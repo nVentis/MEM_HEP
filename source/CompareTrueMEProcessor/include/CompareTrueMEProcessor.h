@@ -75,13 +75,15 @@ class CompareTrueMEProcessor : public Processor
 		lcme::LCMEZHH *_zhh; // ZHH MEM calculator instance
 		lcme::LCMEZZH *_zzh; // ZZH MEM calculator instance
 
+		// Control parameters
+		int m_zhh_is_set{}; // used internally
+		int m_zzh_is_set{}; // used internally
+
 		// True
 		int m_true_z1_decay_mode{}; // as input from parameter; defaults to 5 (mu+mu-)
 		int m_true_z2_decay_mode{}; // when ZZH is assumed; from m_true_z2_decay1_pdg
 		int m_true_is_zhh{}; // whether true ZHH occured
 		int m_true_is_zzh{}; // whether true ZZH occured
-		int m_zhh_is_set{}; // control parameter; set automatically
-		int m_zzh_is_set{}; // control parameter; set automatically
 		int m_true_h1_decay1_pdg{}; // if true ZHH occured, abs(PDG) of particle H1 decayed to
 		int m_true_z2_decay1_pdg{}; // if true ZZH occured, abs(PDG) of particle Z2 decayed to
 

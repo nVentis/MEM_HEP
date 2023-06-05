@@ -214,6 +214,11 @@ void CompareTrueMEProcessor::Clear()
 {
   streamlog_out(DEBUG) << "   Clear called  " << std::endl;
 
+  // Flags to decide whether to save entries for ZHH or ZZH (otherwise they'll all be empty)
+  // Important for processes that are not supported by the ME processors (most important, Z->2 boson decay)
+  m_zhh_is_set = 0;
+  m_zzh_is_set = 0;
+
   // 1. True
   m_true_is_zhh = 0;
   m_true_is_zzh = 0;
@@ -342,10 +347,11 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     inputMCTrueCollection = pLCEvent->getCollection( m_inputMCTrueCollection );
 
     // Check whether true ZHH or ZZH event
-    MCParticle *mcPart_H1_if_zhh = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
+    MCParticle *mcPart_H_if_zhh = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
+    MCParticle *mcPart_H_if_zzh = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
 
-    m_true_is_zhh = (mcPart_H1_if_zhh->getPDG() == 25);
-    m_true_is_zzh = !m_true_is_zhh;
+    m_true_is_zhh = (mcPart_H_if_zhh->getPDG() == 25);
+    m_true_is_zzh = (mcPart_H_if_zzh->getPDG() == 25);
 
     // Get particles of final state
     // Same IDs for final Z1 leptons in both true ZZH and ZHH processes
@@ -354,10 +360,6 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
     TLorentzVector true_l1_lortz = TLorentzVector(true_l1->getMomentum(), true_l1->getEnergy());
     TLorentzVector true_l2_lortz = TLorentzVector(true_l2->getMomentum(), true_l2->getEnergy());
-
-    // Flags to decide whether to save entries for ZHH or ZZH (otherwise they'll all be empty)
-    m_zhh_is_set = 0;
-    m_zzh_is_set = 0;
 
     // Lorentz vectors of final states
     TLorentzVector true_zhh_h1_lortz;
@@ -375,9 +377,6 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       true_zhh_h1_lortz = TLorentzVector(true_zhh_h1->getMomentum(), true_zhh_h1->getEnergy());
       true_zhh_h2_lortz = TLorentzVector(true_zhh_h2->getMomentum(), true_zhh_h2->getEnergy());
 
-      TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
-
-      _zhh->SetMomentumFinal(true_zhh_lortz);
       m_zhh_is_set = 1;
 
       // Assuming ZZH
@@ -393,13 +392,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_h1_decay1_pdg);
 
       if (m_true_z2_decay_mode > 0) {
-        _zzh->SetZDecayMode(m_true_z1_decay_mode, m_true_z2_decay_mode);
-
         true_zzh_h_lortz = true_zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
-
-        TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_lortz, true_zzh_z2f2_lortz, true_zzh_h_lortz};
-
-        _zzh->SetMomentumFinal(true_zzh_lortz);
         m_zzh_is_set = 1;
       }
       
@@ -413,27 +406,26 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       true_zzh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
       true_zzh_h_lortz    = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
 
-      TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_lortz, true_zzh_z2f2_lortz, true_zzh_h_lortz};
-
       m_true_z2_decay1_pdg = abs(true_zzh_z2f1->getPDG());
       m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_z2_decay1_pdg);
 
-      _zzh->SetMomentumFinal(true_zzh_lortz);
-      _zzh->SetZDecayMode(m_true_z1_decay_mode, m_true_z2_decay_mode);
       m_zzh_is_set = 1;
 
       // Assuming ZHH
       true_zhh_h1_lortz = true_zzh_z2f1_lortz + true_zzh_z2f2_lortz;
       true_zhh_h2_lortz = true_zzh_h_lortz;
       
-      TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
-
-      _zhh->SetMomentumFinal(true_zhh_lortz);
-      m_zzh_is_set = 1;
+      m_zhh_is_set = 1;
     }
 
     // ZHH
     if (m_zhh_is_set) {
+      // Set final states
+      TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
+
+      _zhh->SetMomentumFinal(true_zhh_lortz);
+      // Zdecay unchanged
+
       // Output
       Int_t vHelLL[2] = {-1,-1};
       Int_t vHelLR[2] = {-1, 1};
@@ -471,6 +463,12 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
     // ZZH
     if (m_zzh_is_set) {
+      // Set final states
+      TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_lortz, true_zzh_z2f2_lortz, true_zzh_h_lortz};
+      
+      _zzh->SetMomentumFinal(true_zzh_lortz);
+      _zzh->SetZDecayMode(m_true_z1_decay_mode, m_true_z2_decay_mode);
+
       // Output
       Int_t vHelLLL[3] = {-1,-1,-1};
       Int_t vHelLLR[3] = {-1,-1,1};
