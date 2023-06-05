@@ -80,6 +80,7 @@ class CompareTrueMEProcessor : public Processor
 		// True
 		int m_true_is_zhh{};
 		int m_true_is_zzh{};
+		int m_true_h1_decay1_pdg{};
 
 		// 1. Assuming ZHH
 		// 1.a ZHH output
@@ -126,10 +127,14 @@ class CompareTrueMEProcessor : public Processor
 		// 1. Assuming ZZH
 		// 1.a ZZH output
 		float m_true_zzh_sigma{};
-		float m_true_zzh_sigmall{};
-		float m_true_zzh_sigmalr{};
-		float m_true_zzh_sigmarl{};
-		float m_true_zzh_sigmarr{};
+		float m_true_zzh_sigmalll{};
+		float m_true_zzh_sigmallr{};
+		float m_true_zzh_sigmalrl{};
+		float m_true_zzh_sigmalrr{};
+		float m_true_zzh_sigmarll{};
+		float m_true_zzh_sigmarlr{};
+		float m_true_zzh_sigmarrl{};
+		float m_true_zzh_sigmarrr{};
 
 		float m_true_zzh_mz1{};
 		float m_true_zzh_mz2{};
