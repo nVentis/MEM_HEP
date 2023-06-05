@@ -349,11 +349,21 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       TLorentzVector true_zhh_h1_decay1_lortz = TLorentzVector(true_zhh_h1_decay1->getMomentum(), true_zhh_h1_decay1->getEnergy());
       TLorentzVector true_zhh_h1_decay2_lortz = TLorentzVector(true_zhh_h1_decay2->getMomentum(), true_zhh_h1_decay2->getEnergy());
 
-      _zzh->SetZDecayMode(m_Z1DecayMode, getZDecayModeFromPDG(abs(true_zhh_h1_decay1->getPDG())));
+      int z2_decay_mode = getZDecayModeFromPDG(abs(true_zhh_h1_decay1->getPDG()));
 
-      TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_decay1_lortz, true_zhh_h1_decay2_lortz, true_zhh_h2_lortz};
+      if (z2_decay_mode > 0) {
+        _zzh->SetZDecayMode(m_Z1DecayMode, z2_decay_mode);
 
-      _zzh->SetMomentumFinal(true_zzh_lortz);
+        TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_decay1_lortz, true_zhh_h1_decay2_lortz, true_zhh_h2_lortz};
+
+        _zzh->SetMomentumFinal(true_zzh_lortz);
+
+        // ZZH
+        m_true_zzh_mz1   = TMath::Sqrt(_zzh->GetQ2Z1());
+        m_true_zzh_mz2   = TMath::Sqrt(_zzh->GetQ2Z2());
+        m_true_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
+        m_true_zzh_mzzh = TMath::Sqrt(_zzh->GetQ2ZZH());
+      }
       
     } else if (m_true_is_zzh) {
       // Get m_Z2DecayMode
@@ -382,13 +392,6 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     m_true_zhh_l2_px = true_l2->getMomentum()[ 0 ];
     m_true_zhh_l2_py = true_l2->getMomentum()[ 1 ];
     m_true_zhh_l2_pz = true_l2->getMomentum()[ 2 ];
-
-    // ZZH
-    m_true_zzh_mz1   = TMath::Sqrt(_zzh->GetQ2Z1());
-    m_true_zzh_mz2   = TMath::Sqrt(_zzh->GetQ2Z2());
-    m_true_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
-    m_true_zzh_mzzh = TMath::Sqrt(_zzh->GetQ2ZZH());
-
 
     m_pTTree->Fill();
     
@@ -423,5 +426,5 @@ int CompareTrueMEProcessor::getZDecayModeFromPDG(int pdg)
     }
   }
 
-  throw Exception("Invalid pdg input");
+  return 0;
 }
