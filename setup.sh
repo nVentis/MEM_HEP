@@ -2,7 +2,7 @@
 
 #source /cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-03/init_ilcsoft.sh
 #source /afs/desy.de/project/ilcsoft/sw/x86_64_gcc82_centos7/v02-02-03/init_ilcsoft.sh
-source /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/TestPhyssimK4H/only_physsim.sh
+source /cvmfs/ilc.desy.de/key4hep/setup.sh
 
 echo "Using current directory as relative path for libraries, which is ${PWD}"
 
