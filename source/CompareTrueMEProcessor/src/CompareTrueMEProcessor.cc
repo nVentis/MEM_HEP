@@ -436,11 +436,11 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_zhh_mhh  = TMath::Sqrt(_zhh->GetQ2HH());
       m_true_zhh_mzhh = TMath::Sqrt(_zhh->GetQ2ZHH());
 
+      m_true_zhh_sigma   = _zhh->GetMatrixElement2();
       m_true_zhh_sigmall = _zhh->GetMatrixElement2(vHelLL);
       m_true_zhh_sigmalr = _zhh->GetMatrixElement2(vHelLR);
       m_true_zhh_sigmarl = _zhh->GetMatrixElement2(vHelRL);
       m_true_zhh_sigmarr = _zhh->GetMatrixElement2(vHelRR);
-      m_true_zhh_sigma   = _zhh->GetMatrixElement2();
 
       m_true_zhh_phi       = _zhh->GetPhi();
       m_true_zhh_phif      = _zhh->GetPhiF();
@@ -484,6 +484,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
       m_true_zzh_mzzh = TMath::Sqrt(_zzh->GetQ2ZZH());
 
+      m_true_zzh_sigma    = _zzh->GetMatrixElement2();
       m_true_zzh_sigmalll = _zzh->GetMatrixElement2(vHelLLL);
       m_true_zzh_sigmallr = _zzh->GetMatrixElement2(vHelLLR);
       m_true_zzh_sigmalrl = _zzh->GetMatrixElement2(vHelLRL);
