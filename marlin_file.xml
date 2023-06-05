@@ -34,7 +34,7 @@
    <Xprocessor name="MEMExampleEEHProcessor"/>
    <Xprocessor name="ZHHPostRecoMEProcessor"/>
    <Xprocessor name="Misclustering"/>
-   <Xprocessor name="CompareTrueMEProcessor"/>
+   <processor name="CompareTrueMEProcessor"/>
  <!-- ========== full and DST output =======================================  -->
 <!--  <processor name="MyLCIOOutputProcessor"/>  -->
   </execute>
