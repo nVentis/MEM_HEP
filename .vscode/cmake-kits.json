@@ -1,0 +1,10 @@
+[
+    {
+      "name": "key4hep",
+      "compilers": {
+        "C": "/cvmfs/ilc.desy.de/key4hep/spackages/gcc/11.2.0/x86_64-centos7-gcc4.8.5-opt/7isdlpuoi7cbcsugpa2hzuqhh5zgeapj/bin/gcc",
+        "CXX": "/cvmfs/ilc.desy.de/key4hep/spackages/gcc/11.2.0/x86_64-centos7-gcc4.8.5-opt/7isdlpuoi7cbcsugpa2hzuqhh5zgeapj/bin/g++"
+      },
+      "environmentSetupScript" : " /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/TestPhyssimK4H/setup_project_bryan.sh"
+    }
+  ]
