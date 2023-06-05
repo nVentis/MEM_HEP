@@ -414,8 +414,8 @@ void CompareTrueMEProcessor::end()
 
 int CompareTrueMEProcessor::getZDecayModeFromPDG(int pdg)
 {
-  Int_t pdgs[12] = {1 , 2,  3, 4,  5, 6,11,12,13,14,15,16};
-  Int_t zdms[12] = {10, 7, 11, 8, 12, 9, 4, 1, 5, 2, 6, 3};
+  Int_t pdgs[12] = {10, 7, 11, 8, 12, 9, 4, 1, 5, 2, 6, 3};
+  Int_t zdms[12] = {1 , 2,  3, 4,  5, 6,11,12,13,14,15,16};
 
   for (unsigned int i = 0; i < 12; i++) {
     if (pdgs[i] == pdg) {
