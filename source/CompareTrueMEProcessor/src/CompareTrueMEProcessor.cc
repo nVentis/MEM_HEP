@@ -326,21 +326,6 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
   streamlog_out(DEBUG) << "processing event: " << pLCEvent->getEventNumber() << "  in run: " << pLCEvent->getRunNumber() << endl;
 
   // Helicity combinations
-  // ZHH
-  Int_t vHelLL[2] = {-1,-1};
-  Int_t vHelLR[2] = {-1, 1};
-  Int_t vHelRL[2] = { 1,-1};
-  Int_t vHelRR[2] = { 1, 1};
-
-  // ZZH
-  Int_t vHelLLL[3] = {-1,-1,-1};
-  Int_t vHelLLR[3] = {-1,-1,1};
-  Int_t vHelLRL[3] = {-1,1,-1};
-  Int_t vHelLRR[3] = {-1,1,1};
-  Int_t vHelRLL[3] = {1,-1,-1};
-  Int_t vHelRLR[3] = {1,-1,1};
-  Int_t vHelRRL[3] = {1,1,-1};
-  Int_t vHelRRR[3] = {1,1,1};
 
   LCCollection *inputMCTrueCollection{};
 
@@ -363,6 +348,10 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     TLorentzVector true_l1_lortz = TLorentzVector(true_l1->getMomentum(), true_l1->getEnergy());
     TLorentzVector true_l2_lortz = TLorentzVector(true_l2->getMomentum(), true_l2->getEnergy());
 
+    // Flags to decide whether to save entries for ZHH or ZZH (otherwise they'll all be empty)
+    m_zhh_is_set = 0;
+    m_zzh_is_set = 0;
+
     if (m_true_is_zhh) {
       // Assumming ZHH
       MCParticle *true_zhh_h1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
@@ -374,24 +363,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
 
       _zhh->SetMomentumFinal(true_zhh_lortz);
-
-      // Output
-      m_true_zhh_mz   = TMath::Sqrt(_zhh->GetQ2Z());
-      m_true_zhh_mhh  = TMath::Sqrt(_zhh->GetQ2HH());
-      m_true_zhh_mzhh = TMath::Sqrt(_zhh->GetQ2ZHH());
-
-      m_true_zhh_sigmall = _zhh->GetMatrixElement2(vHelLL);
-      m_true_zhh_sigmalr = _zhh->GetMatrixElement2(vHelLR);
-      m_true_zhh_sigmarl = _zhh->GetMatrixElement2(vHelRL);
-      m_true_zhh_sigmarr = _zhh->GetMatrixElement2(vHelRR);
-      m_true_zhh_sigma   = _zhh->GetMatrixElement2();
-
-      m_true_zhh_phi       = _zhh->GetPhi();
-      m_true_zhh_phif      = _zhh->GetPhiF();
-      m_true_zhh_phih      = _zhh->GetPhiH();
-      m_true_zhh_costheta  = _zhh->GetCosTheta();
-      m_true_zhh_costhetaf = _zhh->GetCosThetaF();
-      m_true_zhh_costhetah = _zhh->GetCosThetaH();
+      m_zhh_is_set = 1;
 
       // Input
       m_true_zhh_h1_E  = true_zhh_h1->getEnergy();
@@ -422,21 +394,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_decay1_lortz, true_zhh_h1_decay2_lortz, true_zhh_h2_lortz};
 
         _zzh->SetMomentumFinal(true_zzh_lortz);
-
-        // Output
-        m_true_zzh_mz1   = TMath::Sqrt(_zzh->GetQ2Z1());
-        m_true_zzh_mz2   = TMath::Sqrt(_zzh->GetQ2Z2());
-        m_true_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
-        m_true_zzh_mzzh = TMath::Sqrt(_zzh->GetQ2ZZH());
-
-        m_true_zzh_sigmalll = _zzh->GetMatrixElement2(vHelLLL);
-        m_true_zzh_sigmallr = _zzh->GetMatrixElement2(vHelLLR);
-        m_true_zzh_sigmalrl = _zzh->GetMatrixElement2(vHelLRL);
-        m_true_zzh_sigmalrr = _zzh->GetMatrixElement2(vHelLRR);
-        m_true_zzh_sigmarll = _zzh->GetMatrixElement2(vHelRLL);
-        m_true_zzh_sigmarlr = _zzh->GetMatrixElement2(vHelRLR);
-        m_true_zzh_sigmarrl = _zzh->GetMatrixElement2(vHelRRL);
-        m_true_zzh_sigmarrr = _zzh->GetMatrixElement2(vHelRRR);
+        m_zzh_is_set = 1;
 
         // Input
         m_true_zzh_z2f1_E  = true_zhh_h1_decay1_lortz->getEnergy();
@@ -456,9 +414,76 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
       
     } else if (m_true_is_zzh) {
+      // Assumming ZZH
+      MCParticle *true_zzh_z2f1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
+      MCParticle *true_zzh_z2f2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(11));
+      MCParticle *true_zzh_h    = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
+
+      TLorentzVector true_zhh_z2f1_lortz = TLorentzVector(true_zzh_z2f1->getMomentum(), true_zzh_z2f1->getEnergy());
+      TLorentzVector true_zhh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
+      TLorentzVector true_zhh_h_lortz = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
+
+      TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zhh_z2f1_lortz, true_zhh_z2f2_lortz, true_zhh_h_lortz};
+
+      _zzh->SetMomentumFinal(true_zzh_lortz);
+      m_zzh_is_set = 1;
+
+
       // Get m_Z2DecayMode
       // TODO
       
+    }
+
+    // Output
+    // ZHH
+    if (m_zhh_is_set) {
+      Int_t vHelLL[2] = {-1,-1};
+      Int_t vHelLR[2] = {-1, 1};
+      Int_t vHelRL[2] = { 1,-1};
+      Int_t vHelRR[2] = { 1, 1};
+      
+      m_true_zhh_mz   = TMath::Sqrt(_zhh->GetQ2Z());
+      m_true_zhh_mhh  = TMath::Sqrt(_zhh->GetQ2HH());
+      m_true_zhh_mzhh = TMath::Sqrt(_zhh->GetQ2ZHH());
+
+      m_true_zhh_sigmall = _zhh->GetMatrixElement2(vHelLL);
+      m_true_zhh_sigmalr = _zhh->GetMatrixElement2(vHelLR);
+      m_true_zhh_sigmarl = _zhh->GetMatrixElement2(vHelRL);
+      m_true_zhh_sigmarr = _zhh->GetMatrixElement2(vHelRR);
+      m_true_zhh_sigma   = _zhh->GetMatrixElement2();
+
+      m_true_zhh_phi       = _zhh->GetPhi();
+      m_true_zhh_phif      = _zhh->GetPhiF();
+      m_true_zhh_phih      = _zhh->GetPhiH();
+      m_true_zhh_costheta  = _zhh->GetCosTheta();
+      m_true_zhh_costhetaf = _zhh->GetCosThetaF();
+      m_true_zhh_costhetah = _zhh->GetCosThetaH();
+    }
+
+    // ZZH
+    if (m_zzh_is_set) {
+      Int_t vHelLLL[3] = {-1,-1,-1};
+      Int_t vHelLLR[3] = {-1,-1,1};
+      Int_t vHelLRL[3] = {-1,1,-1};
+      Int_t vHelLRR[3] = {-1,1,1};
+      Int_t vHelRLL[3] = {1,-1,-1};
+      Int_t vHelRLR[3] = {1,-1,1};
+      Int_t vHelRRL[3] = {1,1,-1};
+      Int_t vHelRRR[3] = {1,1,1};
+
+      m_true_zzh_mz1  = TMath::Sqrt(_zzh->GetQ2Z1());
+      m_true_zzh_mz2  = TMath::Sqrt(_zzh->GetQ2Z2());
+      m_true_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
+      m_true_zzh_mzzh = TMath::Sqrt(_zzh->GetQ2ZZH());
+
+      m_true_zzh_sigmalll = _zzh->GetMatrixElement2(vHelLLL);
+      m_true_zzh_sigmallr = _zzh->GetMatrixElement2(vHelLLR);
+      m_true_zzh_sigmalrl = _zzh->GetMatrixElement2(vHelLRL);
+      m_true_zzh_sigmalrr = _zzh->GetMatrixElement2(vHelLRR);
+      m_true_zzh_sigmarll = _zzh->GetMatrixElement2(vHelRLL);
+      m_true_zzh_sigmarlr = _zzh->GetMatrixElement2(vHelRLR);
+      m_true_zzh_sigmarrl = _zzh->GetMatrixElement2(vHelRRL);
+      m_true_zzh_sigmarrr = _zzh->GetMatrixElement2(vHelRRR);
     }
 
     // ZHH and ZZH input (shared l1 and l2 leptons)

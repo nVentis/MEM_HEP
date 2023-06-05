@@ -80,6 +80,8 @@ class CompareTrueMEProcessor : public Processor
 		// True
 		int m_true_is_zhh{};
 		int m_true_is_zzh{};
+		int m_zhh_is_set{};
+		int m_zzh_is_set{};
 		int m_true_h1_decay1_pdg{};
 
 		// 1. Assuming ZHH
