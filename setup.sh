@@ -9,4 +9,5 @@ echo "Using current directory as relative path for libraries, which is ${PWD}"
 export MARLIN_DLL=$MARLIN_DLL:/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim/build/lib/libPhyssim.so
 export MARLIN_DLL=$MARLIN_DLL:$PWD/source/ZHHKinfitProcessors/lib/libZHHKinfitProcessors.so:$PWD/source/CompareTrueMEProcessor/lib/CompareTrueMEProcessor.so
 
+export CMAKE_PREFIX_PATH=/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim:$CMAKE_PREFIX_PATH
 export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH
