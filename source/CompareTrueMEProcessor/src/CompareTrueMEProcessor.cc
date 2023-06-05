@@ -420,7 +420,7 @@ int CompareTrueMEProcessor::getZDecayModeFromPDG(int pdg)
   Int_t pdgs[11] = {12, 14, 16, 11, 13, 15, 2, 4, 1, 3 ,  5};
   Int_t zdms[11] = {1 , 2,  3,  4,  5,  6,  7, 8, 9, 10, 11};
 
-  for (unsigned int i = 0; i < 12; i++) {
+  for (unsigned int i = 0; i < 11; i++) {
     if (pdgs[i] == pdg) {
       return zdms[i];
     }
