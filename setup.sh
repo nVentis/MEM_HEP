@@ -6,6 +6,6 @@ source /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/TestPhyssimK4H/only_ph
 
 echo "Using current directory as relative path for libraries, which is ${PWD}"
 
-export MARLIN_DLL=$MARLIN_DLL:$PWD/source/AddNeutralPFOCovMat/lib/libAddNeutralPFOCovMat.so:$PWD/source/LeptonErrorAnalysis/lib/libLeptonErrorAnalysis.so:$PWD/source/CheatedMCOverlayRemoval/lib/libCheatedMCOverlayRemoval.so:$PWD/source/LeptonPairing/lib/libLeptonPairing.so:$PWD/source/HdecayMode/lib/libHdecayMode.so:$PWD/source/PreSelection/lib/libPreSelection.so:$PWD/source/JetErrorAnalysis/lib/libJetErrorAnalysis.so:$PWD/source/ZHHKinfitProcessors/lib/libZHHKinfitProcessors.so:$PWD/source/Misclustering/lib/libMisclustering.so
+export MARLIN_DLL=$MARLIN_DLL:$PWD/source/ZHHKinfitProcessors/lib/libZHHKinfitProcessors.so:$PWD/source/CompareTrueMEProcessor/lib/CompareTrueMEProcessor.so
 
 export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH

@@ -20,13 +20,6 @@ cd ../..
 }
 
 cd source
-compile_pkg AddNeutralPFOCovMat
-compile_pkg CheatedMCOverlayRemoval
-compile_pkg HdecayMode
-compile_pkg JetErrorAnalysis
-compile_pkg LeptonErrorAnalysis
-compile_pkg LeptonPairing
-compile_pkg PreSelection
-compile_pkg ZHHKinfitProcessors
+compile_pkg CompareTrueMEProcessor
 compile_pkg ZHHPostRecoMEProcessor
 cd ..
