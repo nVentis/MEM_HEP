@@ -140,7 +140,7 @@ void CompareTrueMEProcessor::init()
 
   // 2.a ZZH output
   m_pTTree->Branch("true_zzh_sigma"  , &m_true_zzh_sigma  , "true_zzh_sigma/F");
-  
+
   m_pTTree->Branch("true_zzh_sigmalll", &m_true_zzh_sigmalll, "true_zzh_sigmalll/F");
   m_pTTree->Branch("true_zzh_sigmallr", &m_true_zzh_sigmallr, "true_zzh_sigmallr/F");
   m_pTTree->Branch("true_zzh_sigmalrl", &m_true_zzh_sigmalrl, "true_zzh_sigmalrl/F");
@@ -156,13 +156,15 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("true_zzh_mzz" , &m_true_zzh_mzz , "true_zzh_mzz/F");
   m_pTTree->Branch("true_zzh_mzzh", &m_true_zzh_mzzh, "true_zzh_mzzh/F");
 
-  m_pTTree->Branch("true_zzh_phi" , &m_true_zzh_phi , "true_zzh_phi/F");
-  m_pTTree->Branch("true_zzh_phif", &m_true_zzh_phif, "true_zzh_phif/F");
-  m_pTTree->Branch("true_zzh_phih", &m_true_zzh_phih, "true_zzh_phih/F");
+  m_pTTree->Branch("true_zzh_phi"   , &m_true_zzh_phi   , "true_zzh_phi/F");
+  m_pTTree->Branch("true_zzh_phiz"  , &m_true_zzh_phiz  , "true_zzh_phiz/F");
+  m_pTTree->Branch("true_zzh_phiz1f", &m_true_zzh_phiz1f, "true_zzh_phiz1f/F");
+  m_pTTree->Branch("true_zzh_phiz2f", &m_true_zzh_phiz2f, "true_zzh_phiz2f/F");
   
-  m_pTTree->Branch("true_zzh_costheta" , &m_true_zzh_costheta , "true_zzh_costheta/F");
-  m_pTTree->Branch("true_zzh_costhetaf", &m_true_zzh_costhetaf, "true_zzh_costhetaf/F");
-  m_pTTree->Branch("true_zzh_costhetah", &m_true_zzh_costhetah, "true_zzh_costhetah/F");
+  m_pTTree->Branch("true_zzh_costheta"   , &m_true_zzh_costheta   , "true_zzh_costheta/F");
+  m_pTTree->Branch("true_zzh_costhetaz"  , &m_true_zzh_costhetaz  , "true_zzh_costhetaz/F");
+  m_pTTree->Branch("true_zzh_costhetaz1f", &m_true_zzh_costhetaz1f, "true_zzh_costhetaz1f/F");
+  m_pTTree->Branch("true_zzh_costhetaz2f", &m_true_zzh_costhetaz2f, "true_zzh_costhetaz2f/F");
 
   // 1.b ZZH input
   m_pTTree->Branch("true_zzh_l1_e" , &m_true_zzh_l1_E , "true_zzh_l1_e/F");
@@ -175,15 +177,20 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("true_zzh_l2_py", &m_true_zzh_l2_py, "true_zzh_l2_py/F");
   m_pTTree->Branch("true_zzh_l2_pz", &m_true_zzh_l2_pz, "true_zzh_l2_pz/F");
 
-  m_pTTree->Branch("true_zzh_h1_e" , &m_true_zzh_h1_E , "true_zzh_h1_e/F");
-  m_pTTree->Branch("true_zzh_h1_px", &m_true_zzh_h1_px, "true_zzh_h1_px/F");
-  m_pTTree->Branch("true_zzh_h1_py", &m_true_zzh_h1_py, "true_zzh_h1_py/F");
-  m_pTTree->Branch("true_zzh_h1_pz", &m_true_zzh_h1_pz, "true_zzh_h1_pz/F");
+  m_pTTree->Branch("true_zzh_z2f1_e" , &m_true_zzh_z2f1_E , "true_zzh_z2f1_e/F");
+  m_pTTree->Branch("true_zzh_z2f1_px", &m_true_zzh_z2f1_px, "true_zzh_z2f1_px/F");
+  m_pTTree->Branch("true_zzh_z2f1_py", &m_true_zzh_z2f1_py, "true_zzh_z2f1_py/F");
+  m_pTTree->Branch("true_zzh_z2f1_pz", &m_true_zzh_z2f1_pz, "true_zzh_z2f1_pz/F");
 
-  m_pTTree->Branch("true_zzh_h2_e" , &m_true_zzh_h2_E , "true_zzh_h2_e/F");
-  m_pTTree->Branch("true_zzh_h2_px", &m_true_zzh_h2_px, "true_zzh_h2_px/F");
-  m_pTTree->Branch("true_zzh_h2_py", &m_true_zzh_h2_py, "true_zzh_h2_py/F");
-  m_pTTree->Branch("true_zzh_h2_pz", &m_true_zzh_h2_pz, "true_zzh_h2_pz/F");
+  m_pTTree->Branch("true_zzh_z2f2_e" , &m_true_zzh_z2f2_E , "true_zzh_z2f2_e/F");
+  m_pTTree->Branch("true_zzh_z2f2_px", &m_true_zzh_z2f2_px, "true_zzh_z2f2_px/F");
+  m_pTTree->Branch("true_zzh_z2f2_py", &m_true_zzh_z2f2_py, "true_zzh_z2f2_py/F");
+  m_pTTree->Branch("true_zzh_z2f2_pz", &m_true_zzh_z2f2_pz, "true_zzh_z2f2_pz/F");
+
+  m_pTTree->Branch("true_zzh_h_e" , &m_true_zzh_h_E , "true_zzh_h_e/F");
+  m_pTTree->Branch("true_zzh_h_px", &m_true_zzh_h_px, "true_zzh_h_px/F");
+  m_pTTree->Branch("true_zzh_h_py", &m_true_zzh_h_py, "true_zzh_h_py/F");
+  m_pTTree->Branch("true_zzh_h_pz", &m_true_zzh_h_pz, "true_zzh_h_pz/F");
 
   streamlog_out(DEBUG) << "   init finished  " << std::endl;
 
@@ -211,6 +218,10 @@ void CompareTrueMEProcessor::Clear()
   m_true_is_zhh = 0;
   m_true_is_zzh = 0;
   m_true_h1_decay1_pdg = 0;
+
+  // 1. True
+  m_true_is_zhh = 0;
+  m_true_is_zzh = 0;
 
   // 2.a ZHH output
   m_true_zhh_sigma     = 0.;
@@ -246,29 +257,34 @@ void CompareTrueMEProcessor::Clear()
   m_true_zhh_h1_py = 0.;
   m_true_zhh_h1_pz = 0.;
 
+  m_true_zhh_h2_E  = 0.;
+  m_true_zhh_h2_px = 0.;
+  m_true_zhh_h2_py = 0.;
+  m_true_zhh_h2_pz = 0.;
+
 
   // 3.a ZZH output
-  m_true_zzh_sigma    = 0.;
-  m_true_zzh_sigmalll = 0.;
-  m_true_zzh_sigmallr = 0.;
-  m_true_zzh_sigmalrl = 0.;
-  m_true_zzh_sigmalrr = 0.;
-  m_true_zzh_sigmarll = 0.;
-  m_true_zzh_sigmarlr = 0.;
-  m_true_zzh_sigmarrl = 0.;
-  m_true_zzh_sigmarrr = 0.;
+  m_true_zzh_sigma     = 0.;
+  m_true_zzh_sigmall   = 0.;
+  m_true_zzh_sigmalr   = 0.;
+  m_true_zzh_sigmarl   = 0.;
+  m_true_zzh_sigmarr   = 0.;
 
   m_true_zzh_mz1       = 0.;
   m_true_zzh_mz2       = 0.;
   m_true_zzh_mzz       = 0.;
   m_true_zzh_mzzh      = 0.;
   
-  m_true_zzh_phi       = 0.;
-  m_true_zzh_phif      = 0.;
-  m_true_zzh_phih      = 0.;
-  m_true_zzh_costheta  = 0.;
-  m_true_zzh_costhetaf = 0.;
-  m_true_zzh_costhetah = 0.;
+  m_true_zzh_phi         = 0.;
+  m_true_zzh_phiz        = 0.;
+  m_true_zzh_phiz1f      = 0.;
+  m_true_zzh_phiz2f      = 0.;
+
+  m_true_zzh_costheta    = 0.;
+  m_true_zzh_costhetaz   = 0.;
+  m_true_zzh_costhetaz1f = 0.;
+  m_true_zzh_costhetaz2f = 0.;
+
 
   // 3.b ZZH input
   m_true_zzh_l1_E  = 0.;
@@ -281,15 +297,20 @@ void CompareTrueMEProcessor::Clear()
   m_true_zzh_l2_py = 0.;
   m_true_zzh_l2_pz = 0.;
 
-  m_true_zzh_h1_E  = 0.;
-  m_true_zzh_h1_px = 0.;
-  m_true_zzh_h1_py = 0.;
-  m_true_zzh_h1_pz = 0.;
+  m_true_zzh_z2f1_E  = 0.;
+  m_true_zzh_z2f1_px = 0.;
+  m_true_zzh_z2f1_py = 0.;
+  m_true_zzh_z2f1_pz = 0.;
 
-  m_true_zzh_h2_E  = 0.;
-  m_true_zzh_h2_px = 0.;
-  m_true_zzh_h2_py = 0.;
-  m_true_zzh_h2_pz = 0.;
+  m_true_zzh_z2f2_E  = 0.;
+  m_true_zzh_z2f2_px = 0.;
+  m_true_zzh_z2f2_py = 0.;
+  m_true_zzh_z2f2_pz = 0.;
+
+  m_true_zzh_h_E  = 0.;
+  m_true_zzh_h_px = 0.;
+  m_true_zzh_h_py = 0.;
+  m_true_zzh_h_pz = 0.;
 }
 
 void CompareTrueMEProcessor::processRunHeader( LCRunHeader*  /*run*/) { 
@@ -354,6 +375,25 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       _zhh->SetMomentumFinal(true_zhh_lortz);
 
+      // Output
+      m_true_zhh_mz   = TMath::Sqrt(_zhh->GetQ2Z());
+      m_true_zhh_mhh  = TMath::Sqrt(_zhh->GetQ2HH());
+      m_true_zhh_mzhh = TMath::Sqrt(_zhh->GetQ2ZHH());
+
+      m_true_zhh_sigmall = _zhh->GetMatrixElement2(vHelLL);
+      m_true_zhh_sigmalr = _zhh->GetMatrixElement2(vHelLR);
+      m_true_zhh_sigmarl = _zhh->GetMatrixElement2(vHelRL);
+      m_true_zhh_sigmarr = _zhh->GetMatrixElement2(vHelRR);
+      m_true_zhh_sigma   = _zhh->GetMatrixElement2();
+
+      m_true_zhh_phi       = _zhh->GetPhi();
+      m_true_zhh_phif      = _zhh->GetPhiF();
+      m_true_zhh_phih      = _zhh->GetPhiH();
+      m_true_zhh_costheta  = _zhh->GetCosTheta();
+      m_true_zhh_costhetaf = _zhh->GetCosThetaF();
+      m_true_zhh_costhetah = _zhh->GetCosThetaH();
+
+      // Input
       m_true_zhh_h1_E  = true_zhh_h1->getEnergy();
       m_true_zhh_h1_px = true_zhh_h1->getMomentum()[ 0 ];
       m_true_zhh_h1_py = true_zhh_h1->getMomentum()[ 1 ];
@@ -383,7 +423,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
         _zzh->SetMomentumFinal(true_zzh_lortz);
 
-        // ZZH
+        // Output
         m_true_zzh_mz1   = TMath::Sqrt(_zzh->GetQ2Z1());
         m_true_zzh_mz2   = TMath::Sqrt(_zzh->GetQ2Z2());
         m_true_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
@@ -398,37 +438,30 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         m_true_zzh_sigmarrl = _zzh->GetMatrixElement2(vHelRRL);
         m_true_zzh_sigmarrr = _zzh->GetMatrixElement2(vHelRRR);
 
-        m_true_zzh_sigmall = _zzh->GetMatrixElement2(vHelLL);
-        m_true_zzh_sigmalr = _zzh->GetMatrixElement2(vHelLR);
-        m_true_zzh_sigmarl = _zzh->GetMatrixElement2(vHelRL);
-        m_true_zzh_sigmarr = _zzh->GetMatrixElement2(vHelRR);
-        m_true_zzh_sigma   = _zzh->GetMatrixElement2();
+        // Input
+        m_true_zzh_z2f1_E  = true_zhh_h1_decay1_lortz->getEnergy();
+        m_true_zzh_z2f1_px = true_zhh_h1_decay1_lortz->getMomentum()[ 0 ];
+        m_true_zzh_z2f1_py = true_zhh_h1_decay1_lortz->getMomentum()[ 1 ];
+        m_true_zzh_z2f1_pz = true_zhh_h1_decay1_lortz->getMomentum()[ 2 ];
+
+        m_true_zzh_z2f2_E  = true_zhh_h1_decay2_lortz->getEnergy();
+        m_true_zzh_z2f2_px = true_zhh_h1_decay2_lortz->getMomentum()[ 0 ];
+        m_true_zzh_z2f2_py = true_zhh_h1_decay2_lortz->getMomentum()[ 1 ];
+        m_true_zzh_z2f2_pz = true_zhh_h1_decay2_lortz->getMomentum()[ 2 ];
+
+        m_true_zzh_h_E  = true_zhh_h2_lortz->getEnergy();
+        m_true_zzh_h_px = true_zhh_h2_lortz->getMomentum()[ 0 ];
+        m_true_zzh_h_py = true_zhh_h2_lortz->getMomentum()[ 1 ];
+        m_true_zzh_h_pz = true_zhh_h2_lortz->getMomentum()[ 2 ];
       }
       
     } else if (m_true_is_zzh) {
       // Get m_Z2DecayMode
       // TODO
+      
     }
 
-    // 1. ZHH
-    m_true_zhh_mz   = TMath::Sqrt(_zhh->GetQ2Z());
-    m_true_zhh_mhh  = TMath::Sqrt(_zhh->GetQ2HH());
-    m_true_zhh_mzhh = TMath::Sqrt(_zhh->GetQ2ZHH());
-
-    m_true_zhh_sigmall = _zhh->GetMatrixElement2(vHelLL);
-    m_true_zhh_sigmalr = _zhh->GetMatrixElement2(vHelLR);
-    m_true_zhh_sigmarl = _zhh->GetMatrixElement2(vHelRL);
-    m_true_zhh_sigmarr = _zhh->GetMatrixElement2(vHelRR);
-    m_true_zhh_sigma   = _zhh->GetMatrixElement2();
-
-    m_true_zhh_phi       = _zhh->GetPhi();
-    m_true_zhh_phif      = _zhh->GetPhiF();
-    m_true_zhh_phih      = _zhh->GetPhiH();
-    m_true_zhh_costheta  = _zhh->GetCosTheta();
-    m_true_zhh_costhetaf = _zhh->GetCosThetaF();
-    m_true_zhh_costhetah = _zhh->GetCosThetaH();
-
-    // 1.b ZHH input
+    // ZHH and ZZH input (shared l1 and l2 leptons)
     m_true_zhh_l1_E  = true_l1->getEnergy();
     m_true_zhh_l1_px = true_l1->getMomentum()[ 0 ];
     m_true_zhh_l1_py = true_l1->getMomentum()[ 1 ];
@@ -438,6 +471,16 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     m_true_zhh_l2_px = true_l2->getMomentum()[ 0 ];
     m_true_zhh_l2_py = true_l2->getMomentum()[ 1 ];
     m_true_zhh_l2_pz = true_l2->getMomentum()[ 2 ];
+
+    m_true_zzh_l1_E  = true_l1->getEnergy();
+    m_true_zzh_l1_px = true_l1->getMomentum()[ 0 ];
+    m_true_zzh_l1_py = true_l1->getMomentum()[ 1 ];
+    m_true_zzh_l1_pz = true_l1->getMomentum()[ 2 ];
+
+    m_true_zzh_l2_E  = true_l2->getEnergy();
+    m_true_zzh_l2_px = true_l2->getMomentum()[ 0 ];
+    m_true_zzh_l2_py = true_l2->getMomentum()[ 1 ];
+    m_true_zzh_l2_pz = true_l2->getMomentum()[ 2 ];
 
     m_pTTree->Fill();
     

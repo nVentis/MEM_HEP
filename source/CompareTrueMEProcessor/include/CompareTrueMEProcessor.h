@@ -127,14 +127,10 @@ class CompareTrueMEProcessor : public Processor
 		// 1. Assuming ZZH
 		// 1.a ZZH output
 		float m_true_zzh_sigma{};
-		float m_true_zzh_sigmalll{};
-		float m_true_zzh_sigmallr{};
-		float m_true_zzh_sigmalrl{};
-		float m_true_zzh_sigmalrr{};
-		float m_true_zzh_sigmarll{};
-		float m_true_zzh_sigmarlr{};
-		float m_true_zzh_sigmarrl{};
-		float m_true_zzh_sigmarrr{};
+		float m_true_zzh_sigmall{};
+		float m_true_zzh_sigmalr{};
+		float m_true_zzh_sigmarl{};
+		float m_true_zzh_sigmarr{};
 
 		float m_true_zzh_mz1{};
 		float m_true_zzh_mz2{};
@@ -142,12 +138,14 @@ class CompareTrueMEProcessor : public Processor
 		float m_true_zzh_mzzh{};
 
 		float m_true_zzh_phi{};
-		float m_true_zzh_phif{};
-		float m_true_zzh_phih{};
+		float m_true_zzh_phiz{};
+		float m_true_zzh_phiz1f{};
+		float m_true_zzh_phiz2f{};
 
 		float m_true_zzh_costheta{};
-		float m_true_zzh_costhetaf{};
-		float m_true_zzh_costhetah{};
+		float m_true_zzh_costhetaz{};
+		float m_true_zzh_costhetaz1f{};
+		float m_true_zzh_costhetaz2f{};
 
 		// 1.b ZZH input
 		float m_true_zzh_l1_E{};
@@ -160,15 +158,20 @@ class CompareTrueMEProcessor : public Processor
   		float m_true_zzh_l2_py{};
   		float m_true_zzh_l2_pz{};
 
-		float m_true_zzh_h1_E{};
-  		float m_true_zzh_h1_px{};
-  		float m_true_zzh_h1_py{};
-  		float m_true_zzh_h1_pz{};
+		float m_true_zzh_z2f1_E{};
+  		float m_true_zzh_z2f1_px{};
+  		float m_true_zzh_z2f1_py{};
+  		float m_true_zzh_z2f1_pz{};
 
-		float m_true_zzh_h2_E{};
-  		float m_true_zzh_h2_px{};
-  		float m_true_zzh_h2_py{};
-  		float m_true_zzh_h2_pz{};
+		float m_true_zzh_z2f2_E{};
+  		float m_true_zzh_z2f2_px{};
+  		float m_true_zzh_z2f2_py{};
+  		float m_true_zzh_z2f2_pz{};
+
+		float m_true_zzh_h_E{};
+  		float m_true_zzh_h_px{};
+  		float m_true_zzh_h_py{};
+  		float m_true_zzh_h_pz{};
 };
 
 #endif
