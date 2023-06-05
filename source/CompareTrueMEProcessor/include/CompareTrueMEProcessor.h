@@ -67,8 +67,6 @@ class CompareTrueMEProcessor : public Processor
 
 		int m_nRun;
         int m_nEvt;
-		int m_Z1DecayMode{};
-		int m_Z2DecayMode{}; // when ZZH is assumed
 
 		float m_Hmass{};
 
@@ -78,11 +76,14 @@ class CompareTrueMEProcessor : public Processor
 		lcme::LCMEZZH *_zzh; // ZZH MEM calculator instance
 
 		// True
-		int m_true_is_zhh{};
-		int m_true_is_zzh{};
-		int m_zhh_is_set{};
-		int m_zzh_is_set{};
-		int m_true_h1_decay1_pdg{};
+		int m_true_z1_decay_mode{}; // as input from parameter; defaults to 5 (mu+mu-)
+		int m_true_z2_decay_mode{}; // when ZZH is assumed; from m_true_z2_decay1_pdg
+		int m_true_is_zhh{}; // whether true ZHH occured
+		int m_true_is_zzh{}; // whether true ZZH occured
+		int m_zhh_is_set{}; // control parameter; set automatically
+		int m_zzh_is_set{}; // control parameter; set automatically
+		int m_true_h1_decay1_pdg{}; // if true ZHH occured, abs(PDG) of particle H1 decayed to
+		int m_true_z2_decay1_pdg{}; // if true ZZH occured, abs(PDG) of particle Z2 decayed to
 
 		// 1. Assuming ZHH
 		// 1.a ZHH output
@@ -129,10 +130,14 @@ class CompareTrueMEProcessor : public Processor
 		// 1. Assuming ZZH
 		// 1.a ZZH output
 		float m_true_zzh_sigma{};
-		float m_true_zzh_sigmall{};
-		float m_true_zzh_sigmalr{};
-		float m_true_zzh_sigmarl{};
-		float m_true_zzh_sigmarr{};
+		float m_true_zzh_sigmalll{};
+		float m_true_zzh_sigmallr{};
+		float m_true_zzh_sigmalrl{};
+		float m_true_zzh_sigmalrr{};
+		float m_true_zzh_sigmarrr{};
+		float m_true_zzh_sigmarrl{};
+		float m_true_zzh_sigmarlr{};
+		float m_true_zzh_sigmarll{};
 
 		float m_true_zzh_mz1{};
 		float m_true_zzh_mz2{};

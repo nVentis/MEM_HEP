@@ -49,9 +49,9 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
 				 std::string("preselection")
 				 );
 
-	registerProcessorParameter("Z1DecayMode",
+	registerProcessorParameter("TrueZ1DecayMode",
         "MEM processor mode of decay of Z1 (=Z for ZHH, Z1 for ZZH)",
-        m_Z1DecayMode,
+        m_true_z1_decay_mode,
         int(5)
         );
 
@@ -198,13 +198,13 @@ void CompareTrueMEProcessor::init()
   cerr << "\n";
   cerr << "ZHH MEM processor initializing with:\n";
   cerr << "    H_mass: "<< m_Hmass << "\n";
-  cerr << "    Z1DecayMode: "<< m_Z1DecayMode << "\n";
+  cerr << "    Z1DecayMode: "<< m_true_z1_decay_mode << "\n";
   cerr << "    Pol_e: "<< pol_e << "\n";
   cerr << "    Pol_p: "<< pol_p << "\n";
   cerr << "    m_outputTree: " << m_outputTree << "\n";
 
   _zhh = new LCMEZHH("LCMEZHH", "ZHH", m_Hmass, pol_e, pol_p);
-  _zhh->SetZDecayMode(m_Z1DecayMode); // 5 (internal mapping) -> (13) PDG, muon 
+  _zhh->SetZDecayMode(m_true_z1_decay_mode); // 5 (internal mapping) -> (13) PDG, muon 
 
   _zzh = new LCMEZZH("LCMEZZH", "ZZH", m_Hmass, pol_e, pol_p);
   // zzh setZDecayMode adjusted every run
@@ -218,10 +218,12 @@ void CompareTrueMEProcessor::Clear()
   m_true_is_zhh = 0;
   m_true_is_zzh = 0;
   m_true_h1_decay1_pdg = 0;
+  m_true_z2_decay1_pdg = 0;
 
   // 1. True
   m_true_is_zhh = 0;
   m_true_is_zzh = 0;
+  m_true_z2_decay_mode = 0;
 
   // 2.a ZHH output
   m_true_zhh_sigma     = 0.;
@@ -265,10 +267,15 @@ void CompareTrueMEProcessor::Clear()
 
   // 3.a ZZH output
   m_true_zzh_sigma     = 0.;
-  m_true_zzh_sigmall   = 0.;
-  m_true_zzh_sigmalr   = 0.;
-  m_true_zzh_sigmarl   = 0.;
-  m_true_zzh_sigmarr   = 0.;
+  m_true_zzh_sigmalll   = 0.;
+  m_true_zzh_sigmallr   = 0.;
+  m_true_zzh_sigmalrl   = 0.;
+  m_true_zzh_sigmalrr   = 0.;
+
+  m_true_zzh_sigmarrr   = 0.;
+  m_true_zzh_sigmarrl   = 0.;
+  m_true_zzh_sigmarlr   = 0.;
+  m_true_zzh_sigmarll   = 0.;
 
   m_true_zzh_mz1       = 0.;
   m_true_zzh_mz2       = 0.;
@@ -352,65 +359,48 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     m_zhh_is_set = 0;
     m_zzh_is_set = 0;
 
+    // Lorentz vectors of final states
+    TLorentzVector true_zhh_h1_lortz;
+    TLorentzVector true_zhh_h2_lortz;
+
+    TLorentzVector true_zzh_z2f1_decay1_lortz;
+    TLorentzVector true_zzh_z2f2_decay2_lortz;
+    TLorentzVector true_zzh_h_lortz;
+
     if (m_true_is_zhh) {
       // Assumming ZHH
       MCParticle *true_zhh_h1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
       MCParticle *true_zhh_h2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(11));
 
-      TLorentzVector true_zhh_h1_lortz = TLorentzVector(true_zhh_h1->getMomentum(), true_zhh_h1->getEnergy());
-      TLorentzVector true_zhh_h2_lortz = TLorentzVector(true_zhh_h2->getMomentum(), true_zhh_h2->getEnergy());
+      true_zhh_h1_lortz = TLorentzVector(true_zhh_h1->getMomentum(), true_zhh_h1->getEnergy());
+      true_zhh_h2_lortz = TLorentzVector(true_zhh_h2->getMomentum(), true_zhh_h2->getEnergy());
 
       TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
 
       _zhh->SetMomentumFinal(true_zhh_lortz);
       m_zhh_is_set = 1;
 
-      // Input
-      m_true_zhh_h1_E  = true_zhh_h1->getEnergy();
-      m_true_zhh_h1_px = true_zhh_h1->getMomentum()[ 0 ];
-      m_true_zhh_h1_py = true_zhh_h1->getMomentum()[ 1 ];
-      m_true_zhh_h1_pz = true_zhh_h1->getMomentum()[ 2 ];
-
-      m_true_zhh_h2_E  = true_zhh_h2->getEnergy();
-      m_true_zhh_h2_px = true_zhh_h2->getMomentum()[ 0 ];
-      m_true_zhh_h2_py = true_zhh_h2->getMomentum()[ 1 ];
-      m_true_zhh_h2_pz = true_zhh_h2->getMomentum()[ 2 ];
-
       // Assuming ZZH
       // Pretend that decay products of H1 are decay products of Z2 in ZZH
       MCParticle *true_zhh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
       MCParticle *true_zhh_h1_decay2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(13));
 
-      TLorentzVector true_zhh_h1_decay1_lortz = TLorentzVector(true_zhh_h1_decay1->getMomentum(), true_zhh_h1_decay1->getEnergy());
-      TLorentzVector true_zhh_h1_decay2_lortz = TLorentzVector(true_zhh_h1_decay2->getMomentum(), true_zhh_h1_decay2->getEnergy());
+      true_zzh_z2f1_decay1_lortz = TLorentzVector(true_zhh_h1_decay1->getMomentum(), true_zhh_h1_decay1->getEnergy());
+      true_zzh_z2f2_decay2_lortz = TLorentzVector(true_zhh_h1_decay2->getMomentum(), true_zhh_h1_decay2->getEnergy());
 
-      m_true_h1_decay1_pdg = true_zhh_h1_decay1->getPDG();
+      m_true_h1_decay1_pdg = abs(true_zhh_h1_decay1->getPDG());
 
-      int z2_decay_mode = getZDecayModeFromPDG(abs(m_true_h1_decay1_pdg));
+      m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_h1_decay1_pdg);
 
-      if (z2_decay_mode > 0) {
-        _zzh->SetZDecayMode(m_Z1DecayMode, z2_decay_mode);
+      if (m_true_z2_decay_mode > 0) {
+        _zzh->SetZDecayMode(m_true_z1_decay_mode, m_true_z2_decay_mode);
 
-        TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_decay1_lortz, true_zhh_h1_decay2_lortz, true_zhh_h2_lortz};
+        true_zzh_h_lortz = true_zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
+
+        TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_decay1_lortz, true_zzh_z2f2_decay2_lortz, true_zzh_h_lortz};
 
         _zzh->SetMomentumFinal(true_zzh_lortz);
         m_zzh_is_set = 1;
-
-        // Input
-        m_true_zzh_z2f1_E  = true_zhh_h1_decay1_lortz->getEnergy();
-        m_true_zzh_z2f1_px = true_zhh_h1_decay1_lortz->getMomentum()[ 0 ];
-        m_true_zzh_z2f1_py = true_zhh_h1_decay1_lortz->getMomentum()[ 1 ];
-        m_true_zzh_z2f1_pz = true_zhh_h1_decay1_lortz->getMomentum()[ 2 ];
-
-        m_true_zzh_z2f2_E  = true_zhh_h1_decay2_lortz->getEnergy();
-        m_true_zzh_z2f2_px = true_zhh_h1_decay2_lortz->getMomentum()[ 0 ];
-        m_true_zzh_z2f2_py = true_zhh_h1_decay2_lortz->getMomentum()[ 1 ];
-        m_true_zzh_z2f2_pz = true_zhh_h1_decay2_lortz->getMomentum()[ 2 ];
-
-        m_true_zzh_h_E  = true_zhh_h2_lortz->getEnergy();
-        m_true_zzh_h_px = true_zhh_h2_lortz->getMomentum()[ 0 ];
-        m_true_zzh_h_py = true_zhh_h2_lortz->getMomentum()[ 1 ];
-        m_true_zzh_h_pz = true_zhh_h2_lortz->getMomentum()[ 2 ];
       }
       
     } else if (m_true_is_zzh) {
@@ -419,24 +409,32 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       MCParticle *true_zzh_z2f2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(11));
       MCParticle *true_zzh_h    = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
 
-      TLorentzVector true_zhh_z2f1_lortz = TLorentzVector(true_zzh_z2f1->getMomentum(), true_zzh_z2f1->getEnergy());
-      TLorentzVector true_zhh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
-      TLorentzVector true_zhh_h_lortz = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
+      TLorentzVector true_zzh_z2f1_lortz = TLorentzVector(true_zzh_z2f1->getMomentum(), true_zzh_z2f1->getEnergy());
+      TLorentzVector true_zzh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
+      TLorentzVector true_zzh_h_lortz = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
 
-      TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zhh_z2f1_lortz, true_zhh_z2f2_lortz, true_zhh_h_lortz};
+      TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_lortz, true_zzh_z2f2_lortz, true_zzh_h_lortz};
+
+      m_true_z2_decay1_pdg = abs(true_zzh_z2f1->getPDG());
+      m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_z2_decay1_pdg);
 
       _zzh->SetMomentumFinal(true_zzh_lortz);
+      _zzh->SetZDecayMode(m_true_z1_decay_mode, m_true_z2_decay_mode);
       m_zzh_is_set = 1;
 
-
-      // Get m_Z2DecayMode
-      // TODO
+      // Assuming ZHH
+      true_zhh_h1_lortz = true_zzh_z2f1_lortz + true_zzh_z2f2_lortz;
+      true_zhh_h2_lortz = true_zzh_h_lortz;
       
+      TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
+
+      _zhh->SetMomentumFinal(true_zzh_lortz);
+      m_zzh_is_set = 1;
     }
 
-    // Output
     // ZHH
     if (m_zhh_is_set) {
+      // Output
       Int_t vHelLL[2] = {-1,-1};
       Int_t vHelLR[2] = {-1, 1};
       Int_t vHelRL[2] = { 1,-1};
@@ -458,10 +456,22 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_zhh_costheta  = _zhh->GetCosTheta();
       m_true_zhh_costhetaf = _zhh->GetCosThetaF();
       m_true_zhh_costhetah = _zhh->GetCosThetaH();
+
+      // Input
+      m_true_zhh_h1_E  = true_zhh_h1_lortz.E();
+      m_true_zhh_h1_px = true_zhh_h1_lortz.Px();
+      m_true_zhh_h1_py = true_zhh_h1_lortz.Py();
+      m_true_zhh_h1_pz = true_zhh_h1_lortz.Pz();
+
+      m_true_zhh_h2_E  = true_zhh_h2_lortz.E();
+      m_true_zhh_h2_px = true_zhh_h2_lortz.Px();
+      m_true_zhh_h2_py = true_zhh_h2_lortz.Py();
+      m_true_zhh_h2_pz = true_zhh_h2_lortz.Pz();
     }
 
     // ZZH
     if (m_zzh_is_set) {
+      // Output
       Int_t vHelLLL[3] = {-1,-1,-1};
       Int_t vHelLLR[3] = {-1,-1,1};
       Int_t vHelLRL[3] = {-1,1,-1};
@@ -484,6 +494,22 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_zzh_sigmarlr = _zzh->GetMatrixElement2(vHelRLR);
       m_true_zzh_sigmarrl = _zzh->GetMatrixElement2(vHelRRL);
       m_true_zzh_sigmarrr = _zzh->GetMatrixElement2(vHelRRR);
+
+      // Input
+      m_true_zzh_z2f1_E  = true_zzh_z2f1_decay1_lortz.E();
+      m_true_zzh_z2f1_px = true_zzh_z2f1_decay1_lortz.Px();
+      m_true_zzh_z2f1_py = true_zzh_z2f1_decay1_lortz.Py();
+      m_true_zzh_z2f1_pz = true_zzh_z2f1_decay1_lortz.Pz();
+
+      m_true_zzh_z2f2_E  = true_zzh_z2f2_decay2_lortz.E();
+      m_true_zzh_z2f2_px = true_zzh_z2f2_decay2_lortz.Px();
+      m_true_zzh_z2f2_py = true_zzh_z2f2_decay2_lortz.Py();
+      m_true_zzh_z2f2_pz = true_zzh_z2f2_decay2_lortz.Pz();
+
+      m_true_zzh_h_E  = true_zzh_h_lortz.E();
+      m_true_zzh_h_px = true_zzh_h_lortz.Px();
+      m_true_zzh_h_py = true_zzh_h_lortz.Py();
+      m_true_zzh_h_pz = true_zzh_h_lortz.Pz();
     }
 
     // ZHH and ZZH input (shared l1 and l2 leptons)

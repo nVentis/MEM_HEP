@@ -101,7 +101,7 @@
  
  <processor name="CompareTrueMEProcessor" type="CompareTrueMEProcessor">
    <parameter name="MCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
-   <parameter name="Z1DecayMode" type="int" value="5"/>
+   <parameter name="TrueZ1DecayMode" type="int" value="5"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
    <parameter name="outputFilename" type="string" value="compare_out.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
