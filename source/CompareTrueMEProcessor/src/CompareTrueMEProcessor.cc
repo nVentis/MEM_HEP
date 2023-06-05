@@ -428,7 +428,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       
       TLorentzVector true_zhh_lortz[4] = {true_l1_lortz, true_l2_lortz, true_zhh_h1_lortz, true_zhh_h2_lortz};
 
-      _zhh->SetMomentumFinal(true_zzh_lortz);
+      _zhh->SetMomentumFinal(true_zhh_lortz);
       m_zzh_is_set = 1;
     }
 
@@ -513,25 +513,25 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     }
 
     // ZHH and ZZH input (shared l1 and l2 leptons)
-    m_true_zhh_l1_E  = true_l1->getEnergy();
-    m_true_zhh_l1_px = true_l1->getMomentum()[ 0 ];
-    m_true_zhh_l1_py = true_l1->getMomentum()[ 1 ];
-    m_true_zhh_l1_pz = true_l1->getMomentum()[ 2 ];
+    m_true_zhh_l1_E  = true_l1_lortz.E();
+    m_true_zhh_l1_px = true_l1_lortz.Px();
+    m_true_zhh_l1_py = true_l1_lortz.Py();
+    m_true_zhh_l1_pz = true_l1_lortz.Pz();
 
-    m_true_zhh_l2_E  = true_l2->getEnergy();
-    m_true_zhh_l2_px = true_l2->getMomentum()[ 0 ];
-    m_true_zhh_l2_py = true_l2->getMomentum()[ 1 ];
-    m_true_zhh_l2_pz = true_l2->getMomentum()[ 2 ];
+    m_true_zhh_l2_E  = true_l2_lortz.E();
+    m_true_zhh_l2_px = true_l2_lortz.Px();
+    m_true_zhh_l2_py = true_l2_lortz.Py();
+    m_true_zhh_l2_pz = true_l2_lortz.Pz();
 
-    m_true_zzh_l1_E  = true_l1->getEnergy();
-    m_true_zzh_l1_px = true_l1->getMomentum()[ 0 ];
-    m_true_zzh_l1_py = true_l1->getMomentum()[ 1 ];
-    m_true_zzh_l1_pz = true_l1->getMomentum()[ 2 ];
+    m_true_zzh_l1_E  = true_l1_lortz.E();
+    m_true_zzh_l1_px = true_l1_lortz.Px();
+    m_true_zzh_l1_py = true_l1_lortz.Py();
+    m_true_zzh_l1_pz = true_l1_lortz.Pz();
 
-    m_true_zzh_l2_E  = true_l2->getEnergy();
-    m_true_zzh_l2_px = true_l2->getMomentum()[ 0 ];
-    m_true_zzh_l2_py = true_l2->getMomentum()[ 1 ];
-    m_true_zzh_l2_pz = true_l2->getMomentum()[ 2 ];
+    m_true_zzh_l2_E  = true_l2_lortz.E();
+    m_true_zzh_l2_px = true_l2_lortz.Px();
+    m_true_zzh_l2_py = true_l2_lortz.Py();
+    m_true_zzh_l2_pz = true_l2_lortz.Pz();
 
     m_pTTree->Fill();
     
