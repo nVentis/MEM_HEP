@@ -95,7 +95,8 @@ void CompareTrueMEProcessor::init()
   // 1. True
   m_pTTree->Branch("true_is_zhh", &m_true_is_zhh, "true_is_zhh/I");
   m_pTTree->Branch("true_is_zzh", &m_true_is_zzh, "true_is_zzh/I");
-  m_pTTree->Branch("true_h1_decay1_pdg", &m_true_h1_decay1_pdg, "true_h1_decay1_pdg/I");
+  m_pTTree->Branch("true_h1_decay_pdg", &m_true_h1_decay_pdg, "true_h1_decay_pdg/I");
+  m_pTTree->Branch("true_z2_decay_pdg", &m_true_z2_decay_pdg, "true_z2_decay_pdg/I");
 
   // 1.a ZHH output
   m_pTTree->Branch("true_zhh_sigma"  , &m_true_zhh_sigma  , "true_zhh_sigma/F");
@@ -222,8 +223,8 @@ void CompareTrueMEProcessor::Clear()
   // 1. True
   m_true_is_zhh = 0;
   m_true_is_zzh = 0;
-  m_true_h1_decay1_pdg = 0;
-  m_true_z2_decay1_pdg = 0;
+  m_true_h1_decay_pdg = 0;
+  m_true_z2_decay_pdg = 0;
 
   // 1. True
   m_true_is_zhh = 0;
@@ -387,9 +388,9 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       true_zzh_z2f1_lortz = TLorentzVector(true_zhh_h1_decay1->getMomentum(), true_zhh_h1_decay1->getEnergy());
       true_zzh_z2f2_lortz = TLorentzVector(true_zhh_h1_decay2->getMomentum(), true_zhh_h1_decay2->getEnergy());
 
-      m_true_h1_decay1_pdg = abs(true_zhh_h1_decay1->getPDG());
+      m_true_h1_decay_pdg = abs(true_zhh_h1_decay1->getPDG());
 
-      m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_h1_decay1_pdg);
+      m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_h1_decay_pdg);
 
       if (m_true_z2_decay_mode > 0) {
         true_zzh_h_lortz = true_zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
@@ -406,8 +407,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       true_zzh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
       true_zzh_h_lortz    = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
 
-      m_true_z2_decay1_pdg = abs(true_zzh_z2f1->getPDG());
-      m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_z2_decay1_pdg);
+      m_true_z2_decay_pdg = abs(true_zzh_z2f1->getPDG());
+      m_true_z2_decay_mode = getZDecayModeFromPDG(m_true_z2_decay_pdg);
 
       m_zzh_is_set = 1;
 

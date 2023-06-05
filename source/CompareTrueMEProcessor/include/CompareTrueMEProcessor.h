@@ -84,8 +84,8 @@ class CompareTrueMEProcessor : public Processor
 		int m_true_z2_decay_mode{}; // when ZZH is assumed; from m_true_z2_decay1_pdg
 		int m_true_is_zhh{}; // whether true ZHH occured
 		int m_true_is_zzh{}; // whether true ZZH occured
-		int m_true_h1_decay1_pdg{}; // if true ZHH occured, abs(PDG) of particle H1 decayed to
-		int m_true_z2_decay1_pdg{}; // if true ZZH occured, abs(PDG) of particle Z2 decayed to
+		int m_true_h1_decay_pdg{}; // if true ZHH occured, abs(PDG) of particle H1 decayed to
+		int m_true_z2_decay_pdg{}; // if true ZZH occured, abs(PDG) of particle Z2 decayed to
 
 		// 1. Assuming ZHH
 		// 1.a ZHH output
