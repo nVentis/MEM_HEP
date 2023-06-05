@@ -363,8 +363,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     TLorentzVector true_zhh_h1_lortz;
     TLorentzVector true_zhh_h2_lortz;
 
-    TLorentzVector true_zzh_z2f1_decay1_lortz;
-    TLorentzVector true_zzh_z2f2_decay2_lortz;
+    TLorentzVector true_zzh_z2f1_lortz;
+    TLorentzVector true_zzh_z2f2_lortz;
     TLorentzVector true_zzh_h_lortz;
 
     if (m_true_is_zhh) {
@@ -385,8 +385,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       MCParticle *true_zhh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
       MCParticle *true_zhh_h1_decay2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(13));
 
-      true_zzh_z2f1_decay1_lortz = TLorentzVector(true_zhh_h1_decay1->getMomentum(), true_zhh_h1_decay1->getEnergy());
-      true_zzh_z2f2_decay2_lortz = TLorentzVector(true_zhh_h1_decay2->getMomentum(), true_zhh_h1_decay2->getEnergy());
+      true_zzh_z2f1_lortz = TLorentzVector(true_zhh_h1_decay1->getMomentum(), true_zhh_h1_decay1->getEnergy());
+      true_zzh_z2f2_lortz = TLorentzVector(true_zhh_h1_decay2->getMomentum(), true_zhh_h1_decay2->getEnergy());
 
       m_true_h1_decay1_pdg = abs(true_zhh_h1_decay1->getPDG());
 
@@ -397,7 +397,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
         true_zzh_h_lortz = true_zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
 
-        TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_decay1_lortz, true_zzh_z2f2_decay2_lortz, true_zzh_h_lortz};
+        TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_lortz, true_zzh_z2f2_lortz, true_zzh_h_lortz};
 
         _zzh->SetMomentumFinal(true_zzh_lortz);
         m_zzh_is_set = 1;
@@ -409,9 +409,9 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       MCParticle *true_zzh_z2f2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(11));
       MCParticle *true_zzh_h    = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
 
-      TLorentzVector true_zzh_z2f1_lortz = TLorentzVector(true_zzh_z2f1->getMomentum(), true_zzh_z2f1->getEnergy());
-      TLorentzVector true_zzh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
-      TLorentzVector true_zzh_h_lortz = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
+      true_zzh_z2f1_lortz = TLorentzVector(true_zzh_z2f1->getMomentum(), true_zzh_z2f1->getEnergy());
+      true_zzh_z2f2_lortz = TLorentzVector(true_zzh_z2f2->getMomentum(), true_zzh_z2f2->getEnergy());
+      true_zzh_h_lortz    = TLorentzVector(true_zzh_h->getMomentum(), true_zzh_h->getEnergy());
 
       TLorentzVector true_zzh_lortz[5] = {true_l1_lortz, true_l2_lortz, true_zzh_z2f1_lortz, true_zzh_z2f2_lortz, true_zzh_h_lortz};
 
@@ -496,15 +496,15 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_zzh_sigmarrr = _zzh->GetMatrixElement2(vHelRRR);
 
       // Input
-      m_true_zzh_z2f1_E  = true_zzh_z2f1_decay1_lortz.E();
-      m_true_zzh_z2f1_px = true_zzh_z2f1_decay1_lortz.Px();
-      m_true_zzh_z2f1_py = true_zzh_z2f1_decay1_lortz.Py();
-      m_true_zzh_z2f1_pz = true_zzh_z2f1_decay1_lortz.Pz();
+      m_true_zzh_z2f1_E  = true_zzh_z2f1_lortz.E();
+      m_true_zzh_z2f1_px = true_zzh_z2f1_lortz.Px();
+      m_true_zzh_z2f1_py = true_zzh_z2f1_lortz.Py();
+      m_true_zzh_z2f1_pz = true_zzh_z2f1_lortz.Pz();
 
-      m_true_zzh_z2f2_E  = true_zzh_z2f2_decay2_lortz.E();
-      m_true_zzh_z2f2_px = true_zzh_z2f2_decay2_lortz.Px();
-      m_true_zzh_z2f2_py = true_zzh_z2f2_decay2_lortz.Py();
-      m_true_zzh_z2f2_pz = true_zzh_z2f2_decay2_lortz.Pz();
+      m_true_zzh_z2f2_E  = true_zzh_z2f2_lortz.E();
+      m_true_zzh_z2f2_px = true_zzh_z2f2_lortz.Px();
+      m_true_zzh_z2f2_py = true_zzh_z2f2_lortz.Py();
+      m_true_zzh_z2f2_pz = true_zzh_z2f2_lortz.Pz();
 
       m_true_zzh_h_E  = true_zzh_h_lortz.E();
       m_true_zzh_h_px = true_zzh_h_lortz.Px();
