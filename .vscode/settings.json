@@ -71,7 +71,21 @@
         "typeindex": "cpp",
         "xlocmon": "cpp",
         "xlocnum": "cpp",
-        "xloctime": "cpp"
+        "xloctime": "cpp",
+        "condition_variable": "cpp",
+        "ios": "cpp",
+        "mutex": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocinfo": "cpp",
+        "xmemory": "cpp",
+        "xstddef": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     },
     "cmake.cmakePath": "/cvmfs/ilc.desy.de/key4hep/spackages/cmake/3.23.0/x86_64-centos7-gcc11.2.0-opt/mje3q7dbcg3ot3ptvn4pzypadohlejte/bin/cmake",
     "cmake.preferredGenerators": [
