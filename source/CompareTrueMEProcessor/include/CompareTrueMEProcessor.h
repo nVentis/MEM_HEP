@@ -60,7 +60,7 @@ class CompareTrueMEProcessor : public Processor
 		 */
 		std::string m_inputLepPairCollection{};
 		std::string m_inputJetCollection{};
-		std::string m_inputHdecayMode{};
+		std::string m_inputHdecayModeCollection{};
 		std::string m_inputHiggsPairCollection{};
 		std::string m_inputMCTrueCollection{};
 		std::string m_outputFile{};

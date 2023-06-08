@@ -57,7 +57,7 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
   registerInputCollection(LCIO::MCPARTICLE,
 				 "InputHdecayMode",
 				 "HdecayMode collection with important parameters (flavour)",
-				 m_inputHiggsPairCollection,
+				 m_inputHdecayModeCollection,
 				 std::string("HdecayMode")
 				 );
 
@@ -477,8 +477,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       streamlog_out(DEBUG) << " getting higgs pair: " << m_inputHiggsPairCollection << std::endl ;
       inputHiggsPair = pLCEvent->getCollection( m_inputHiggsPairCollection );
 
-      streamlog_out(DEBUG) << " getting HdecayMode: " << m_inputHdecayMode << std::endl ;
-      inputHdecayMode = pLCEvent->getCollection( m_inputHdecayMode );
+      streamlog_out(DEBUG) << " getting HdecayMode: " << m_inputHdecayModeCollection << std::endl ;
+      inputHdecayMode = pLCEvent->getCollection( m_inputHdecayModeCollection );
 
       // Extract information about HdecayParameters
       const EVENT::LCParameters& HdecayParameters = inputHdecayMode->getParameters();

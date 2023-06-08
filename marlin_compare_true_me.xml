@@ -111,6 +111,7 @@
    <parameter name="HiggsMass" type="double" value="125.0"/>
    <parameter name="outputFilename" type="string" value="compare_out.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
+   <parameter name="Verbosity" type="string">DEBUG</parameter>
  </processor>
 
  <processor name="Misclustering" type="Misclustering">
