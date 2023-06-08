@@ -101,7 +101,12 @@
  </processor>
  
  <processor name="CompareTrueMEProcessor" type="CompareTrueMEProcessor">
-   <parameter name="MCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
+   <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
+   <parameter name="InputHdecayMode" type="string" lcioInType="MCParticle"> HdecayMode </parameter>
+   <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
+   <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
+   <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
+   <parameter name="calculationSource" type="int" value="1"/>
    <parameter name="TrueZ1DecayMode" type="int" value="5"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
    <parameter name="outputFilename" type="string" value="compare_out.root"/>

@@ -48,38 +48,38 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
 	_description = "CompareTrueMEProcessor writes relevant observables to root-file " ;
 
   registerInputCollection(LCIO::MCPARTICLE,
-				 "MCTrueCollection",
+				 "InputMCTrueCollection",
 				 "preselection collection",
 				 m_inputMCTrueCollection,
 				 std::string("preselection")
 				 );
 
   registerInputCollection(LCIO::MCPARTICLE,
+				 "InputHdecayMode",
+				 "HdecayMode collection with important parameters (flavour)",
+				 m_inputHiggsPairCollection,
+				 std::string("HdecayMode")
+				 );
+
+  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
 				 "InputJetCollection",
-				 "higgs pair collection (four jets)",
+				 "collection of four jets originating from two higgses",
 				 m_inputJetCollection,
 				 std::string("RefinedJets")
 				 );
 
-  registerInputCollection(LCIO::MCPARTICLE,
-				 "HiggsPairCollection",
-				 "higgs pair collection (four jets)",
+  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
+				 "InputHiggsPairCollection",
+				 "higgs pair collection (two particles)",
 				 m_inputHiggsPairCollection,
 				 std::string("HiggsPair")
 				 );
   
-  registerInputCollection(LCIO::MCPARTICLE,
-				 "LepPairCollection",
+  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
+				 "InputLepPairCollection",
 				 "lepton pair collection (two leptons)",
 				 m_inputLepPairCollection,
 				 std::string("LeptonPair")
-				 );
-
-  registerInputCollection(LCIO::MCPARTICLE,
-				 "HdecayMode",
-				 "HdecayMode collection with important parameters (flavour)",
-				 m_inputHiggsPairCollection,
-				 std::string("HdecayMode")
 				 );
 
 	registerProcessorParameter("TrueZ1DecayMode",
