@@ -482,8 +482,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       // Extract information about HdecayParameters
       const EVENT::LCParameters& HdecayParameters = inputHdecayMode->getParameters();
-      bool both_to_b = HdecayParameters.getIntVal(std::string("isDecayedTob")) == 2;
-      bool both_to_c = HdecayParameters.getIntVal(std::string("isDecayedToc")) == 2;
+      bool both_to_b = (HdecayParameters.getIntVal(std::string("isDecayedTob")) == 2);
+      bool both_to_c = (HdecayParameters.getIntVal(std::string("isDecayedToc")) == 2);
 
       // Get higgs particles and associated jets
       // TODO: Check which particle from the HiggsPair to consider in ZZH or completely different approach altogether?
