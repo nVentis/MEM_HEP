@@ -559,13 +559,11 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       ReconstructedParticle* l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
       
       l1_lortz = v4(l1);
-      l2_lortz = v4(l1);
+      l2_lortz = v4(l2);
 
       if (m_is_zhh) {
         // Assuming ZHH
         if (both_to_b || both_to_c) {
-          ReconstructedParticle* zzh_z2f1 = jets[perm[2]];
-          
           zzh_z2f1_lortz = v4(jets[perm[2]]);
           zzh_z2f2_lortz = v4(jets[perm[3]]);
           zzh_h_lortz    = h1_act_lortz;
