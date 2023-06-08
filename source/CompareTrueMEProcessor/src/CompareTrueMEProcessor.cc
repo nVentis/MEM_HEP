@@ -505,15 +505,14 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       // Check if jet pairing parameters exist in higgs pair; otherwise try permutations to check which pairing was used
       const EVENT::LCParameters& higgsParams = inputHiggsPair->getParameters();
-
       vector<int> perm;
 
       if (higgsParams.getNInt(std::string("h1jet1id")) == 1) {
         // Jet pairing saved in collection (newer version)
-        perm[0] = higgsParams.getIntVal("h1jet1id");
-        perm[1] = higgsParams.getIntVal("h1jet2id");
-        perm[2] = higgsParams.getIntVal("h2jet1id");
-        perm[3] = higgsParams.getIntVal("h2jet2id");
+        perm.push_back(higgsParams.getIntVal("h1jet1id"));
+        perm.push_back(higgsParams.getIntVal("h1jet2id"));
+        perm.push_back(higgsParams.getIntVal("h2jet1id"));
+        perm.push_back(higgsParams.getIntVal("h2jet2id"));
       } else {
         // Jet pairing can be retrieved post analysis by checking against matched pairs
         float min_diff = 9999.;
@@ -531,25 +530,27 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         }
 
         // sum of ids: 6
-        perm[0] = 0;
-        perm[1] = best_idx;
+        perm.push_back(0);
+        perm.push_back(best_idx);
 
         switch (best_idx) {
           case 1:
-            perm[2] = 2;
-            perm[3] = 3;
+            perm.push_back(2);
+            perm.push_back(3);
             break;
 
           case 2:
-            perm[2] = 1;
-            perm[3] = 3;
+            perm.push_back(1);
+            perm.push_back(3);
             break;
 
           case 3:
-            perm[2] = 1;
-            perm[3] = 2;
+            perm.push_back(1);
+            perm.push_back(2);
             break;
         }
+
+        streamlog_out(DEBUG) << "processEvent : estimated min_diff " << min_diff << std::endl;
       }
 
       streamlog_out(MESSAGE) << "processEvent : estimated Higgs jet pairing to " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
