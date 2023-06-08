@@ -1,13 +1,12 @@
-executable = /afs/desy.de/user/d/dudarboh/TOFAnalysis/job/job.sh
+executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/job.sh
 arguments = $(file) $(ProcId)
 
 Requirements = OpSys == "LINUX" && Arch =="X86_64"
 request_cpus = 1
 request_memory = 2000 Mb
-request_disk = 5MB
 
 log = ../log/$(ProcId).log
 output = ../out/$(ProcId).out
 error = ../err/$(ProcId).err
 
-queue file from /afs/desy.de/user/d/dudarboh/TOFAnalysis/job/2f_Z_hadronic_250gev_part2.txt
+queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/queue.txt
