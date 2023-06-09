@@ -24,5 +24,8 @@ export MARLIN_DLL=$MARLIN_DLL:$ILD_ANASOFT_ZHH/source/Misclustering/lib/libMiscl
 export MARLIN_DLL=$MARLIN_DLL:$PWD/source/ZHHPostRecoMEProcessor/lib/libZHHPostRecoMEProcessor.so
 export MARLIN_DLL=$MARLIN_DLL:$PWD/source/CompareTrueMEProcessor/lib/libCompareTrueMEProcessor.so
 
+# Other modules
+export MARLIN_DLL=$MARLIN_DLL:/afs/desy.de/user/b/bliewert/public/yradkhorrami/SLDecayCorrection/build/lib/libSLDecayCorrection.so
+
 export CMAKE_PREFIX_PATH=/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim:$CMAKE_PREFIX_PATH
 export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH

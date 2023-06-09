@@ -8,8 +8,9 @@ cd ./job${2}
 
 cp ${1} .
 filename=`ls *.slcio`
+bname=`basename -s .slcio ./$filename`
 
-Marlin /afs/desy.de/user/d/bliewert/public/MarlinWorkdirs/MEM_HEP/marlin_compare_true_me.xml --global.LCIOInputFiles="${filename}"
+Marlin /afs/desy.de/user/d/bliewert/public/MarlinWorkdirs/MEM_HEP/marlin_compare_true_me.xml --global.LCIOInputFiles="${filename}" --constant.OutputBaseName="${bname}"
 mv TOFAnalysis_RENAME.root ${2}.root
 rm -f ../${2}.root
 mv ${2}.root ..
