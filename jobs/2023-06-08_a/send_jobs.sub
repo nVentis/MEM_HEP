@@ -1,12 +1,14 @@
-executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/job.sh
+executable = job.sh
 arguments = $(file) $(ProcId)
+should_transfer_files = True
+transfer_executable = True
 
 Requirements = OpSys == "LINUX" && Arch =="X86_64"
 request_cpus = 1
 request_memory = 2000 Mb
 
-log = ../log/$(ProcId).log
-output = ../out/$(ProcId).out
-error = ../err/$(ProcId).err
+log = $(ProcId).log
+output = $(ProcId).out
+error = $(ProcId).err
 
-queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/queue.txt
+queue file from queue.txt
