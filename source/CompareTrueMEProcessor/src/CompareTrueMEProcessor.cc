@@ -88,10 +88,10 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
         int(5)
         );
 
-  registerProcessorParameter("calculationSource",
-        "source of data",
-        m_calculation_source,
-        int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. TrueJet with given jet pairing) 
+  registerProcessorParameter("Mode",
+        "mode of usage; 0:MCParticles, 1:InputHiggsPairCollection with InputJetCollection",
+        m_mode,
+        int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
         );
 
 	registerProcessorParameter("HiggsMass",
@@ -186,7 +186,7 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zzh_sigmalrl", &m_zzh_sigmalrl, "zzh_sigmalrl/F");
   m_pTTree->Branch("zzh_sigmalrr", &m_zzh_sigmalrr, "zzh_sigmalrr/F");
 
-  m_pTTree->Branch("zzh_sigmarrr", &m_zzh_sigmalll, "zzh_sigmarrr/F");
+  m_pTTree->Branch("zzh_sigmarrr", &m_zzh_sigmarrr, "zzh_sigmarrr/F");
   m_pTTree->Branch("zzh_sigmarrl", &m_zzh_sigmarrl, "zzh_sigmarrl/F");
   m_pTTree->Branch("zzh_sigmarlr", &m_zzh_sigmarlr, "zzh_sigmarlr/F");
   m_pTTree->Branch("zzh_sigmarll", &m_zzh_sigmarll, "zzh_sigmarll/F");
@@ -195,6 +195,7 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zzh_mz2"  , &m_zzh_mz2  , "zzh_mz2/F");
   m_pTTree->Branch("zzh_mzz" , &m_zzh_mzz , "zzh_mzz/F");
   m_pTTree->Branch("zzh_mzzh", &m_zzh_mzzh, "zzh_mzzh/F");
+  m_pTTree->Branch("zzh_mh", &m_zzh_mh, "zzh_mh/F");
 
   m_pTTree->Branch("zzh_phi"   , &m_zzh_phi   , "zzh_phi/F");
   m_pTTree->Branch("zzh_phiz"  , &m_zzh_phiz  , "zzh_phiz/F");
@@ -402,7 +403,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     TLorentzVector zzh_z2f2_lortz;
     TLorentzVector zzh_h_lortz;
 
-    if (m_calculation_source == 0) {
+    if (m_mode == 0) {
       // Fetch data from collection holding MCParticle 
       // Get particles of final state
       // Same IDs for final Z1 leptons in both true ZZH and ZHH processes
@@ -445,8 +446,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         MCParticle *zzh_z2f2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(11));
         MCParticle *zzh_h    = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
 
-        zzh_z2f1_lortz = v4(zzh_z2f1);
-        zzh_z2f2_lortz = v4(zzh_z2f2);
+        zzh_z2f1_lortz = v4(zzh_z2f1->getPDG() > 0 ? zzh_z2f1 : zzh_z2f2);
+        zzh_z2f2_lortz = v4(zzh_z2f1->getPDG() > 0 ? zzh_z2f2 : zzh_z2f1);
         zzh_h_lortz    = v4(zzh_h);
 
         m_z2_decay_pdg = abs(zzh_z2f1->getPDG());
@@ -460,8 +461,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         
         m_zhh_is_set = 1;
       }
-    } else if (m_calculation_source == 1) {
-      // Fetch data from TrueJet reconstructed and clustered jet data
+    } else if (m_mode == 1) {
+      // Fetch reconstructed jets and clustering
       LCCollection *inputJetCol{};
       LCCollection *inputLepPair{};
       LCCollection *inputHiggsPair{};
@@ -653,6 +654,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zzh_mz2  = TMath::Sqrt(_zzh->GetQ2Z2());
       m_zzh_mzz  = TMath::Sqrt(_zzh->GetQ2ZZ());
       m_zzh_mzzh = TMath::Sqrt(_zzh->GetQ2ZZH());
+      m_zzh_mh   = TMath::Sqrt(_zzh->GetQ2H());
 
       m_zzh_sigma    = _zzh->GetMatrixElement2();
       m_zzh_sigmalll = _zzh->GetMatrixElement2(vHelLLL);

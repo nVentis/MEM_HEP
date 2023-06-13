@@ -20,45 +20,27 @@
 
 <marlin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ilcsoft.desy.de/marlin/marlin.xsd">
   <execute>
-    <Xprocessor name="MyAIDAProcessor"/> 
-    <!--  <processor name="MyTestProcessor"/>  -->
-    <!-- ========== create a root file =======================================  -->
-    <Xprocessor name="InitDD4hep" /> 
-    <!-- ========== lepton selection =======================================  -->
-   <Xprocessor name="MEMExampleZHH_qqffHProcessor"/>
-   <Xprocessor name="MEMExampleZZHProcessor"/>
-   <Xprocessor name="MEMExampleZHHProcessor"/>   
-   <Xprocessor name="MEMExampleZHProcessor"/>  
+    <processor name="MyAIDAProcessor"/> 
+   <!--  <processor name="MyTestProcessor"/>  -->
+ <!-- ========== create a root file =======================================  -->
+ <Xprocessor name="InitDD4hep" />
+ <Xprocessor name="RootFileProcessor"/>  
+ <!-- ========== lepton selection =======================================  -->
+   <Xprocessor name="MEMExampleProcessor"/>   
+   <processor name="MEMExampleZHProcessor"/>  
    <Xprocessor name="MEMExampleNNHHProcessor"/>  
    <Xprocessor name="MEMExampleNNHProcessor"/>  
-   <Xprocessor name="MEMExampleEEHProcessor"/>
-   <Xprocessor name="ZHHPostRecoMEProcessor"/>
-   <Xprocessor name="Misclustering"/>
-   <processor name="CompareTrueMEProcessor"/>
+   <Xprocessor name="MEMExampleEEHProcessor"/>  
  <!-- ========== full and DST output =======================================  -->
 <!--  <processor name="MyLCIOOutputProcessor"/>  -->
   </execute>
 
  <global>
-  <!--
-
-    ZH: old,5(old with only ZDecayMode(5)):
-    /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/higgs/ILD_l5_o1_v02/v02-02/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I402001.Pe1e1h.eL.pR.n000.d_dstm_15089_0.slcio
-
-    ZHH (ffHH): e2e2hh_eL.pR (2nd with correctly set polarizations))
-    /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02/v02-02-03/00015739/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15739_0.slcio
-    /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2hh.eL.pR_fullflow_v2.slcio
-
-    ZZH (qqffH): e2e2qqh_eL.pR
-    /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2qqh.eL.pR_fullflow_v2.slcio
-
-  -->
-  <parameter name="LCIOInputFiles">
-  /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2qqh.eL.pR_fullflow_v2.slcio
-  <!-- /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2hh.eL.pR_fullflow_v2.slcio -->
+  <parameter name="LCIOInputFiles"> 
+  /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/higgs/ILD_l5_o1_v02/v02-02/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I402001.Pe1e1h.eL.pR.n000.d_dstm_15089_0.slcio
   </parameter>
   <!-- limit the number of processed records (run+evt): -->  
-  <parameter name="MaxRecordNumber" value="0" />  
+  <parameter name="MaxRecordNumber" value="-1" />  
   <parameter name="SkipNEvents" value="0" />  
   <parameter name="SupressCheck" value="false" />  
 <!--  <parameter name="GearXMLFile"> gear_ILD_o1_v05.xml </parameter>  -->
@@ -66,58 +48,45 @@
   <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> MESSAGE  </parameter> 
  </global>
 
-<processor name="mytruejet" type="TrueJet">
-    <!-- These are the defaults, probably exactly what you need.-->
-    <parameter name="MCParticleCollection" type="string" lcioInType="MCParticle">MCParticlesSkimmed</parameter>
-    <parameter name="RecoParticleCollection" type="string"  lcioInType="ReconstructedParticle">PandoraPFOs</parameter>
-    <parameter name="RecoMCTruthLinkName" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
-    <parameter name="TrueJets" type="string"  lcioOutType="ReconstructedParticle">TrueJets</parameter>
-    <parameter name="FinalColourNeutrals" type="string"  lcioOutType="ReconstructedParticle">FinalColourNeutrals</parameter>
-    <parameter name="InitialColourNeutrals" type="string"  lcioOutType="ReconstructedParticle">InitialColourNeutrals</parameter>
-    <parameter name="TrueJetPFOLink" type="string" lcioOutType="LCRelation"> TrueJetPFOLink </parameter>
-    <parameter name="TrueJetMCParticleLink" type="string" lcioOutType="LCRelation">TrueJetMCParticleLink </parameter>
-    <parameter name="FinalElementonLink" type="string" lcioOutType="LCRelation">FinalElementonLink</parameter>
-    <parameter name="InitialElementonLink" type="string" lcioOutType="LCRelation">InitialElementonLink</parameter>
-    <parameter name="FinalColourNeutralLink" type="string" lcioOutType="LCRelation">FinalColourNeutralLink</parameter>
-    <parameter name="InitialColourNeutralLink" type="string" lcioOutType="LCRelation">InitialColourNeutralLink</parameter>
-    <parameter name="Verbosity" type="string">SILENT</parameter>
-  </processor>
-
+ <processor name="RootFileProcessor" type="RootFileProcessor">
+   <parameter name="OutputRootFile" type="string"> 
+eeh_lrlr.root
+   </parameter>
+ </processor>
 <processor name="InitDD4hep" type="InitializeDD4hep">
    <!--InitializeDD4hep reads a compact xml file and initializes the DD4hep::LCDD object-->
    <!--Name of the DD4hep compact xml file to load-->
    <parameter name="DD4hepXMLFile" type="string"> /cvmfs/ilc.desy.de/sw/x86_64_gcc82_sl6/v02-01/lcgeo/v00-16-06/ILD/compact/ILD_l5_v02/ILD_l5_v02.xml </parameter>
  </processor>
 
-<processor name="ZHHPostRecoMEProcessor" type="ZHHPostRecoMEProcessor">
-   <parameter name="LepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
-   <parameter name="HiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
-   <parameter name="MCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
-   <parameter name="PreSelectionCollection" type="string" lcioInType="ReconstructedParticle"> preselection </parameter>
-   <parameter name="ZDecayMode" type="int" value="5"/>
-   <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="zhh_output.root"/>
-   <parameter name="outputTree" type="string" value="dataTree"/>
- </processor>
- 
- <processor name="CompareTrueMEProcessor" type="CompareTrueMEProcessor">
-   <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
-   <parameter name="InputHdecayMode" type="string" lcioInType="MCParticle"> HdecayMode </parameter>
-   <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
-   <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
-   <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="Mode" type="int" value="0"/>
-   <parameter name="TrueZ1DecayMode" type="int" value="5"/>
-   <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_out.root"/>
-   <parameter name="outputTree" type="string" value="dataTree"/>
-   <parameter name="Verbosity" type="string">DEBUG</parameter>
+ <processor name="MEMExampleProcessor" type="MEMExampleProcessor">
+   <parameter name="InputMCParticlesCollection" type="string" lcioInType="MCParticle"> MCParticle </parameter>
+   <parameter name="InputMCTruthLinkCollection" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
+   <parameter name="InputPandoraPFOsCollection" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
  </processor>
 
- <processor name="Misclustering" type="Misclustering">
-   <parameter name="RecoJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="matchMethod" type="int" value="0"/>
-   <parameter name="outputFilename" type="string" value="mscl_output.root"/>
+ <processor name="MEMExampleZHProcessor" type="MEMExampleZHProcessor">
+   <parameter name="InputMCParticlesCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
+   <parameter name="InputMCTruthLinkCollection" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
+   <parameter name="InputPandoraPFOsCollection" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
+ </processor>
+
+ <processor name="MEMExampleNNHHProcessor" type="MEMExampleNNHHProcessor">
+   <parameter name="InputMCParticlesCollection" type="string" lcioInType="MCParticle"> MCParticle </parameter>
+   <parameter name="InputMCTruthLinkCollection" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
+   <parameter name="InputPandoraPFOsCollection" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
+ </processor>
+
+ <processor name="MEMExampleNNHProcessor" type="MEMExampleNNHProcessor">
+   <parameter name="InputMCParticlesCollection" type="string" lcioInType="MCParticle"> MCParticle </parameter>
+   <parameter name="InputMCTruthLinkCollection" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
+   <parameter name="InputPandoraPFOsCollection" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
+ </processor>
+
+ <processor name="MEMExampleEEHProcessor" type="MEMExampleEEHProcessor">
+   <parameter name="InputMCParticlesCollection" type="string" lcioInType="MCParticle"> MCParticle </parameter>
+   <parameter name="InputMCTruthLinkCollection" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
+   <parameter name="InputPandoraPFOsCollection" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
  </processor>
 
  <processor name="VertexFinder" type="LcfiplusProcessor">
@@ -2135,46 +2104,6 @@ Make sure to not specify any LCIOInputFiles in the steering in order to read SUC
   <!--Name of the ZVRES Selected Jets collection-->
   <!--parameter name="ZVRESSelectedJetsCollection" type="string">ZVRESSelectedJets </parameter-->
 </processor>
-
-<processor name="DSTOutput" type="LCIOOutputProcessor">
-   <!--   
-     DST output: drop all hits, skim MCParticles and keep final Tracks, Clusters and  ReconstructedParticles 
-     TO DO:  add LCFI flavour tag stuff
-   -->
-   <parameter name="LCIOOutputFile" type="string" >
-   output.slcio
-   </parameter>
-   <parameter name="DropCollectionTypes" type="StringVec"> 
-       MCParticle 
-       LCRelation 
-       SimTrackerHit 
-       SimCalorimeterHit
-       TrackerHit
-       CalorimeterHit 
-       Track 
-       ReconstructedParticle
-       LCFloatVec
-       TrackerHitPlane
-       LCGenericObject 
-    </parameter>
-    <parameter name="FullSubsetCollections" type="StringVec" value="MCParticlesSkimmed2"/>
-  <!-- Collections treated by RecoMCTruthLinker. You can of course add whatever you want -->
-    <parameter name="KeepCollectionNames" type="StringVec"> 
-       MCParticlesSkimmed2
-       RecoMCTruthLink2
-     <!-- The follwing will only be there if you asked for it, see above
-       MCTruthRecoLink
-       TrackMCTruthLink
-       MCTruthTrackLink
-       ClusterMCTruthLink
-       MCTruthClusterLink -->
-       PandoraPFOs
-       PandoraClusters
-       BCALClusters
-       MarlinTrkTracks
-    </parameter>
-    <parameter name="LCIOWriteMode" type="string" value="WRITE_NEW"/>
- </processor>
 
  <processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
  <!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->

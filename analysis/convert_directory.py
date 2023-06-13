@@ -1,3 +1,4 @@
+#import click
 import numpy as np
 import uproot as ur
 
@@ -39,7 +40,12 @@ def convert_file(source_path, in_file_location, output_path = ""):
     return out
 
 # See https://uproot.readthedocs.io/en/latest/uproot.behaviors.TBranch.iterate.html
+#@click.command()
+#@click.argument("source_path")
+#@click.argument("in_file_location")
+#@click.option("--output_dir_abs", default="", help="Output directory of the converted .npy files. Per default, the current working directory")
 def convert_directory(source_path: str, in_file_location: str, output_dir_abs: str = ""):
+    """Converts all ROOT trees at position in_file_location of the .root files contained in source_path to npy format in output_dir_abs"""
     dir_contents = listdir(source_path)
     root_files = filter(lambda filename: filename.endswith(".root"), dir_contents)
 
