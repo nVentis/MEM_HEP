@@ -118,8 +118,8 @@ void CompareTrueMEProcessor::init()
   streamlog_out(DEBUG) << "   init called  " << std::endl;
   this->Clear();
 
-  Double_t pol_e = -1.; // this->parameters()->getFloatVal("beamPol1");
-  Double_t pol_p = +1.; // this->parameters()->getFloatVal("beamPol2");
+  Double_t pol_e = 0.; // this->parameters()->getFloatVal("beamPol1");
+  Double_t pol_p = 0; // this->parameters()->getFloatVal("beamPol2");
 
   m_nRun = 0;
   m_nEvt = 0;
@@ -637,8 +637,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       // Set final states
       TLorentzVector zzh_lortz[5] = {l1_lortz, l2_lortz, zzh_z2f1_lortz, zzh_z2f2_lortz, zzh_h_lortz};
       
-      _zzh->SetMomentumFinal(zzh_lortz);
       _zzh->SetZDecayMode(m_z1_decay_mode, m_z2_decay_mode);
+      _zzh->SetMomentumFinal(zzh_lortz);
 
       // Output
       Int_t vHelLLL[3] = {-1,-1,-1};
@@ -665,6 +665,15 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zzh_sigmarlr = _zzh->GetMatrixElement2(vHelRLR);
       m_zzh_sigmarrl = _zzh->GetMatrixElement2(vHelRRL);
       m_zzh_sigmarrr = _zzh->GetMatrixElement2(vHelRRR);
+
+      m_zzh_phi    = _zzh->GetPhi();
+      m_zzh_phiz1f = _zzh->GetPhiZ1F();
+      m_zzh_phiz2f = _zzh->GetPhiZ2F();
+      m_zzh_phiz   = _zzh->GetPhiZ();
+      m_zzh_costheta    = _zzh->GetCosTheta();
+      m_zzh_costhetaz1f = _zzh->GetCosThetaZ1F();
+      m_zzh_costhetaz2f = _zzh->GetCosThetaZ2F();
+      m_zzh_costhetaz   = _zzh->GetCosThetaZ();
 
       // Input
       m_zzh_z2f1_E  = zzh_z2f1_lortz.E();
