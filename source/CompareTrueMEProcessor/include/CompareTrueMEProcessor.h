@@ -70,6 +70,8 @@ class CompareTrueMEProcessor : public Processor
         int m_nEvt;
 
 		int m_mode{}; // 0 => use MCTruth data; 1 => use reconstructed data (HiggsPair, LeptonPair, HdecayMode, and some jet e.g. RefinedJets)
+		int m_mode_me{};
+		int m_zzh_no_z_decay{};
 		float m_Hmass{};
 
 		TFile *m_pTFile{};
@@ -135,12 +137,19 @@ class CompareTrueMEProcessor : public Processor
 		// 1.a ZZH output
 		float m_zzh_sigma{};
 		float m_zzh_sigmalll{};
+		float m_zzh_sigmallz{};
 		float m_zzh_sigmallr{};
+
 		float m_zzh_sigmalrl{};
+		float m_zzh_sigmalrz{};
 		float m_zzh_sigmalrr{};
+
 		float m_zzh_sigmarrr{};
+		float m_zzh_sigmarrz{};
 		float m_zzh_sigmarrl{};
+
 		float m_zzh_sigmarlr{};
+		float m_zzh_sigmarlz{};
 		float m_zzh_sigmarll{};
 
 		float m_zzh_mz1{};

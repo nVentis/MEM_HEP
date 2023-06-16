@@ -41,7 +41,9 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
 
   Processor("CompareTrueMEProcessor"),
   m_nRun(0),
-  m_nEvt(0)
+  m_nEvt(0),
+  m_zzh_no_z_decay(0), // 0-> both Zs decay, 1-> 1 Z does not decay
+  m_mode_me(0) // 0-> dsigma, 1-> ME
 
 {
 
@@ -118,9 +120,14 @@ void CompareTrueMEProcessor::init()
   streamlog_out(DEBUG) << "   init called  " << std::endl;
   this->Clear();
 
+  // Configuration
   Double_t pol_e = 0.; // this->parameters()->getFloatVal("beamPol1");
   Double_t pol_p = 0; // this->parameters()->getFloatVal("beamPol2");
 
+  m_mode_me = 1; // if 1, only get matrix elements
+  m_zzh_no_z_decay = 1; //
+
+  // Runtime variables
   m_nRun = 0;
   m_nEvt = 0;
 
@@ -131,13 +138,13 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("run", &m_nRun, "run/I");
   m_pTTree->Branch("event", &m_nEvt, "event/I");
 
-  // 1. True
+  // 1. Meta
   m_pTTree->Branch("is_zhh", &m_is_zhh, "is_zhh/I");
   m_pTTree->Branch("is_zzh", &m_is_zzh, "is_zzh/I");
   m_pTTree->Branch("h1_decay_pdg", &m_h1_decay_pdg, "h1_decay_pdg/I");
   m_pTTree->Branch("z2_decay_pdg", &m_z2_decay_pdg, "z2_decay_pdg/I");
 
-  // 1.a ZHH output
+  // 2.a ZHH output
   m_pTTree->Branch("zhh_sigma"  , &m_zhh_sigma  , "zhh_sigma/F");
   m_pTTree->Branch("zhh_sigmall", &m_zhh_sigmall, "zhh_sigmall/F");
   m_pTTree->Branch("zhh_sigmalr", &m_zhh_sigmalr, "zhh_sigmalr/F");
@@ -156,7 +163,7 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zhh_costhetaf", &m_zhh_costhetaf, "zhh_costhetaf/F");
   m_pTTree->Branch("zhh_costhetah", &m_zhh_costhetah, "zhh_costhetah/F");
 
-  // 1.b ZHH input
+  // 2.b ZHH input
   m_pTTree->Branch("zhh_l1_e" , &m_zhh_l1_E , "zhh_l1_e/F");
   m_pTTree->Branch("zhh_l1_px", &m_zhh_l1_px, "zhh_l1_px/F");
   m_pTTree->Branch("zhh_l1_py", &m_zhh_l1_py, "zhh_l1_py/F");
@@ -178,18 +185,27 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zhh_h2_pz", &m_zhh_h2_pz, "zhh_h2_pz/F");
 
 
-  // 2.a ZZH output
+  // 3.a ZZH output
   m_pTTree->Branch("zzh_sigma"  , &m_zzh_sigma  , "zzh_sigma/F");
 
   m_pTTree->Branch("zzh_sigmalll", &m_zzh_sigmalll, "zzh_sigmalll/F");
   m_pTTree->Branch("zzh_sigmallr", &m_zzh_sigmallr, "zzh_sigmallr/F");
+
   m_pTTree->Branch("zzh_sigmalrl", &m_zzh_sigmalrl, "zzh_sigmalrl/F");
   m_pTTree->Branch("zzh_sigmalrr", &m_zzh_sigmalrr, "zzh_sigmalrr/F");
 
   m_pTTree->Branch("zzh_sigmarrr", &m_zzh_sigmarrr, "zzh_sigmarrr/F");
   m_pTTree->Branch("zzh_sigmarrl", &m_zzh_sigmarrl, "zzh_sigmarrl/F");
+
   m_pTTree->Branch("zzh_sigmarlr", &m_zzh_sigmarlr, "zzh_sigmarlr/F");
   m_pTTree->Branch("zzh_sigmarll", &m_zzh_sigmarll, "zzh_sigmarll/F");
+
+  if (m_zzh_no_z_decay == 1) {
+    m_pTTree->Branch("zzh_sigmallz", &m_zzh_sigmallz, "zzh_sigmallz/F");
+    m_pTTree->Branch("zzh_sigmalrz", &m_zzh_sigmalrz, "zzh_sigmalrz/F");
+    m_pTTree->Branch("zzh_sigmarrz", &m_zzh_sigmarrz, "zzh_sigmarrz/F");
+    m_pTTree->Branch("zzh_sigmarlz", &m_zzh_sigmarlz, "zzh_sigmarlz/F");
+  }
 
   m_pTTree->Branch("zzh_mz1"  , &m_zzh_mz1  , "zzh_mz1/F");
   m_pTTree->Branch("zzh_mz2"  , &m_zzh_mz2  , "zzh_mz2/F");
@@ -207,7 +223,7 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zzh_costhetaz1f", &m_zzh_costhetaz1f, "zzh_costhetaz1f/F");
   m_pTTree->Branch("zzh_costhetaz2f", &m_zzh_costhetaz2f, "zzh_costhetaz2f/F");
 
-  // 1.b ZZH input
+  // 3.b ZZH input
   m_pTTree->Branch("zzh_l1_e" , &m_zzh_l1_E , "zzh_l1_e/F");
   m_pTTree->Branch("zzh_l1_px", &m_zzh_l1_px, "zzh_l1_px/F");
   m_pTTree->Branch("zzh_l1_py", &m_zzh_l1_py, "zzh_l1_py/F");
@@ -248,6 +264,14 @@ void CompareTrueMEProcessor::init()
   _zhh->SetZDecayMode(m_z1_decay_mode); // 5 (internal mapping) -> (13) PDG, muon 
 
   _zzh = new LCMEZZH("LCMEZZH", "ZZH", m_Hmass, pol_e, pol_p);
+  _zzh->SetNoZDecay(m_zzh_no_z_decay); // default for ZHH (i.e. no Z decay)
+
+  // onlz get matrix element (and log of it)
+  if (m_mode_me == 1) {
+    _zhh->SetMEType(2);
+
+    _zzh->SetMEType(2);
+  }
   // zzh setZDecayMode adjusted every run
 }
 
@@ -312,15 +336,21 @@ void CompareTrueMEProcessor::Clear()
 
 
   // 3.a ZZH output
-  m_zzh_sigma     = 0.;
+  m_zzh_sigma      = 0.;
   m_zzh_sigmalll   = 0.;
+  m_zzh_sigmallz   = 0.;
   m_zzh_sigmallr   = 0.;
+
   m_zzh_sigmalrl   = 0.;
+  m_zzh_sigmalrz   = 0.;
   m_zzh_sigmalrr   = 0.;
 
   m_zzh_sigmarrr   = 0.;
+  m_zzh_sigmarrz   = 0.;
   m_zzh_sigmarrl   = 0.;
+
   m_zzh_sigmarlr   = 0.;
+  m_zzh_sigmarlz   = 0.;
   m_zzh_sigmarll   = 0.;
 
   m_zzh_mz1       = 0.;
@@ -337,7 +367,6 @@ void CompareTrueMEProcessor::Clear()
   m_zzh_costhetaz   = 0.;
   m_zzh_costhetaz1f = 0.;
   m_zzh_costhetaz2f = 0.;
-
 
   // 3.b ZZH input
   m_zzh_l1_E  = 0.;
@@ -398,9 +427,10 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
     TLorentzVector zhh_h1_lortz;
     TLorentzVector zhh_h2_lortz;
-
-    TLorentzVector zzh_z2f1_lortz;
-    TLorentzVector zzh_z2f2_lortz;
+    
+    TLorentzVector zzh_z2f1_lortz; // only used if m_zzh_no_z_decay == 0
+    TLorentzVector zzh_z2f2_lortz; // only used if m_zzh_no_z_decay == 0
+    TLorentzVector zzh_z2_lortz;   // only used if m_zzh_no_z_decay == 1
     TLorentzVector zzh_h_lortz;
 
     if (m_mode == 0) {
@@ -424,19 +454,25 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         m_zhh_is_set = 1;
 
         // Assuming ZZH
-        // Pretend that decay products of H1 are decay products of Z2 in ZZH
-        MCParticle *zhh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
-        MCParticle *zhh_h1_decay2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(13));
+        if (m_zzh_no_z_decay == 0) {
+          // Pretend that decay products of H1 are decay products of Z2 in ZZH
+          MCParticle *zhh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
+          MCParticle *zhh_h1_decay2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(13));
+          
+          zzh_z2f1_lortz = v4(zhh_h1_decay1);
+          zzh_z2f2_lortz = v4(zhh_h1_decay2);
 
-        zzh_z2f1_lortz = v4(zhh_h1_decay1);
-        zzh_z2f2_lortz = v4(zhh_h1_decay2);
+          m_h1_decay_pdg = abs(zhh_h1_decay1->getPDG());
 
-        m_h1_decay_pdg = abs(zhh_h1_decay1->getPDG());
+          m_z2_decay_mode = getZDecayModeFromPDG(m_h1_decay_pdg);
 
-        m_z2_decay_mode = getZDecayModeFromPDG(m_h1_decay_pdg);
-
-        if (m_z2_decay_mode > 0) {
-          zzh_h_lortz = zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
+          if (m_z2_decay_mode > 0) {
+            zzh_h_lortz = zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
+            m_zzh_is_set = 1;
+          }
+        } else if (m_zzh_no_z_decay == 1) {
+          zzh_z2_lortz = zhh_h1_lortz;
+          zzh_h_lortz  = zhh_h2_lortz;
           m_zzh_is_set = 1;
         }
         
@@ -448,10 +484,15 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
         zzh_z2f1_lortz = v4(zzh_z2f1->getPDG() > 0 ? zzh_z2f1 : zzh_z2f2);
         zzh_z2f2_lortz = v4(zzh_z2f1->getPDG() > 0 ? zzh_z2f2 : zzh_z2f1);
+
         zzh_h_lortz    = v4(zzh_h);
 
-        m_z2_decay_pdg = abs(zzh_z2f1->getPDG());
-        m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
+        if (m_zzh_no_z_decay == 0) {
+          m_z2_decay_pdg = abs(zzh_z2f1->getPDG());
+          m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
+        } else if (m_zzh_no_z_decay == 1) {
+          zzh_z2_lortz = zzh_z2f1_lortz + zzh_z2f2_lortz;
+        }
 
         m_zzh_is_set = 1;
 
@@ -634,21 +675,41 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
     // ZZH
     if (m_zzh_is_set) {
-      // Set final states
-      TLorentzVector zzh_lortz[5] = {l1_lortz, l2_lortz, zzh_z2f1_lortz, zzh_z2f2_lortz, zzh_h_lortz};
-      
-      _zzh->SetZDecayMode(m_z1_decay_mode, m_z2_decay_mode);
-      _zzh->SetMomentumFinal(zzh_lortz);
-
-      // Output
+      // Possible helicity initial and final states
       Int_t vHelLLL[3] = {-1,-1,-1};
-      Int_t vHelLLR[3] = {-1,-1,1};
-      Int_t vHelLRL[3] = {-1,1,-1};
-      Int_t vHelLRR[3] = {-1,1,1};
-      Int_t vHelRLL[3] = {1,-1,-1};
-      Int_t vHelRLR[3] = {1,-1,1};
-      Int_t vHelRRL[3] = {1,1,-1};
-      Int_t vHelRRR[3] = {1,1,1};
+      Int_t vHelLLR[3] = {-1,-1, 1};
+
+      Int_t vHelLRL[3] = {-1, 1,-1};
+      Int_t vHelLRR[3] = {-1, 1, 1};
+
+      Int_t vHelRLL[3] = { 1,-1,-1};
+      Int_t vHelRLR[3] = { 1,-1, 1};
+
+      Int_t vHelRRL[3] = { 1, 1,-1};
+      Int_t vHelRRR[3] = { 1, 1, 1};
+      
+      // Set final states
+      if (m_zzh_no_z_decay == 0) {
+        TLorentzVector zzh_lortz[5] = {l1_lortz, l2_lortz, zzh_z2f1_lortz, zzh_z2f2_lortz, zzh_h_lortz};
+        
+        _zzh->SetZDecayMode(m_z1_decay_mode, m_z2_decay_mode);
+        _zzh->SetMomentumFinal(zzh_lortz);
+      } else if (m_zzh_no_z_decay == 1) {
+        TLorentzVector zzh_lortz[4] = {l1_lortz, l2_lortz, zzh_z2_lortz, zzh_h_lortz};
+
+        _zzh->SetZDecayMode(m_z1_decay_mode);
+        _zzh->SetMomentumFinalNoZdecay(zzh_lortz);
+
+        Int_t vHelLLZ[3] = {-1,-1, 0};
+        Int_t vHelLRZ[3] = {-1, 1, 0};
+        Int_t vHelRLZ[3] = { 1,-1, 0};
+        Int_t vHelRRZ[3] = { 1, 1, 0};
+
+        m_zzh_sigmallz = _zzh->GetMatrixElement2(vHelLLZ);
+        m_zzh_sigmalrz = _zzh->GetMatrixElement2(vHelLRZ);
+        m_zzh_sigmarlz = _zzh->GetMatrixElement2(vHelRLZ);
+        m_zzh_sigmarrz = _zzh->GetMatrixElement2(vHelRRZ);
+      }
 
       m_zzh_mz1  = TMath::Sqrt(_zzh->GetQ2Z1());
       m_zzh_mz2  = TMath::Sqrt(_zzh->GetQ2Z2());

@@ -55,7 +55,7 @@
   -->
   <parameter name="LCIOInputFiles">
   /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2qqh.eL.pR_fullflow_v2.slcio
-  <!-- /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2hh.eL.pR_fullflow_v2.slcio -->
+  /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2hh.eL.pR_fullflow_v2.slcio
   </parameter>
   <!-- limit the number of processed records (run+evt): -->  
   <parameter name="MaxRecordNumber" value="0" />  
