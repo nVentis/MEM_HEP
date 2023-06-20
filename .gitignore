@@ -1,7 +1,9 @@
 build
 lib
+ee_mumuzh
 *.root
 *.npy
 *.pyc
 *.png
 Ranlux.coonf
+py.py

@@ -30,3 +30,10 @@ export MARLIN_DLL=$MARLIN_DLL:/afs/desy.de/user/b/bliewert/public/yradkhorrami/S
 
 export CMAKE_PREFIX_PATH=/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim:$CMAKE_PREFIX_PATH
 export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH
+
+# CPATH header files; marlin and streamlog
+export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/marlin/1.19/x86_64-centos7-gcc11.2.0-opt/aj5n37vac5zzw4eil7raxolernp6o4vi/include
+export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/ilcutil/1.7/x86_64-centos7-gcc11.2.0-opt/nnyawmpqncnl6tu3nfhufy4seyzdlfj2/include
+
+# MadGraph
+export $PATH=$PATH:/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_0/bin

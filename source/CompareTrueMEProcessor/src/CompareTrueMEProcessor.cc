@@ -141,7 +141,13 @@ void CompareTrueMEProcessor::init()
   // 1. Meta
   m_pTTree->Branch("is_zhh", &m_is_zhh, "is_zhh/I");
   m_pTTree->Branch("is_zzh", &m_is_zzh, "is_zzh/I");
+  m_pTTree->Branch("true_h1_decay_pdg", &m_true_h1_decay_pdg, "true_h1_decay_pdg/I");
+  m_pTTree->Branch("true_h2_decay_pdg", &m_true_h2_decay_pdg, "true_h2_decay_pdg/I");
+  m_pTTree->Branch("true_z2_decay_pdg", &m_true_z2_decay_pdg, "true_z2_decay_pdg/I");
+
+  // 2. Event data
   m_pTTree->Branch("h1_decay_pdg", &m_h1_decay_pdg, "h1_decay_pdg/I");
+  m_pTTree->Branch("h2_decay_pdg", &m_h2_decay_pdg, "h2_decay_pdg/I");
   m_pTTree->Branch("z2_decay_pdg", &m_z2_decay_pdg, "z2_decay_pdg/I");
 
   // 2.a ZHH output
@@ -249,30 +255,33 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zzh_h_py", &m_zzh_h_py, "zzh_h_py/F");
   m_pTTree->Branch("zzh_h_pz", &m_zzh_h_pz, "zzh_h_pz/F");
 
-  streamlog_out(DEBUG) << "   init finished  " << std::endl;
-
-  // Print some debug info
-  cerr << "\n";
+  // Core configuration
+  cerr << endl;
   cerr << "ZHH MEM processor initializing with:\n";
-  cerr << "    H_mass: "<< m_Hmass << "\n";
-  cerr << "    Z1DecayMode: "<< m_z1_decay_mode << "\n";
-  cerr << "    Pol_e: "<< pol_e << "\n";
-  cerr << "    Pol_p: "<< pol_p << "\n";
-  cerr << "    m_outputTree: " << m_outputTree << "\n";
+  cerr << " H_mass: "<< m_Hmass << "\n";
+  cerr << " Z1DecayMode: "<< m_z1_decay_mode << "\n";
+  cerr << " Pol_e: "<< pol_e << "\n";
+  cerr << " Pol_p: "<< pol_p << "\n";
+  cerr << " m_outputTree: " << m_outputTree << "\n";
 
   _zhh = new LCMEZHH("LCMEZHH", "ZHH", m_Hmass, pol_e, pol_p);
-  _zhh->SetZDecayMode(m_z1_decay_mode); // 5 (internal mapping) -> (13) PDG, muon 
+  _zhh->SetZDecayMode(m_z1_decay_mode); // 5 (internal mapping) -> (13) PDG, muon
+  _zhh->SetNoHDecay(2);
+  _zhh->SetPropagator(1);
 
   _zzh = new LCMEZZH("LCMEZZH", "ZZH", m_Hmass, pol_e, pol_p);
   _zzh->SetNoZDecay(m_zzh_no_z_decay); // default for ZHH (i.e. no Z decay)
+  _zzh->SetNoHDecay(1);
+  _zzh->SetPropagator(1);
 
-  // onlz get matrix element (and log of it)
+  // Get matrix element, not diff cross section 
   if (m_mode_me == 1) {
     _zhh->SetMEType(2);
-
     _zzh->SetMEType(2);
   }
   // zzh setZDecayMode adjusted every run
+
+  streamlog_out(DEBUG) << "   init finished  " << std::endl;
 }
 
 void CompareTrueMEProcessor::Clear() 
@@ -285,14 +294,16 @@ void CompareTrueMEProcessor::Clear()
   m_zzh_is_set = 0;
 
   // 1. True
+  m_true_h1_decay_pdg = 0;
+  m_true_h2_decay_pdg = 0;
+  m_true_z2_decay_pdg = 0;
   m_is_zhh = 0;
   m_is_zzh = 0;
-  m_h1_decay_pdg = 0;
-  m_z2_decay_pdg = 0;
 
-  // 1. True
-  m_is_zhh = 0;
-  m_is_zzh = 0;
+  // 2. Event data
+  m_h1_decay_pdg  = 0;
+  m_h2_decay_pdg  = 0;
+  m_z2_decay_pdg  = 0;
   m_z2_decay_mode = 0;
 
   // 2.a ZHH output
@@ -433,7 +444,32 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     TLorentzVector zzh_z2_lortz;   // only used if m_zzh_no_z_decay == 1
     TLorentzVector zzh_h_lortz;
 
+    // Save truth info about H/Z-decays
+    MCParticle *zhh_h1_decay1;
+    MCParticle *zhh_h2_decay1;
+
+    MCParticle *zzh_z2f1;
+    MCParticle *zzh_h1_decay1;
+
+    if (m_is_zhh) {
+      zhh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
+      zhh_h2_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(14));
+
+      m_true_h1_decay_pdg = abs(zhh_h1_decay1->getPDG());
+      m_true_h2_decay_pdg = abs(zhh_h2_decay1->getPDG());
+    } else if (m_is_zzh) {
+      zzh_z2f1      = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
+      zzh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(13));
+
+      m_true_z2_decay_pdg = abs(zzh_z2f1->getPDG());
+      m_true_h1_decay_pdg = abs(zzh_h1_decay1->getPDG());
+    }
+
     if (m_mode == 0) {
+      m_h1_decay_pdg = m_true_h1_decay_pdg;
+      m_h2_decay_pdg = m_true_h2_decay_pdg;
+      m_z2_decay_pdg = m_true_z2_decay_pdg;
+
       // Fetch data from collection holding MCParticle 
       // Get particles of final state
       // Same IDs for final Z1 leptons in both true ZZH and ZHH processes
@@ -456,13 +492,10 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         // Assuming ZZH
         if (m_zzh_no_z_decay == 0) {
           // Pretend that decay products of H1 are decay products of Z2 in ZZH
-          MCParticle *zhh_h1_decay1 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(12));
           MCParticle *zhh_h1_decay2 = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(13));
           
           zzh_z2f1_lortz = v4(zhh_h1_decay1);
           zzh_z2f2_lortz = v4(zhh_h1_decay2);
-
-          m_h1_decay_pdg = abs(zhh_h1_decay1->getPDG());
 
           m_z2_decay_mode = getZDecayModeFromPDG(m_h1_decay_pdg);
 
@@ -488,7 +521,6 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         zzh_h_lortz    = v4(zzh_h);
 
         if (m_zzh_no_z_decay == 0) {
-          m_z2_decay_pdg = abs(zzh_z2f1->getPDG());
           m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
         } else if (m_zzh_no_z_decay == 1) {
           zzh_z2_lortz = zzh_z2f1_lortz + zzh_z2f2_lortz;
@@ -678,13 +710,10 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       // Possible helicity initial and final states
       Int_t vHelLLL[3] = {-1,-1,-1};
       Int_t vHelLLR[3] = {-1,-1, 1};
-
       Int_t vHelLRL[3] = {-1, 1,-1};
       Int_t vHelLRR[3] = {-1, 1, 1};
-
       Int_t vHelRLL[3] = { 1,-1,-1};
       Int_t vHelRLR[3] = { 1,-1, 1};
-
       Int_t vHelRRL[3] = { 1, 1,-1};
       Int_t vHelRRR[3] = { 1, 1, 1};
       
@@ -737,10 +766,17 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zzh_costhetaz   = _zzh->GetCosThetaZ();
 
       // Input
-      m_zzh_z2f1_E  = zzh_z2f1_lortz.E();
-      m_zzh_z2f1_px = zzh_z2f1_lortz.Px();
-      m_zzh_z2f1_py = zzh_z2f1_lortz.Py();
-      m_zzh_z2f1_pz = zzh_z2f1_lortz.Pz();
+      if (m_zzh_no_z_decay == 0) {
+        m_zzh_z2f1_E  = zzh_z2f1_lortz.E();
+        m_zzh_z2f1_px = zzh_z2f1_lortz.Px();
+        m_zzh_z2f1_py = zzh_z2f1_lortz.Py();
+        m_zzh_z2f1_pz = zzh_z2f1_lortz.Pz();
+      } else if (m_zzh_no_z_decay == 1) {
+        m_zzh_z2f1_E  = zzh_z2_lortz.E();
+        m_zzh_z2f1_px = zzh_z2_lortz.Px();
+        m_zzh_z2f1_py = zzh_z2_lortz.Py();
+        m_zzh_z2f1_pz = zzh_z2_lortz.Pz();
+      }
 
       m_zzh_z2f2_E  = zzh_z2f2_lortz.E();
       m_zzh_z2f2_px = zzh_z2f2_lortz.Px();
