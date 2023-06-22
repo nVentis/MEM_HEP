@@ -463,6 +463,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     }
 
     if (m_mode == 0) {
+      // MCTruth mode
       m_h1_decay_pdg = m_true_h1_decay_pdg;
       m_h2_decay_pdg = m_true_h2_decay_pdg;
       m_z2_decay_pdg = m_true_z2_decay_pdg;
@@ -532,6 +533,9 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         m_zhh_is_set = 1;
       }
     } else if (m_mode == 1) {
+      // Full reconstruction mode
+      // As of now, assumes inputJetCol, inputLepPair, inputHiggsPair and inputHdecayMode
+
       // Fetch reconstructed jets and clustering
       LCCollection *inputJetCol{};
       LCCollection *inputLepPair{};
@@ -656,9 +660,11 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
           
         }
       }
+    } else if (m_mode == 2) {
+      // TrueJet mode
+      
     }
 
-    
     // ZHH
     if (m_zhh_is_set) {
       // Set final states
