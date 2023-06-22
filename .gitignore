@@ -1,9 +1,11 @@
 build
 lib
-ee_mumuzh
+ee_zhh_cpp
+ee_zzh_cpp
 *.root
 *.npy
 *.pyc
 *.png
 Ranlux.coonf
 py.py
+madjax

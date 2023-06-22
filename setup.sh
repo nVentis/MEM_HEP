@@ -35,5 +35,10 @@ export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/marlin/1.19/x86_64-centos7-gcc11.2.0-opt/aj5n37vac5zzw4eil7raxolernp6o4vi/include
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/ilcutil/1.7/x86_64-centos7-gcc11.2.0-opt/nnyawmpqncnl6tu3nfhufy4seyzdlfj2/include
 
-# MadGraph
-export $PATH=$PATH:/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_0/bin
+# MadGraph and madjax
+# export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_0/bin:$PATH
+# export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_9_15/bin:$PATH
+export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_8_1/bin:$PATH
+export PATH=/afs/desy.de/user/b/bliewert/.local/bin:$PATH
+
+# This is incompatible with py311 environment!

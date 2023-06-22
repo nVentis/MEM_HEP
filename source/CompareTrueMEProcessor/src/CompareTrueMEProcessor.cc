@@ -43,7 +43,7 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
   m_nRun(0),
   m_nEvt(0),
   m_zzh_no_z_decay(0), // 0-> both Zs decay, 1-> 1 Z does not decay
-  m_mode_me(0) // 0-> dsigma, 1-> ME
+  m_mode_me(1) // 0-> dsigma, 1-> ME^2
 
 {
 
@@ -123,9 +123,6 @@ void CompareTrueMEProcessor::init()
   // Configuration
   Double_t pol_e = 0.; // this->parameters()->getFloatVal("beamPol1");
   Double_t pol_p = 0; // this->parameters()->getFloatVal("beamPol2");
-
-  m_mode_me = 1; // if 1, only get matrix elements
-  m_zzh_no_z_decay = 1; //
 
   // Runtime variables
   m_nRun = 0;
