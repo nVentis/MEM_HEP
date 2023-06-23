@@ -58,11 +58,14 @@ class CompareTrueMEProcessor : public Processor
 		
 		/** Input collection name.
 		 */
+		std::string m_inputMCTrueCollection{};
 		std::string m_inputLepPairCollection{};
 		std::string m_inputJetCollection{};
+		std::string m_inputPreSelectionCollection{};
 		std::string m_inputHdecayModeCollection{};
 		std::string m_inputHiggsPairCollection{};
-		std::string m_inputMCTrueCollection{};
+		std::string m_inputTrueJetCollection{};
+
 		std::string m_outputFile{};
 		std::string m_outputTree{};
 
@@ -72,6 +75,7 @@ class CompareTrueMEProcessor : public Processor
 		int m_mode{}; // 0 => use MCTruth data; 1 => use reconstructed data (HiggsPair, LeptonPair, HdecayMode, and some jet e.g. RefinedJets)
 		int m_mode_me{};
 		int m_zzh_no_z_decay{};
+		int m_require_presel_pass{};
 		float m_Hmass{};
 
 		TFile *m_pTFile{};
@@ -93,6 +97,8 @@ class CompareTrueMEProcessor : public Processor
 		int m_z2_decay_mode{}; // when ZZH is assumed; from m_z2_decay1_pdg
 		int m_is_zhh{}; // true label
 		int m_is_zzh{}; // true label
+		int m_passed_preselection{};
+
 		int m_h1_decay_pdg{}; // abs(PDG) of particle H1 decayed to
 		int m_h2_decay_pdg{}; // abs(PDG) of particle H2 decayed to (true for true ZHH events)
 		int m_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (true for true ZZH events)

@@ -6,6 +6,7 @@
  * 
  * Parameters:
  * - LepPairCollection<RECONSTRUCTEDPARTICLE>
+ * 
  * - HiggsPairCollection<RECONSTRUCTEDPARTICLE>
  * - PreSelectionCollection<RECONSTRUCTEDPARTICLE> [why is this a particle and not a simple boolean flag?]
  * - MCTrueCollection<MCPARTICLE>
@@ -53,6 +54,13 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
 				 "InputMCTrueCollection",
 				 "preselection collection",
 				 m_inputMCTrueCollection,
+				 std::string("MCParticlesSkimmed")
+				 );
+
+  registerInputCollection(LCIO::MCPARTICLE,
+				 "InputPreSelection",
+				 "preselection collection",
+				 m_inputPreSelectionCollection,
 				 std::string("preselection")
 				 );
 
@@ -84,6 +92,19 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
 				 std::string("LeptonPair")
 				 );
 
+  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
+				 "InputTrueJets",
+				 "true jet collection (to analyze detector effects)",
+				 m_inputTrueJetCollection,
+				 std::string("TrueJets")
+				 );
+
+  registerProcessorParameter("RequirePreselectionPass",
+        "whether (1) or not to skip (1) events that did not pass preselection",
+        m_require_presel_pass,
+        int(0)
+        );
+
 	registerProcessorParameter("TrueZ1DecayMode",
         "MEM processor mode of decay of Z1 (=Z for ZHH, Z1 for ZZH)",
         m_z1_decay_mode,
@@ -91,7 +112,7 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
         );
 
   registerProcessorParameter("Mode",
-        "mode of usage; 0:MCParticles, 1:InputHiggsPairCollection with InputJetCollection",
+        "mode of usage; 0:MCParticles, 1:InputHiggsPairCollection with InputJetCollection, 1:TrueJet",
         m_mode,
         int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
         );
@@ -138,6 +159,7 @@ void CompareTrueMEProcessor::init()
   // 1. Meta
   m_pTTree->Branch("is_zhh", &m_is_zhh, "is_zhh/I");
   m_pTTree->Branch("is_zzh", &m_is_zzh, "is_zzh/I");
+  m_pTTree->Branch("passed_preselection", &m_passed_preselection, "passed_preselection/I");
   m_pTTree->Branch("true_h1_decay_pdg", &m_true_h1_decay_pdg, "true_h1_decay_pdg/I");
   m_pTTree->Branch("true_h2_decay_pdg", &m_true_h2_decay_pdg, "true_h2_decay_pdg/I");
   m_pTTree->Branch("true_z2_decay_pdg", &m_true_z2_decay_pdg, "true_z2_decay_pdg/I");
@@ -291,11 +313,12 @@ void CompareTrueMEProcessor::Clear()
   m_zzh_is_set = 0;
 
   // 1. True
-  m_true_h1_decay_pdg = 0;
-  m_true_h2_decay_pdg = 0;
-  m_true_z2_decay_pdg = 0;
-  m_is_zhh = 0;
-  m_is_zzh = 0;
+  m_true_h1_decay_pdg   = 0;
+  m_true_h2_decay_pdg   = 0;
+  m_true_z2_decay_pdg   = 0;
+  m_passed_preselection = 0;
+  m_is_zhh              = 0;
+  m_is_zzh              = 0;
 
   // 2. Event data
   m_h1_decay_pdg  = 0;
@@ -418,9 +441,18 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
   try {
     // Fetching collections
     LCCollection *inputMCTrueCollection{};
+    LCCollection *preselectioncol{};
 
     streamlog_out(DEBUG) << "        getting true MC collection: " << m_inputMCTrueCollection << std::endl ;
     inputMCTrueCollection = pLCEvent->getCollection( m_inputMCTrueCollection );
+
+    streamlog_out(DEBUG) << "        getting preselection_passed collection: " << m_inputPreSelectionCollection << std::endl ;
+    preselectioncol = pLCEvent->getCollection( m_inputPreSelectionCollection );
+
+    // Check for preselection
+    m_passed_preselection = preselectioncol->parameters().getIntVal("isPassed");
+    if (m_require_presel_pass && !m_passed_preselection)
+      return;
 
     // Check whether true ZHH or ZZH event
     MCParticle *mcPart_H_if_zhh = dynamic_cast<MCParticle*>(inputMCTrueCollection->getElementAt(10));
@@ -589,58 +621,18 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
           perm.push_back(higgsParams.getIntVal("h1jet2id"));
           perm.push_back(higgsParams.getIntVal("h2jet1id"));
           perm.push_back(higgsParams.getIntVal("h2jet2id"));
-        } else {
-          // Jet pairing can be retrieved post analysis by checking against matched pairs
-          float min_diff = 9999.;
-
-          // Pair first jet with three others and check where match is best
-          int best_idx = 1;
-          for (int i = 1; i < 3; i++) {
-            TLorentzVector h1_jet_lortz  = v4(jets[0]) + v4(jets[i]);
-            TLorentzVector to_zero = h1_jet_lortz - h1_act_lortz;
-            
-            if (to_zero.M() < min_diff) {
-              min_diff = to_zero.M();
-              best_idx = i;
-            }
-          }
-
-          // sum of ids: 6
-          perm.push_back(0);
-          perm.push_back(best_idx);
-
-          switch (best_idx) {
-            case 1:
-              perm.push_back(2);
-              perm.push_back(3);
-              break;
-
-            case 2:
-              perm.push_back(1);
-              perm.push_back(3);
-              break;
-
-            case 3:
-              perm.push_back(1);
-              perm.push_back(2);
-              break;
-          }
-
-          streamlog_out(DEBUG) << "processEvent : estimated min_diff " << min_diff << std::endl;
-        }
-
-        streamlog_out(MESSAGE) << "processEvent : estimated Higgs jet pairing to " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
-
-        // Assign final states
-        ReconstructedParticle* l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
-        ReconstructedParticle* l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
         
-        l1_lortz = v4(l1);
-        l2_lortz = v4(l2);
+          streamlog_out(MESSAGE) << "processEvent : estimated Higgs jet pairing to " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
 
-        if (m_is_zhh) {
-          // Assuming ZHH
+          // Assign final states
+          ReconstructedParticle* l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
+          ReconstructedParticle* l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
+          
+          l1_lortz = v4(l1);
+          l2_lortz = v4(l2);
+
           if (both_to_b || both_to_c) {
+            // Assuming ZHH
             zzh_z2f1_lortz = v4(jets[perm[2]]);
             zzh_z2f2_lortz = v4(jets[perm[3]]);
             zzh_h_lortz    = h1_act_lortz;
@@ -649,20 +641,61 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
             m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
 
             m_zzh_is_set = 1;
-          }
 
-          // Assuming ZHH
-          zhh_h1_lortz = h2_act_lortz;
-          zhh_h2_lortz = h1_act_lortz;
-          
-          m_zhh_is_set = 1;
-        } else if (m_is_zzh) {
-          
+            // Assuming ZHH
+            zhh_h1_lortz = h2_act_lortz;
+            zhh_h2_lortz = h1_act_lortz;
+            
+            m_zhh_is_set = 1;
+          }
         }
       }
     } else if (m_mode == 2) {
       // TrueJet mode
-      
+      LCCollection *inputTrueJets{};
+
+      // Fetching collections
+      streamlog_out(DEBUG) << " getting TrueJet collection: " << m_inputTrueJetCollection << std::endl ;
+      inputTrueJets = pLCEvent->getCollection( m_inputTrueJetCollection );
+
+      // Jet pairing can be retrieved post analysis by checking against matched pairs
+      float min_diff = 9999.;
+      vector<int> perm;
+
+      // Pair first jet with three others and check where match is best
+      int best_idx = 1;
+      for (int i = 1; i < 3; i++) {
+        TLorentzVector h1_jet_lortz  = v4(jets[0]) + v4(jets[i]);
+        TLorentzVector to_zero = h1_jet_lortz - h1_act_lortz;
+        
+        if (to_zero.M() < min_diff) {
+          min_diff = to_zero.M();
+          best_idx = i;
+        }
+      }
+
+      // sum of ids: 6
+      perm.push_back(0);
+      perm.push_back(best_idx);
+
+      switch (best_idx) {
+        case 1:
+          perm.push_back(2);
+          perm.push_back(3);
+          break;
+
+        case 2:
+          perm.push_back(1);
+          perm.push_back(3);
+          break;
+
+        case 3:
+          perm.push_back(1);
+          perm.push_back(2);
+          break;
+      }
+
+      streamlog_out(DEBUG) << "processEvent : estimated min_diff " << min_diff << std::endl;
     }
 
     // ZHH

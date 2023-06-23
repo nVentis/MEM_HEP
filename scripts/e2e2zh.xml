@@ -5,8 +5,8 @@
     <constant name="lcgeo_DIR" value="/cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/lcgeo/v00-16-06" />
     <constant name="DetectorModel" value="ILD_l5_o1_v02" />
     <constant name="CompactFile" value="${lcgeo_DIR}/ILD/compact/${DetectorModel}/${DetectorModel}.xml" />
-    <constant name="OutputDirectory" value="." />
-    <constant name="OutputBaseName" value="e2e2hhECMStudies" />
+    <constant name="OutputDirectory" value="zzh" />
+    <constant name="OutputBaseName" value="e2e2zh" />
     <constant name="OutputRootFile" value="${OutputBaseName}.root" />
     <constant name="NumberOfHiggs" value="2" />
     <constant name="NumberOfJets" value="4" />
@@ -36,74 +36,41 @@
       <processor name="MySLDCorrection" condition="" />
       <processor name="MyErrorFlow" condition="" />
       <processor name="MyZHHKinFitLeptonChannel" condition="" />
-      <processor name="MyLeptonErrorAnalysis" condition="" />
-      <processor name="MyJetErrorAnalysis_woNu" condition="" />
-      <processor name="MyJetErrorAnalysis" condition="" />
+      <Xprocessor name="MyLeptonErrorAnalysis" condition="" />
+      <Xprocessor name="MyJetErrorAnalysis_woNu" condition="" />
+      <Xprocessor name="MyJetErrorAnalysis" condition="" />
     </if>
+    <processor name="mytruejet"/>
     <if condition="MyHdecayMode.GoodEvent">
-      <processor name="mytruejet"/>
       <!-- <processor name="MyZHHPostRecoMEProcessor"/> -->
       <processor name="MyMisclustering"/>
     </if>
-    <processor name="CompareTrueMEProcessor"/>
+    <Xprocessor name="CompareTrueMEProcessor"/>
     <processor name="MyLCIOOutputProcessor"/>
   </execute>
 
   <global>
     <!--parameter name="LCIOInputFiles">/pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_ZZ_hadronic/ILD_l5_o1_v02/v02-02/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500062.P4f_zz_h.eL.pR.n000.d_dstm_15122_0.slcio</parameter-->
     <parameter name="LCIOInputFiles">
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_0.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_1.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15806_0.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15806_1.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_0.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_1.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_2.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_3.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_4.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_5.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_6.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_10.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_11.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_12.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_13.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_14.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_15.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_7.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_8.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_9.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_16.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_17.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_18.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_19.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_20.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_21.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_22.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_23.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_0.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_1.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_2.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_3.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_4.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_5.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n000.d_dstm_15807_6.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_10.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_11.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_12.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_13.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_14.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_15.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_7.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_8.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n001.d_dstm_15807_9.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_16.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_17.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_18.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_19.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_20.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_21.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_22.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403002.Pe2e2hh.eR.pL.n002.d_dstm_15807_23.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15806_0.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15806_1.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_0.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_1.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_2.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_3.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_4.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_5.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_6.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_7.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_8.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_9.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_10.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_11.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_12.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_13.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_14.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_15.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_16.slcio
     </parameter>
     <!-- limit the number of processed records (run+evt): -->
     <!--parameter name="MaxRecordNumber" value="0" /to process all events--> 
@@ -694,15 +661,15 @@
   <processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
     <!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
     <!--drops the named collections from the event-->
-    <parameter name="DropCollectionNames" type="StringVec"> BuildUpVertex BuildUpVertex_RP BuildUpVertex_V0 BuildUpVertex_V0_RP GammaGammaCandidateEtaPrimes GammaGammaCandidateEtas GammaGammaCandidatePi0s MCTruthMarlinTrkTracksLink MCTruthClusterLink MarlinTrkTracks MarlinTrkTracksKaon MarlinTrkTracksMCTruthLink MarlinTrkTracksProton PFOsWithoutMCOverlay PandoraClusters PandoraPFO_updatedNeutralPFOs PandoraPFOsWithoutIsoLep PrimaryVertex PrimaryVertex_RP RefinedJets_rel RefinedJets_vtx RefinedJets_vtx_RP RefinedVertex_RP V0RecoParticles V0Vertices VertexJets </parameter>
+    <parameter name="DropCollectionNames" type="StringVec"> BuildUpVertex BuildUpVertex_RP BuildUpVertex_V0 BuildUpVertex_V0_RP GammaGammaCandidateEtaPrimes GammaGammaCandidateEtas GammaGammaCandidatePi0s MCTruthMarlinTrkTracksLink MCTruthClusterLink MarlinTrkTracks MarlinTrkTracksKaon MarlinTrkTracksMCTruthLink MarlinTrkTracksProton PFOsWithoutMCOverlay PandoraClusters PandoraPFO_updatedNeutralPFOs PandoraPFOsWithoutIsoLep PrimaryVertex PrimaryVertex_RP RefinedJets_rel RefinedJets_vtx RefinedJets_vtx_RP RefinedVertex_RP V0RecoParticles V0Vertices VertexJets DistilledPFOs GammaGammaParticles DurhamJetsPFOs Durham_2JetsPFOs PandoraPFOsWithoutLepPair </parameter>
     <!--drops all collections of the given type from the event-->
     <!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit  </parameter-->
     <!-- write complete objects in subset collections to the file (i.e. ignore subset flag)-->
     <!--parameter name="FullSubsetCollections" type="StringVec">MCParticlesSkimmed  </parameter-->
     <!--force keep of the named collections - overrules DropCollectionTypes (and DropCollectionNames)-->
-    <parameter name="KeepCollectionNames" type="StringVec"> Durham_2Jets Durham_2JetsPFOs IsolatedLeptons ISOLeptons PandoraPFOsWithoutLepPair RefinedJets RefinedJetsPFOs OutputErrorFlowJets TrueJets FinalColourNeutrals InitialColourNeutrals TrueJetPFOLink TrueJetMCParticleLink FinalElementonLink InitialElementonLink FinalColourNeutralLink InitialColourNeutralLink HdecayMode IsolatedLeptons RefinedJets </parameter>
+    <parameter name="KeepCollectionNames" type="StringVec"> Durham_2Jets IsolatedLeptons ISOLeptons PandoraPFOsWithoutLepPair RefinedJets RefinedJetsPFOs OutputErrorFlowJets TrueJets FinalColourNeutrals InitialColourNeutrals TrueJetPFOLink TrueJetMCParticleLink FinalElementonLink InitialElementonLink FinalColourNeutralLink InitialColourNeutralLink HdecayMode IsolatedLeptons preselection </parameter>
         <!-- name of output file -->
-    <parameter name="LCIOOutputFile" type="string">${OutputDirectory}/slcio/${OutputBaseName}.slcio</parameter>
+    <parameter name="LCIOOutputFile" type="string">${OutputDirectory}/${OutputBaseName}.slcio</parameter>
     <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
     <parameter name="LCIOWriteMode" type="string">WRITE_NEW</parameter>
     <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->

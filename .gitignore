@@ -6,6 +6,5 @@ ee_zzh_cpp
 *.npy
 *.pyc
 *.png
+*.slcio
 Ranlux.coonf
-py.py
-madjax

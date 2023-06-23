@@ -55,8 +55,8 @@
 
   -->
   <parameter name="LCIOInputFiles">
-  /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2qqh.eL.pR_fullflow_v2.slcio
-  /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2hh.eL.pR_fullflow_v2.slcio
+  /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zhh/e2e2hh.slcio
+  /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zzh/e2e2zh.slcio
   </parameter>
   <!-- limit the number of processed records (run+evt): -->  
   <parameter name="MaxRecordNumber" value="0" />  
@@ -104,9 +104,13 @@
  <processor name="CompareTrueMEProcessor" type="CompareTrueMEProcessor">
    <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
    <parameter name="InputHdecayMode" type="string" lcioInType="MCParticle"> HdecayMode </parameter>
+   <parameter name="InputPreSelection" type="string" lcioInType="ReconstructedParticle"> preselection </parameter>
    <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
+   <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
+
+   <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="Mode" type="int" value="0"/>
    <parameter name="TrueZ1DecayMode" type="int" value="5"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
