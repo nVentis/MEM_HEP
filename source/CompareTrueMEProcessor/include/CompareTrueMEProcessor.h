@@ -124,6 +124,10 @@ class CompareTrueMEProcessor : public Processor
 		float m_zhh_costhetah{};
 
 		// 1.b ZHH input
+		float m_zhh_q2_z{};
+		float m_zhh_q2_h1{};
+		float m_zhh_q2_h2{};
+
 		float m_zhh_l1_E{};
   		float m_zhh_l1_px{};
   		float m_zhh_l1_py{};
@@ -181,6 +185,10 @@ class CompareTrueMEProcessor : public Processor
 		float m_zzh_costhetaz2f{};
 
 		// 1.b ZZH input
+		float m_zzh_q2_z1{};
+		float m_zzh_q2_z2{};
+		float m_zzh_q2_h{};
+
 		float m_zzh_l1_E{};
   		float m_zzh_l1_px{};
   		float m_zzh_l1_py{};

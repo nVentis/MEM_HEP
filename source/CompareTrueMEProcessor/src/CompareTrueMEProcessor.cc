@@ -36,6 +36,15 @@ TLorentzVector v4(T* p){
   return TLorentzVector( p->getMomentum(), p->getEnergy() );
 }
 
+template<class T>
+double inv_mass(T* p1, T* p2){
+  double e = p1->getEnergy()+p2->getEnergy() ;
+  double px = p1->getMomentum()[0]+p2->getMomentum()[0];
+  double py = p1->getMomentum()[1]+p2->getMomentum()[1];
+  double pz = p1->getMomentum()[2]+p2->getMomentum()[2];
+  return( sqrt( e*e - px*px - py*py - pz*pz  ) );
+}
+
 CompareTrueMEProcessor aCompareTrueMEProcessor ;
 
 CompareTrueMEProcessor::CompareTrueMEProcessor() :
@@ -587,70 +596,100 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       streamlog_out(DEBUG) << " getting HdecayMode: " << m_inputHdecayModeCollection << std::endl ;
       inputHdecayMode = pLCEvent->getCollection( m_inputHdecayModeCollection );
 
-      // Extract information about HdecayParameters
-      const EVENT::LCParameters& HdecayParameters = inputHdecayMode->getParameters();
-      bool both_to_b = (HdecayParameters.getIntVal(std::string("isDecayedTob")) == 2);
-      bool both_to_c = (HdecayParameters.getIntVal(std::string("isDecayedToc")) == 2);
-
+      // CHEATED: Extract information about decays
+      int both_to_b = 0;
+      int both_to_c = 0;
+      if (m_is_zhh) {
+        both_to_b = (m_true_h1_decay_pdg == m_true_h2_decay_pdg) && (m_true_h1_decay_pdg == 5);
+        both_to_c = (m_true_h1_decay_pdg == m_true_h2_decay_pdg) && (m_true_h1_decay_pdg == 4);
+      } else if (m_is_zzh) {
+        both_to_b = (m_true_h1_decay_pdg == m_true_z2_decay_pdg) && (m_true_h1_decay_pdg == 5);
+        both_to_c = (m_true_h1_decay_pdg == m_true_z2_decay_pdg) && (m_true_h1_decay_pdg == 4);
+      }
+      
       // Necessary for ME calculation: b/c jets (only, because we cannot tell apart which [reco] jet might be which?) AND 2 isolated leptons (i.e. one LeptonPair)
-      if ((both_to_b || both_to_c) && inputLepPair->getNumberOfElements() == 2) {
-        // Get higgs particles and associated jets
-        // TODO: Check which particle from the HiggsPair to consider in ZZH or completely different approach altogether?
-        // Current status: p(HiggsPair[0] == ActualHiggs) > p(HiggsPair[1] == ActualHiggs)
+      // cerr << " both_to_b " << both_to_b << " both_to_c " << both_to_c << " lep_pair " << inputLepPair->getNumberOfElements() << endl;
+      if (!(both_to_b || both_to_c) || inputLepPair->getNumberOfElements() != 2)
+        return;
 
-        vector<ReconstructedParticle*> jets;
-        int m_nJets = 4;
-        for (int i=0; i<m_nJets; ++i) {
-          ReconstructedParticle* jet = (ReconstructedParticle*) inputJetCol->getElementAt(i);
-          jets.push_back(jet);
-        }
+      // Get higgs particles and associated jets
+      // TODO: Check which particle from the HiggsPair to consider in ZZH or completely different approach altogether?
+      // Current status: p(HiggsPair[0] == ActualHiggs) > p(HiggsPair[1] == ActualHiggs)
 
-        ReconstructedParticle* h1 = (ReconstructedParticle*) inputHiggsPair->getElementAt(0);
-        ReconstructedParticle* h2 = (ReconstructedParticle*) inputHiggsPair->getElementAt(1);
-        
-        TLorentzVector h1_act_lortz = v4(h1);
-        TLorentzVector h2_act_lortz = v4(h2);
+      vector<ReconstructedParticle*> jets;
+      int m_nJets = 4;
+      for (int i=0; i<m_nJets; ++i) {
+        ReconstructedParticle* jet = (ReconstructedParticle*) inputJetCol->getElementAt(i);
+        jets.push_back(jet);
+      }
 
-        // Check if jet pairing parameters exist in higgs pair; otherwise try permutations to check which pairing was used
-        const EVENT::LCParameters& higgsParams = inputHiggsPair->getParameters();
-        vector<int> perm;
+      ReconstructedParticle* h1 = (ReconstructedParticle*) inputHiggsPair->getElementAt(0);
+      ReconstructedParticle* h2 = (ReconstructedParticle*) inputHiggsPair->getElementAt(1);
+      
+      TLorentzVector h1_act_lortz = v4(h1);
+      TLorentzVector h2_act_lortz = v4(h2);
 
-        if (higgsParams.getNInt(std::string("h1jet1id")) == 1) {
-          // Jet pairing saved in collection (newer version)
-          perm.push_back(higgsParams.getIntVal("h1jet1id"));
-          perm.push_back(higgsParams.getIntVal("h1jet2id"));
-          perm.push_back(higgsParams.getIntVal("h2jet1id"));
-          perm.push_back(higgsParams.getIntVal("h2jet2id"));
-        
-          streamlog_out(MESSAGE) << "processEvent : estimated Higgs jet pairing to " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
+      // Check if jet pairing parameters exist in higgs pair; otherwise try permutations to check which pairing was used
+      const EVENT::LCParameters& higgsParams = inputHiggsPair->getParameters();
+      vector<int> perm;
 
-          // Assign final states
-          ReconstructedParticle* l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
-          ReconstructedParticle* l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
-          
-          l1_lortz = v4(l1);
-          l2_lortz = v4(l2);
+      if (higgsParams.getNInt(std::string("h1jet1id")) == 1) {
+        // Jet pairing saved in collection (newer version)
+        perm.push_back(higgsParams.getIntVal("h1jet1id"));
+        perm.push_back(higgsParams.getIntVal("h1jet2id"));
+        perm.push_back(higgsParams.getIntVal("h2jet1id"));
+        perm.push_back(higgsParams.getIntVal("h2jet2id"));
+      } else {
+        vector<vector<int>> perms {
+          {0,1,2,3}, {0,2,1,3}, {0,3,1,2}
+        };
 
-          if (both_to_b || both_to_c) {
-            // Assuming ZHH
-            zzh_z2f1_lortz = v4(jets[perm[2]]);
-            zzh_z2f2_lortz = v4(jets[perm[3]]);
-            zzh_h_lortz    = h1_act_lortz;
+        float chi2min = 99999. ;
 
-            m_z2_decay_pdg = both_to_b ? 5 : 4; // PDGs: bottom->5, charm->4
-            m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
+        // Pair first jet with three others and check where match is best
+        int best_idx = 0;
+        for (int i = 0; i < perms.size(); i++) {
+          float m1 = inv_mass(jets[perms[i][0]], jets[perms[i][1]]);
+          float chi2 = (m1-125)*(m1-125);
 
-            m_zzh_is_set = 1;
-
-            // Assuming ZHH
-            zhh_h1_lortz = h2_act_lortz;
-            zhh_h2_lortz = h1_act_lortz;
-            
-            m_zhh_is_set = 1;
+          if (chi2 < chi2min) {
+            chi2min = chi2;
+            best_idx = i;
           }
         }
+
+        perm = perms[best_idx];
       }
+      
+      streamlog_out(MESSAGE) << "processEvent : estimated Higgs jet pairing to " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
+
+      // Assign final states
+      ReconstructedParticle* l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
+      ReconstructedParticle* l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
+      
+      l1_lortz = v4(l1);
+      l2_lortz = v4(l2);
+
+      // Assuming ZHH
+      zzh_z2f1_lortz = v4(jets[perm[2]]);
+      zzh_z2f2_lortz = v4(jets[perm[3]]);
+      zzh_h_lortz    = v4(jets[perm[0]]) + v4(jets[perm[1]]);
+
+      m_z2_decay_pdg = both_to_b ? 5 : 4; // PDGs: bottom->5, charm->4
+      m_h1_decay_pdg =  both_to_b ? 5 : 4;
+      m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
+
+      m_zhh_is_set = 1;
+
+      // Assuming ZHH
+      zhh_h1_lortz = zzh_z2f1_lortz + zzh_z2f2_lortz;
+      zhh_h2_lortz = zzh_h_lortz;
+
+      m_h2_decay_pdg = both_to_b ? 5 : 4;
+      
+      m_zzh_is_set = 1;
     } else if (m_mode == 2) {
+      /*
       // TrueJet mode
       LCCollection *inputTrueJets{};
 
@@ -696,6 +735,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
 
       streamlog_out(DEBUG) << "processEvent : estimated min_diff " << min_diff << std::endl;
+      */
     }
 
     // ZHH
@@ -730,6 +770,8 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zhh_costhetah = _zhh->GetCosThetaH();
 
       // Input
+      m_zzh_q2_z1 = _zhh;
+
       m_zhh_h1_E  = zhh_h1_lortz.E();
       m_zhh_h1_px = zhh_h1_lortz.Px();
       m_zhh_h1_py = zhh_h1_lortz.Py();
