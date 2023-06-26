@@ -707,6 +707,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       
       m_zzh_is_set = 1;
     } else if (m_mode == 2) {
+      /*
       // Fetch TrueJet collections in TrueJet_Parser
       this->getall(pLCEvent);
 
@@ -759,6 +760,7 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
 
       streamlog_out(DEBUG) << "processEvent : estimated min_diff " << min_diff << std::endl;
+      */
     }
 
     // ZHH

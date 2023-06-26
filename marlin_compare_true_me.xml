@@ -140,6 +140,7 @@
 
  <processor name="Misclustering" type="Misclustering">
    <parameter name="RecoJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
+   <parameter name="JetMatchingCollection" type="string" lcioOutType="ReconstructedParticle"> JetMatching </parameter>
    <parameter name="matchMethod" type="int" value="0"/>
    <parameter name="outputFilename" type="string" value="mscl_output.root"/>
  </processor>
