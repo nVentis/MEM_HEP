@@ -126,6 +126,12 @@ CompareTrueMEProcessor::CompareTrueMEProcessor() :
         int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
         );
 
+  registerProcessorParameter("SaveInputKinematics",
+        "0: no complete kinematics, 1: save x,y,z,E of all inputs",
+        m_saveInputKinematics,
+        int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
+        );
+
 	registerProcessorParameter("HiggsMass",
         "assumed Hmass",
         m_Hmass,
@@ -283,6 +289,10 @@ void CompareTrueMEProcessor::init()
   m_pTTree->Branch("zzh_h_py", &m_zzh_h_py, "zzh_h_py/F");
   m_pTTree->Branch("zzh_h_pz", &m_zzh_h_pz, "zzh_h_pz/F");
 
+  if (m_saveInputKinematics) {
+
+  }
+
   // Core configuration
   cerr << endl;
   cerr << "ZHH MEM processor initializing with:\n";
@@ -354,6 +364,10 @@ void CompareTrueMEProcessor::Clear()
   m_zhh_costhetah = 0.;
 
   // 2.b ZHH input
+  m_zhh_q2_h1 = 0.;
+  m_zhh_q2_h2 = 0.;
+  m_zhh_q2_z  = 0.;
+
   m_zhh_l1_E  = 0.;
   m_zhh_l1_px = 0.;
   m_zhh_l1_py = 0.;
@@ -409,6 +423,10 @@ void CompareTrueMEProcessor::Clear()
   m_zzh_costhetaz2f = 0.;
 
   // 3.b ZZH input
+  m_zzh_q2_h  = 0.;
+  m_zzh_q2_z1 = 0.;
+  m_zzh_q2_z2 = 0.;
+
   m_zzh_l1_E  = 0.;
   m_zzh_l1_px = 0.;
   m_zzh_l1_py = 0.;
@@ -689,13 +707,19 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       
       m_zzh_is_set = 1;
     } else if (m_mode == 2) {
-      /*
+      // Fetch TrueJet collections in TrueJet_Parser
+      this->getall(pLCEvent);
+
       // TrueJet mode
       LCCollection *inputTrueJets{};
 
       // Fetching collections
       streamlog_out(DEBUG) << " getting TrueJet collection: " << m_inputTrueJetCollection << std::endl ;
       inputTrueJets = pLCEvent->getCollection( m_inputTrueJetCollection );
+
+      ReconstructedParticle *a = (ReconstructedParticle*) inputTrueJets->getElementAt(0);
+
+      a->getParticleIDs()[0]->getPDG();
 
       // Jet pairing can be retrieved post analysis by checking against matched pairs
       float min_diff = 9999.;
@@ -735,7 +759,6 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
 
       streamlog_out(DEBUG) << "processEvent : estimated min_diff " << min_diff << std::endl;
-      */
     }
 
     // ZHH
@@ -770,7 +793,9 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zhh_costhetah = _zhh->GetCosThetaH();
 
       // Input
-      m_zzh_q2_z1 = _zhh;
+      m_zhh_q2_h1 = _zhh->GetQ2H1();
+      m_zhh_q2_h2 = _zhh->GetQ2H2();
+      m_zhh_q2_z  = _zhh->GetQ2Z();
 
       m_zhh_h1_E  = zhh_h1_lortz.E();
       m_zhh_h1_px = zhh_h1_lortz.Px();
@@ -844,6 +869,10 @@ void CompareTrueMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zzh_costhetaz   = _zzh->GetCosThetaZ();
 
       // Input
+      m_zzh_q2_z1 = _zzh->GetQ2Z1();
+      m_zzh_q2_z2 = _zzh->GetQ2Z2();
+      m_zzh_q2_h  = _zzh->GetQ2H();
+
       if (m_zzh_no_z_decay == 0) {
         m_zzh_z2f1_E  = zzh_z2f1_lortz.E();
         m_zzh_z2f1_px = zzh_z2f1_lortz.Px();

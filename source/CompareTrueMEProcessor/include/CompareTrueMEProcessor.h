@@ -20,6 +20,7 @@
 #include "TLorentzVector.h"
 #include "physsim/LCMEZHH.h"
 #include "physsim/LCMEZZH.h"
+#include "TrueJet_Parser.h"
 class TFile;
 class TH1F;
 class TH1I;
@@ -30,7 +31,7 @@ using namespace lcio ;
 using namespace marlin ;
 using namespace lcme ;
 
-class CompareTrueMEProcessor : public Processor
+class CompareTrueMEProcessor : public Processor, public TrueJet_Parser
 {
 	public:
 
@@ -74,6 +75,8 @@ class CompareTrueMEProcessor : public Processor
 
 		int m_mode{}; // 0 => use MCTruth data; 1 => use reconstructed data (HiggsPair, LeptonPair, HdecayMode, and some jet e.g. RefinedJets)
 		int m_mode_me{};
+		int m_saveInputKinematics{};
+
 		int m_zzh_no_z_decay{};
 		int m_require_presel_pass{};
 		float m_Hmass{};
