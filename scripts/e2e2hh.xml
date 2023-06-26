@@ -40,9 +40,8 @@
       <Xprocessor name="MyJetErrorAnalysis_woNu" condition="" />
       <Xprocessor name="MyJetErrorAnalysis" condition="" />
     </if>
-    <processor name="mytruejet"/>
     <if condition="MyHdecayMode.GoodEvent">
-      <!-- <processor name="MyZHHPostRecoMEProcessor"/> -->
+      <processor name="mytruejet"/>>
       <processor name="MyMisclustering"/>
     </if>
     <Xprocessor name="CompareTrueMEProcessor"/>
@@ -659,6 +658,7 @@
   <processor name="MyMisclustering" type="Misclustering">
     <!--Name of the input reconstructed Jet collection-->
     <parameter name="RecoJetCollection" type="string" lcioInType="ReconstructedParticle">RefinedJets</parameter>
+    <parameter name="JetMatchingCollection" type="string" lcioOutType="ReconstructedParticle">JetMatching</parameter>
     <parameter name="matchMethod" type="int">0</parameter>
     <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_Misclustering.root</parameter>
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
@@ -674,7 +674,7 @@
     <!-- write complete objects in subset collections to the file (i.e. ignore subset flag)-->
     <!--parameter name="FullSubsetCollections" type="StringVec">MCParticlesSkimmed  </parameter-->
     <!--force keep of the named collections - overrules DropCollectionTypes (and DropCollectionNames)-->
-    <parameter name="KeepCollectionNames" type="StringVec"> Durham_2Jets IsolatedLeptons ISOLeptons PandoraPFOsWithoutLepPair RefinedJets RefinedJetsPFOs OutputErrorFlowJets TrueJets FinalColourNeutrals InitialColourNeutrals TrueJetPFOLink TrueJetMCParticleLink FinalElementonLink InitialElementonLink FinalColourNeutralLink InitialColourNeutralLink HdecayMode IsolatedLeptons preselection </parameter>
+    <parameter name="KeepCollectionNames" type="StringVec"> Durham_2Jets IsolatedLeptons ISOLeptons PandoraPFOsWithoutLepPair RefinedJets RefinedJetsPFOs OutputErrorFlowJets TrueJets FinalColourNeutrals InitialColourNeutrals TrueJetPFOLink TrueJetMCParticleLink FinalElementonLink InitialElementonLink FinalColourNeutralLink InitialColourNeutralLink HdecayMode IsolatedLeptons preselection JetMatching </parameter>
         <!-- name of output file -->
     <parameter name="LCIOOutputFile" type="string">${OutputDirectory}/${OutputBaseName}.slcio</parameter>
     <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
