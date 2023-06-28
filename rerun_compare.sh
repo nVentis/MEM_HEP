@@ -4,7 +4,7 @@ cd /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/TestPhyssimK4H/Physsim/bui
 cmake -DCMAKE_CXX_STANDARD=17 ..
 make install
 
-cd /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareTrueMEProcessor/build
+cd /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor/build
 cmake -DCMAKE_CXX_STANDARD=17 ..
 make install
 cd ../../../

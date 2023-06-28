@@ -23,7 +23,7 @@ export MARLIN_DLL=$MARLIN_DLL:$ILD_ANASOFT_ZHH/source/Misclustering/lib/libMiscl
 
 # Modules of MEM_HEP
 export MARLIN_DLL=$MARLIN_DLL:$MEM_HEP/source/ZHHPostRecoMEProcessor/lib/libZHHPostRecoMEProcessor.so
-export MARLIN_DLL=$MARLIN_DLL:$MEM_HEP/source/CompareTrueMEProcessor/lib/libCompareTrueMEProcessor.so
+export MARLIN_DLL=$MARLIN_DLL:$MEM_HEP/source/CompareMEProcessor/lib/libCompareMEProcessor.so
 
 # Other modules
 export MARLIN_DLL=$MARLIN_DLL:/afs/desy.de/user/b/bliewert/public/yradkhorrami/SLDecayCorrection/build/lib/libSLDecayCorrection.so

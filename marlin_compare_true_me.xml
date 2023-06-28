@@ -34,8 +34,8 @@
    <Xprocessor name="MEMExampleEEHProcessor"/>
    <Xprocessor name="ZHHPostRecoMEProcessor"/>
    <Xprocessor name="Misclustering"/>
-   <processor name="CompareTrueMEProcessorTrue"/>
-   <processor name="CompareTrueMEProcessorReco"/>
+   <processor name="CompareMEProcessorTrue"/>
+   <processor name="CompareMEProcessorReco"/>
    <Xprocessor name="mytruejet"/>
  <!-- ========== full and DST output =======================================  -->
    <Xprocessor name="MyLCIOOutputProcessor"/>
@@ -102,7 +102,7 @@
    <parameter name="outputTree" type="string" value="dataTree"/>
  </processor>
  
- <processor name="CompareTrueMEProcessorTrue" type="CompareTrueMEProcessor">
+ <processor name="CompareMEProcessorTrue" type="CompareMEProcessor">
    <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
    <parameter name="InputHdecayMode" type="string" lcioInType="MCParticle"> HdecayMode </parameter>
    <parameter name="InputPreSelection" type="string" lcioInType="ReconstructedParticle"> preselection </parameter>
@@ -120,7 +120,7 @@
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>
 
- <processor name="CompareTrueMEProcessorReco" type="CompareTrueMEProcessor">
+ <processor name="CompareMEProcessorReco" type="CompareMEProcessor">
    <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
    <parameter name="InputHdecayMode" type="string" lcioInType="MCParticle"> HdecayMode </parameter>
    <parameter name="InputPreSelection" type="string" lcioInType="ReconstructedParticle"> preselection </parameter>

@@ -40,11 +40,10 @@
       <Xprocessor name="MyJetErrorAnalysis_woNu" condition="" />
       <Xprocessor name="MyJetErrorAnalysis" condition="" />
     </if>
-    <if condition="MyHdecayMode.GoodEvent">
-      <processor name="mytruejet"/>>
+    <!-- <if condition="MyHdecayMode.GoodEvent"> -->
+      <processor name="mytruejet"/>
       <processor name="MyMisclustering"/>
-    </if>
-    <Xprocessor name="CompareTrueMEProcessor"/>
+    <!-- </if> -->
     <processor name="MyLCIOOutputProcessor"/>
   </execute>
 
@@ -81,7 +80,7 @@
     <!-- limit the number of processed records (run+evt): -->
     <!--parameter name="MaxRecordNumber" value="0" /to process all events--> 
     <!--parameter name="MaxRecordNumber" value="1000" /to process 1000 events--> 
-    <parameter name="MaxRecordNumber" value="5000"/>
+    <parameter name="MaxRecordNumber" value="500"/>
     <parameter name="SkipNEvents" value="0" />
     <parameter name="SupressCheck" value="false" />
     <parameter name="GearXMLFile">/cvmfs/ilc.desy.de/sw/ILDConfig/v02-02-02/StandardConfig/production/Gear/gear_ILD_l5_v02.xml</parameter>
@@ -97,7 +96,7 @@
     <!--InitializeDD4hep reads a compact xml file and initializes the DD4hep::LCDD object-->
     <!--Name of the DD4hep compact xml file to load-->
     <parameter name="DD4hepXMLFile" type="string">${CompactFile}</parameter>
-    <parameter name="Verbosity" type="string">SILENT </parameter>
+    <parameter name="Verbosity" type="string">SILENT</parameter>
   </processor>
 
   <processor name="MyAIDAProcessor" type="AIDAProcessor">
@@ -111,17 +110,6 @@
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
     <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
   </processor>
-
-  <processor name="CompareTrueMEProcessor" type="CompareTrueMEProcessor">
-   <parameter name="MCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
-   <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="LepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
-   <parameter name="HiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
-   <parameter name="TrueZ1DecayMode" type="int" value="5"/>
-   <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_CompareTrueMEProcessor.root</parameter>
-   <parameter name="outputTree" type="string" value="dataTree"/>
- </processor>
 
   <processor name="MyAddNeutralPFOCovMatLite" type="AddNeutralPFOCovMat">
     <!--Name of the Input PFO Collection-->

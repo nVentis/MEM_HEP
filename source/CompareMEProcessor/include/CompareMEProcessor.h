@@ -7,8 +7,8 @@
  * 
 */
 
-#ifndef CompareTrueMEProcessor_h
-#define CompareTrueMEProcessor_h 1
+#ifndef CompareMEProcessor_h
+#define CompareMEProcessor_h 1
 
 #include "marlin/Processor.h"
 #include "IMPL/LCCollectionVec.h"
@@ -31,18 +31,28 @@ using namespace lcio ;
 using namespace marlin ;
 using namespace lcme ;
 
-class CompareTrueMEProcessor : public Processor, public TrueJet_Parser
+enum ERRORS : unsigned int {
+  PRESELECTION_FAILED_BUT_REQUIRED = 1,
+  INCOMPLETE_RECO_LEPTON_PAIR = 101,
+
+  NO_JET_MATCHING_COLLECTION = 200,
+  INCOMPLETE_TRUEJET_LEPTON_PAIR = 201,
+  
+  NEITHER_BBBB_NOR_CCCC = 1200
+};
+
+class CompareMEProcessor : public Processor, public TrueJet_Parser
 {
 	public:
 
 		virtual Processor*  newProcessor()
 		{
-			return new CompareTrueMEProcessor;
+			return new CompareMEProcessor;
 		}
-		CompareTrueMEProcessor();
-		virtual ~CompareTrueMEProcessor() = default;
-		CompareTrueMEProcessor(const CompareTrueMEProcessor&) = delete;
-		CompareTrueMEProcessor& operator=(const CompareTrueMEProcessor&) = delete;
+		CompareMEProcessor();
+		virtual ~CompareMEProcessor() = default;
+		CompareMEProcessor(const CompareMEProcessor&) = delete;
+		CompareMEProcessor& operator=(const CompareMEProcessor&) = delete;
 		virtual void init();
 		virtual void Clear();
 		virtual void processRunHeader( LCRunHeader*  /*run*/);
@@ -52,6 +62,7 @@ class CompareTrueMEProcessor : public Processor, public TrueJet_Parser
 		int getZDecayModeFromPDG(int pdg);
 		
  protected:
+		void save_evt_with_error_code(int error_code);
 		
 		/**
 		 * Add the expected output collections
@@ -65,19 +76,21 @@ class CompareTrueMEProcessor : public Processor, public TrueJet_Parser
 		std::string m_inputPreSelectionCollection{};
 		std::string m_inputHdecayModeCollection{};
 		std::string m_inputHiggsPairCollection{};
-		std::string m_inputTrueJetCollection{};
+		std::string m_inputJetMatchingCollection{};
 
 		std::string m_outputFile{};
 		std::string m_outputTree{};
 
 		int m_nRun;
         int m_nEvt;
+		int m_mode_me;
+		int m_zzh_no_z_decay;
+		int m_error_code{};
 
 		int m_mode{}; // 0 => use MCTruth data; 1 => use reconstructed data (HiggsPair, LeptonPair, HdecayMode, and some jet e.g. RefinedJets)
-		int m_mode_me{};
+		int m_lepton_mode{};
 		int m_saveInputKinematics{};
 
-		int m_zzh_no_z_decay{};
 		int m_require_presel_pass{};
 		float m_Hmass{};
 
@@ -96,7 +109,8 @@ class CompareTrueMEProcessor : public Processor, public TrueJet_Parser
 		int m_true_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (true for true ZZH events)
 
 		// Event data
-		int m_z1_decay_mode{}; // as input from parameter; defaults to 5 (mu+mu-)
+		int m_z1_decay_pdg{}; // as input from parameter; defaults to 5 (mu+mu-)
+		int m_z1_decay_mode{}; // m_z1_decay_pdg converted to corresponding LCME value
 		int m_z2_decay_mode{}; // when ZZH is assumed; from m_z2_decay1_pdg
 		int m_is_zhh{}; // true label
 		int m_is_zzh{}; // true label
@@ -105,6 +119,23 @@ class CompareTrueMEProcessor : public Processor, public TrueJet_Parser
 		int m_h1_decay_pdg{}; // abs(PDG) of particle H1 decayed to
 		int m_h2_decay_pdg{}; // abs(PDG) of particle H2 decayed to (true for true ZHH events)
 		int m_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (true for true ZZH events)
+
+		ReconstructedParticle *l1{};
+		ReconstructedParticle *l2{};
+		MCParticle *mcPart_H_if_zhh{};
+		MCParticle *mcPart_H_if_zzh{};
+
+		MCParticle *zhh_h1_decay1{};
+		MCParticle *zhh_h1_decay2{};
+		MCParticle *zhh_h2_decay1{};
+		
+		MCParticle *zhh_h1{};
+        MCParticle *zhh_h2{};
+
+		MCParticle *zzh_z2f1{};
+		MCParticle *zzh_z2f2{};
+		MCParticle *zzh_h1_decay1{};
+		MCParticle *zzh_h{};
 
 		// 1. Assuming ZHH
 		// 1.a ZHH output
