@@ -120,22 +120,31 @@ class CompareMEProcessor : public Processor, public TrueJet_Parser
 		int m_h2_decay_pdg{}; // abs(PDG) of particle H2 decayed to (true for true ZHH events)
 		int m_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (true for true ZZH events)
 
-		ReconstructedParticle *l1{};
-		ReconstructedParticle *l2{};
-		MCParticle *mcPart_H_if_zhh{};
-		MCParticle *mcPart_H_if_zzh{};
+		// True
+		MCParticle *mcp_l1;
+		MCParticle *mcp_l2;
 
-		MCParticle *zhh_h1_decay1{};
-		MCParticle *zhh_h1_decay2{};
-		MCParticle *zhh_h2_decay1{};
+		MCParticle *mcp_H_if_zhh{};
+		MCParticle *mcp_H_if_zzh{};
+
+		MCParticle *mcp_zhh_h1_decay1{};
+		MCParticle *mcp_zhh_h1_decay2{};
+		MCParticle *mcp_zhh_h2_decay1{};
 		
-		MCParticle *zhh_h1{};
-        MCParticle *zhh_h2{};
+		MCParticle *mcp_zhh_h1{};
+        MCParticle *mcp_zhh_h2{};
 
-		MCParticle *zzh_z2f1{};
-		MCParticle *zzh_z2f2{};
-		MCParticle *zzh_h1_decay1{};
-		MCParticle *zzh_h{};
+		MCParticle *mcp_zzh_z2f1{};
+		MCParticle *mcp_zzh_z2f2{};
+		MCParticle *mcp_zzh_h1_decay1{};
+		MCParticle *mcp_zzh_h{};
+
+		// Reco
+		ReconstructedParticle *reco_l1{};
+		ReconstructedParticle *reco_l2{};
+
+		LCCollection *inputJetCol{};
+		LCCollection *inputHiggsPair{};
 
 		// 1. Assuming ZHH
 		// 1.a ZHH output
