@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/source",
+    "cmake.sourceDirectory": "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",
     "cmake.buildDirectory": "${workspaceFolder}/source/build",
     "C_Cpp.loggingLevel": "Debug",
     "files.associations": {

@@ -127,7 +127,7 @@ CompareMEProcessor::CompareMEProcessor() :
         );
 
   registerProcessorParameter("Mode",
-        "mode of usage; 0:MCParticles, 1:InputHiggsPairCollection with InputJetCollection, 1:TrueJet",
+        "mode of usage; 0:MCParticles, 1:RefinedJets using JetMatching collection, 1:TrueJet using JetMatching collection",
         m_mode,
         int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
         );
@@ -252,6 +252,12 @@ void CompareMEProcessor::init()
   m_pTTree->Branch("true_h1_decay_pdg", &m_true_h1_decay_pdg, "true_h1_decay_pdg/I");
   m_pTTree->Branch("true_h2_decay_pdg", &m_true_h2_decay_pdg, "true_h2_decay_pdg/I");
   m_pTTree->Branch("true_z2_decay_pdg", &m_true_z2_decay_pdg, "true_z2_decay_pdg/I");
+
+  // For Reco and TrueJet mode, save the region and region_icns parameters of the Misclustering processor
+  if (m_mode > 0) {
+    m_pTTree->Branch("misclustering_region", &m_misclustering_region, "misclustering_region/I");
+    m_pTTree->Branch("misclustering_region_icns", &m_misclustering_region_icns, "misclustering_region_icns/I");
+  }
 
   // 2. Event data
   m_pTTree->Branch("h1_decay_pdg", &m_h1_decay_pdg, "h1_decay_pdg/I");
@@ -407,39 +413,15 @@ void CompareMEProcessor::Clear()
   m_zzh_is_set = 0;
   m_error_code = 0;
 
-  // Pointers
-  delete mcp_l1;
-  delete mcp_l2;
-
-  delete mcp_H_if_zhh;
-  delete mcp_H_if_zzh;
-
-  delete mcp_zhh_h1_decay1;
-  delete mcp_zhh_h1_decay2;
-  delete mcp_zhh_h2_decay1;
-  
-  delete mcp_zhh_h1;
-  delete mcp_zhh_h2;
-
-  delete mcp_zzh_z2f1;
-  delete mcp_zzh_z2f2;
-  delete mcp_zzh_h1_decay1;
-  delete mcp_zzh_h;
-
-  // Reco
-  delete reco_l1;
-  delete reco_l2;
-
-  delete inputJetCol;
-  delete inputHiggsPair;
-
   // 1. True
-  m_true_h1_decay_pdg   = 0;
-  m_true_h2_decay_pdg   = 0;
-  m_true_z2_decay_pdg   = 0;
-  m_passed_preselection = 0;
-  m_is_zhh              = 0;
-  m_is_zzh              = 0;
+  m_true_h1_decay_pdg         = 0;
+  m_true_h2_decay_pdg         = 0;
+  m_true_z2_decay_pdg         = 0;
+  m_passed_preselection       = 0;
+  m_is_zhh                    = 0;
+  m_is_zzh                    = 0;
+  m_misclustering_region      = -1;
+  m_misclustering_region_icns = -1;
 
   // 2. Event data
   m_h1_decay_pdg  = 0;
@@ -609,7 +591,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       m_true_h1_decay_pdg = abs(mcp_zhh_h1_decay1->getPDG());
       m_true_h2_decay_pdg = abs(mcp_zhh_h2_decay1->getPDG());
-    } else {//if (m_is_zzh) {
+    } else if (m_is_zzh) {
       mcp_zzh_z2f1      = (MCParticle*) inputMCTrueCollection->getElementAt(10);
       mcp_zzh_h1_decay1 = (MCParticle*) inputMCTrueCollection->getElementAt(13);
 
@@ -689,6 +671,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
     } else if (m_mode == 1 || m_mode == 2) {
       // Jet reconstruction mode
+      // Fetch data from Misclustering processor per default?
       // 1 for RefinedJets (or any m_inputJetCollection) with inputHiggsPair; or 2 for TrueJet (requires output as from Misclustering) in https://github.com/nVentis/ZHH
       // As of now, assumes inputJetCol, inputLepPair, inputHiggsPair and inputHdecayMode
 
@@ -696,24 +679,21 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       vector<int> perm; 
       vector<ReconstructedParticle*> reco_jets;
 
-      // Fetch hadronic jets
+      // Check if JetMatching collection exists
+      const vector<string> *reco_colls = pLCEvent->getCollectionNames();
+      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingCollection) == reco_colls->end())
+        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_COLLECTION);
+
+      // Fetching collections
+      streamlog_out(DEBUG) << " getting JetMatching collection: " << m_inputJetMatchingCollection << std::endl ;
+      const EVENT::LCParameters& jm_params = pLCEvent->getCollection( m_inputJetMatchingCollection )->getParameters();
+
       if (m_mode == 2) {
-        // TrueJet helper
         this->getall( pLCEvent );
-        DelMe delme(std::bind(&CompareMEProcessor::delall, this));
-
-        // Check if JetMatching collection exists
-        const vector<string> *reco_colls = pLCEvent->getCollectionNames();
-        if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingCollection) == reco_colls->end())
-          return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_COLLECTION);
-
-        // Fetching collections
-        streamlog_out(DEBUG) << " getting JetMatching collection: " << m_inputJetMatchingCollection << std::endl ;
-        const EVENT::LCParameters& jm_params = pLCEvent->getCollection( m_inputJetMatchingCollection )->getParameters();
+        //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
 
         vector<int> temp;
-        if (jm_params.getNInt(std::string("h1tjet1id")) > 0) {
-          // Supported in newer versions
+        if (jm_params.getNInt("h1tjet1id") > 0) {
           temp.push_back(jm_params.getIntVal("h1tjet1id"));
           temp.push_back(jm_params.getIntVal("h1tjet2id"));
           temp.push_back(jm_params.getIntVal("h2tjet1id"));
@@ -725,22 +705,27 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
             reco_jets.push_back(true_jet);
             perm.push_back(j); // jets are already matched by true_jet_index
           }
-        } else {
-          temp.push_back(jm_params.getIntVal("h1jet1id"));
-          temp.push_back(jm_params.getIntVal("h1jet2id"));
-          temp.push_back(jm_params.getIntVal("h2jet1id"));
-          temp.push_back(jm_params.getIntVal("h2jet2id"));
+        } else
+          return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
-          for (int j = 0; j < 4; j++) {
-            char key[12];
-            sprintf(key, "reco2true%d", temp[j]);
-
-            int true_jet_index = jm_params.getIntVal(key);
-
-            ReconstructedParticle* true_jet = (ReconstructedParticle*) jet(true_jet_index);
-            reco_jets.push_back(true_jet);
-            perm.push_back(j); // jets are already matched by true_jet_index
+        if (m_lepton_mode == 2 || m_lepton_mode == 0) {
+          unsigned int n_matching_l_jets = 0;
+          unsigned int n_matching_lb_jets = 0;
+          for (int i_jet = 0 ; i_jet < njets() ; i_jet++ ) {
+            if ( type_jet( i_jet ) == 2 ) { // 2 = leptonic jets
+              int jet_pdg = jet(i_jet)->getParticleIDs()[0]->getPDG();
+              if ( jet_pdg == m_z1_decay_pdg ) {
+                reco_l1 = (ReconstructedParticle*) jet(i_jet);
+                n_matching_l_jets++;
+              } else if ( jet_pdg == -m_z1_decay_pdg) {
+                reco_l2 = (ReconstructedParticle*) jet(i_jet);
+                n_matching_lb_jets++;
+              }
+            }
           }
+
+          if (n_matching_l_jets != n_matching_lb_jets || n_matching_lb_jets != 1)
+            return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_LEPTON_PAIR);
         }
       } else if (m_mode == 1) {
         // Fetching collections
@@ -759,13 +744,21 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
           reco_jets.push_back(reco_jet);
         }
 
-        // Check if jet pairing parameters exist in higgs pair; otherwise try permutations to check which pairing was used  
-        if (higgsParams.getNInt(std::string("h1jet1id")) == 1) {
+        // Use jet pairing parameters from jm_params  
+        if (jm_params.getNInt(std::string("h1jet1id")) == 1 ||
+            higgsParams.getNInt(std::string("h1jet1id")) == 1) {
+
+          if (jm_params.getIntVal("h1jet1id") != higgsParams.getIntVal("h1jet1id") ||
+              jm_params.getIntVal("h1jet2id") != higgsParams.getIntVal("h1jet2id") ||
+              jm_params.getIntVal("h2jet1id") != higgsParams.getIntVal("h2jet1id") ||
+              jm_params.getIntVal("h2jet2id") != higgsParams.getIntVal("h2jet2id"))
+              return save_evt_with_error_code(9999);
+
           // Jet pairing saved in collection (newer version)
-          perm.push_back(higgsParams.getIntVal("h1jet1id"));
-          perm.push_back(higgsParams.getIntVal("h1jet2id"));
-          perm.push_back(higgsParams.getIntVal("h2jet1id"));
-          perm.push_back(higgsParams.getIntVal("h2jet2id"));
+          perm.push_back(jm_params.getIntVal("h1jet1id"));
+          perm.push_back(jm_params.getIntVal("h1jet2id"));
+          perm.push_back(jm_params.getIntVal("h2jet1id"));
+          perm.push_back(jm_params.getIntVal("h2jet2id"));
         } else {
           vector<vector<int>> perms {
             {0,1,2,3},
@@ -792,26 +785,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
 
       // Fetch leptons (errors 101 and 201)
-      if (m_lepton_mode == 2 || (m_lepton_mode == 0 && m_mode == 2)) {
-        unsigned int n_matching_l_jets = 0;
-        unsigned int n_matching_lb_jets = 0;
-        for (int i_jet = 0 ; i_jet < this->njets() ; i_jet++ ) {
-          if ( type_jet( i_jet ) == 2 ) { // 2 = leptonic jets
-            int jet_pdg = jet(i_jet)->getParticleIDs()[0]->getPDG();
-            if ( jet_pdg == m_z1_decay_pdg ) {
-              reco_l1 = (ReconstructedParticle*) jet(i_jet);
-              n_matching_l_jets++;
-            } else if ( jet_pdg == -m_z1_decay_pdg) {
-              reco_l2 = (ReconstructedParticle*) jet(i_jet);
-              n_matching_lb_jets++;
-            }
-          }
-        }
-
-        if (n_matching_l_jets != n_matching_lb_jets || n_matching_lb_jets != 1)
-          return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_LEPTON_PAIR);
-
-      } else if (m_lepton_mode == 1 || (m_lepton_mode == 0 && m_mode == 1)) {
+      if (m_lepton_mode == 1 || (m_lepton_mode == 0 && m_mode == 1)) {
         streamlog_out(DEBUG) << " getting lepton pair: " << m_inputLepPairCollection << std::endl;
         LCCollection *inputLepPair = pLCEvent->getCollection( m_inputLepPairCollection );
 
@@ -822,9 +796,15 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         reco_l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
       }
 
-      // Assign lepton final states
+      // Assign final state particles
       l1_lortz = v4(reco_l1);
       l2_lortz = v4(reco_l2);
+
+      // Save info about regions
+      if (jm_params.getNInt("region") == 1)
+        m_misclustering_region = jm_params.getIntVal("region");
+      if (jm_params.getNInt("region_icns") == 1)
+        m_misclustering_region_icns = jm_params.getIntVal("region_icns");
 
       // CHEATED: Extract information about decays
       int both_to_b = 0;
@@ -842,15 +822,15 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (!(both_to_b || both_to_c))
         return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
     
-      streamlog_out(MESSAGE) << "processEvent : using Higgs jet pairing " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
+      cerr << "processEvent : using Higgs jet pairing " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
 
-      // Assuming ZHH
+      // Assuming ZZH
       zzh_z2f1_lortz = v4(reco_jets[perm[2]]);
       zzh_z2f2_lortz = v4(reco_jets[perm[3]]);
       zzh_h_lortz    = v4(reco_jets[perm[0]]) + v4(reco_jets[perm[1]]);
 
       m_z2_decay_pdg  = both_to_b ? 5 : 4; // PDGs: bottom->5, charm->4
-      m_h1_decay_pdg  =  both_to_b ? 5 : 4;
+      m_h1_decay_pdg  = both_to_b ? 5 : 4;
       m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
 
       m_zhh_is_set = 1;
@@ -1038,7 +1018,6 @@ void CompareMEProcessor::save_evt_with_error_code(int error_code)
   m_error_code = error_code;
   m_pTTree->Fill();
 }
-
 
 void CompareMEProcessor::end()
 {

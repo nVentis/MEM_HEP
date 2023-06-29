@@ -35,10 +35,11 @@ enum ERRORS : unsigned int {
   PRESELECTION_FAILED_BUT_REQUIRED = 1,
   INCOMPLETE_RECO_LEPTON_PAIR = 101,
 
-  NO_JET_MATCHING_COLLECTION = 200,
   INCOMPLETE_TRUEJET_LEPTON_PAIR = 201,
+  INCOMPLETE_TRUEJET_COLLECTION = 202,
   
-  NEITHER_BBBB_NOR_CCCC = 1200
+  NEITHER_BBBB_NOR_CCCC = 1200,
+  NO_JET_MATCHING_COLLECTION = 1203
 };
 
 class CompareMEProcessor : public Processor, public TrueJet_Parser
@@ -115,6 +116,8 @@ class CompareMEProcessor : public Processor, public TrueJet_Parser
 		int m_is_zhh{}; // true label
 		int m_is_zzh{}; // true label
 		int m_passed_preselection{};
+		int m_misclustering_region{};
+		int m_misclustering_region_icns{};
 
 		int m_h1_decay_pdg{}; // abs(PDG) of particle H1 decayed to
 		int m_h2_decay_pdg{}; // abs(PDG) of particle H2 decayed to (true for true ZHH events)
