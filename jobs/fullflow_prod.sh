@@ -12,5 +12,5 @@ mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/log
 
 mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison
 
-condor_submit /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/send_jobs_zhh.sub
-condor_submit /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/send_jobs_zzh.sub
+condor_submit /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/send_jobs_zhh.sub
+condor_submit /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/send_jobs_zzh.sub

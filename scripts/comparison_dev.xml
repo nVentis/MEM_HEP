@@ -34,8 +34,8 @@
    <Xprocessor name="MEMExampleEEHProcessor"/>
    <Xprocessor name="ZHHPostRecoMEProcessor"/>
    <Xprocessor name="Misclustering"/>
-   <Xprocessor name="CompareMEProcessorMCTruth"/>
-   <Xprocessor name="CompareMEProcessorReco"/>
+   <processor name="CompareMEProcessorMCTruth"/>
+   <processor name="CompareMEProcessorReco"/>
    <processor name="CompareMEProcessorTrueJet"/>
    <Xprocessor name="mytruejet"/>
  <!-- ========== full and DST output =======================================  -->
@@ -57,80 +57,8 @@
 
   -->
   <parameter name="LCIOInputFiles">
-    <!-- /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zhh/e2e2hh.slcio
-    /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zzh/e2e2zh.slcio -->
-    <!--
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_0.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_1.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_0.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_1.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_2.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_3.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_5.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_6.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_10.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_11.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_12.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_13.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_14.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_7.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_8.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_9.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_16.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_17.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_18.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_19.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_20.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_21.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_22.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_23.slcio -->
-    <!-- /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zhh/e2e2hh.slcio
-    /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zzh/e2e2zh.slcio -->
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_0.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_1.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_0.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_1.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_2.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_3.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_4.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_5.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_6.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_7.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_8.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_9.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_10.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_11.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_12.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_13.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_14.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n001.d_dstm_15807_15.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_16.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_17.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_18.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_20.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_21.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_22.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n002.d_dstm_15807_23.slcio
-    <!-- Now ZZH -->
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15806_0.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15806_1.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_0.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_1.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_2.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_3.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_4.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_5.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_6.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15807_7.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_8.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_9.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_10.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_11.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_12.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_13.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_14.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_15.slcio
-    /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/slcio/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n001.d_dstm_15807_16.slcio
+    /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zhh/e2e2hh.slcio
+    /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zzh/e2e2zh.slcio
   </parameter>
   <!-- limit the number of processed records (run+evt): -->  
   <parameter name="MaxRecordNumber" value="0" />  
@@ -190,7 +118,7 @@
    <parameter name="LeptonMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_mcparticle.root"/>
+   <parameter name="outputFilename" type="string" value="root/dev/compare_mcparticle.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>
@@ -210,7 +138,7 @@
    <parameter name="LeptonMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_reco.root"/>
+   <parameter name="outputFilename" type="string" value="root/dev/compare_reco.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>
@@ -230,7 +158,7 @@
    <parameter name="LeptonMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_truejet.root"/>
+   <parameter name="outputFilename" type="string" value="root/dev/compare_truejet.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>

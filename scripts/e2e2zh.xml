@@ -73,7 +73,7 @@
     <!-- limit the number of processed records (run+evt): -->
     <!--parameter name="MaxRecordNumber" value="0" /to process all events--> 
     <!--parameter name="MaxRecordNumber" value="1000" /to process 1000 events--> 
-    <parameter name="MaxRecordNumber" value="500"/>
+    <parameter name="MaxRecordNumber" value="50"/>
     <parameter name="SkipNEvents" value="0" />
     <parameter name="SupressCheck" value="false" />
     <parameter name="GearXMLFile">/cvmfs/ilc.desy.de/sw/ILDConfig/v02-02-02/StandardConfig/production/Gear/gear_ILD_l5_v02.xml</parameter>

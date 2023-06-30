@@ -15,10 +15,12 @@ def convert_type(type_name: str):
     else:
         return type_name
 
-def convert_file(source_path, in_file_location, output_path = ""):
+# Loads a ROOT file and converts it into a numpy representation
+def root_to_numpy(source_path, in_file_location, merge_with_np_array=None, merge_by_columns=None):
     with ur.open(source_path) as file:
         # Find data in file
         data = file[in_file_location]
+        keys = data.keys()
 
         # Get correct column names and types for conversion
         dtype_arr = []
@@ -26,16 +28,34 @@ def convert_file(source_path, in_file_location, output_path = ""):
 
         for field_name in dtype_names:
             dtype_arr.append((field_name, convert_type(dtype_names[field_name])))
+            
+        if merge_with_np_array is not None and merge_by_columns is not None:
+            dtype_names2 = merge_with_np_array.typenames()
+            keys = keys + list(set(dtype_names2) - set(keys))
+            
+            for field_name in dtype_names2:
+                if field_name not in dtype_names:
+                    dtype_arr.append((field_name, convert_type(dtype_names[field_name])))
 
         # Convert data to (column-wise) arrays using numpy
         out = np.zeros(data.num_entries, dtype=dtype_arr)
-        keys = data.keys()
+        out[:] = np.nan
+
         for i in range(0, len(keys)):
             key = keys[i]
             out[key] = data[key].array()
+            
+        if merge_with_np_array is not None and merge_by_columns is not None:
+            ...
 
-        if output_path != "":
-            np.save(output_path, out, allow_pickle=True)
+    return out
+
+# merge_with can be a dataframe or numpy array that will be appended to the output
+def convert_file(source_path, in_file_location, output_path = "", merge_with=None):
+    out = root_to_numpy(source_path, in_file_location, output_path)
+    
+    if output_path != "":
+        np.save(output_path, out, allow_pickle=True)
 
     return out
 

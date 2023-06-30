@@ -257,6 +257,16 @@ void CompareMEProcessor::init()
   if (m_mode > 0) {
     m_pTTree->Branch("misclustering_region", &m_misclustering_region, "misclustering_region/I");
     m_pTTree->Branch("misclustering_region_icns", &m_misclustering_region_icns, "misclustering_region_icns/I");
+
+    m_pTTree->Branch("efrac1_reco", &m_efrac1_reco, "efrac1_icn_reco/F");
+    m_pTTree->Branch("efrac2_reco", &m_efrac2_reco, "efrac1_icn_reco/F");
+    m_pTTree->Branch("efrac1_true", &m_efrac1_true, "efrac1_icn_true/F");
+    m_pTTree->Branch("efrac2_true", &m_efrac2_true, "efrac1_icn_true/F");
+
+    m_pTTree->Branch("efrac1_icn_reco", &m_efrac1_icn_reco, "efrac1_icn_reco/F");
+    m_pTTree->Branch("efrac2_icn_reco", &m_efrac2_icn_reco, "efrac1_icn_reco/F");
+    m_pTTree->Branch("efrac1_icn_true", &m_efrac1_icn_true, "efrac1_icn_true/F");
+    m_pTTree->Branch("efrac2_icn_true", &m_efrac2_icn_true, "efrac1_icn_true/F");
   }
 
   // 2. Event data
@@ -422,6 +432,16 @@ void CompareMEProcessor::Clear()
   m_is_zzh                    = 0;
   m_misclustering_region      = -1;
   m_misclustering_region_icns = -1;
+
+  m_efrac1_reco = 0.;
+  m_efrac2_reco = 0.;
+  m_efrac1_true = 0.;
+  m_efrac2_true = 0.;
+
+  m_efrac1_icn_reco = 0.;
+  m_efrac2_icn_reco = 0.;
+  m_efrac1_icn_true = 0.;
+  m_efrac2_icn_true = 0.;
 
   // 2. Event data
   m_h1_decay_pdg  = 0;
@@ -801,10 +821,20 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       l2_lortz = v4(reco_l2);
 
       // Save info about regions
-      if (jm_params.getNInt("region") == 1)
+      if (jm_params.getNInt("region") > 1)
         m_misclustering_region = jm_params.getIntVal("region");
       if (jm_params.getNInt("region_icns") == 1)
         m_misclustering_region_icns = jm_params.getIntVal("region_icns");
+
+      m_efrac1_reco = (float)jm_params.getDoubleVal("efrac1_reco");
+      m_efrac2_reco = (float)jm_params.getDoubleVal("efrac2_reco");
+      m_efrac1_true = (float)jm_params.getDoubleVal("efrac1_true");
+      m_efrac2_true = (float)jm_params.getDoubleVal("efrac2_true");
+
+      m_efrac1_icn_reco = (float)jm_params.getDoubleVal("efrac1_icn_reco");
+      m_efrac2_icn_reco = (float)jm_params.getDoubleVal("efrac2_icn_reco");
+      m_efrac1_icn_true = (float)jm_params.getDoubleVal("efrac1_icn_true");
+      m_efrac2_icn_true = (float)jm_params.getDoubleVal("efrac2_icn_true");
 
       // CHEATED: Extract information about decays
       int both_to_b = 0;

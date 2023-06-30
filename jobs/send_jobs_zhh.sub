@@ -1,4 +1,4 @@
-executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/job_zhh.sh
+executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/job_zhh.sh
 arguments = $(file) $(ProcId)
 should_transfer_files = True
 transfer_executable = True
@@ -11,4 +11,6 @@ log = /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/log/$(ProcId).log
 output = /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/log/$(ProcId).out
 error = /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/log/$(ProcId).err
 
-queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/2023-06-08_a/queue_zhh.txt
+transfer_output_files = ""
+
+queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/queue_zhh.txt

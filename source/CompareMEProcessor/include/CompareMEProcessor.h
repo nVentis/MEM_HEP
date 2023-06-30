@@ -91,7 +91,6 @@ class CompareMEProcessor : public Processor, public TrueJet_Parser
 		int m_mode{}; // 0 => use MCTruth data; 1 => use reconstructed data (HiggsPair, LeptonPair, HdecayMode, and some jet e.g. RefinedJets)
 		int m_lepton_mode{};
 		int m_saveInputKinematics{};
-
 		int m_require_presel_pass{};
 		float m_Hmass{};
 
@@ -116,12 +115,24 @@ class CompareMEProcessor : public Processor, public TrueJet_Parser
 		int m_is_zhh{}; // true label
 		int m_is_zzh{}; // true label
 		int m_passed_preselection{};
-		int m_misclustering_region{};
-		int m_misclustering_region_icns{};
 
 		int m_h1_decay_pdg{}; // abs(PDG) of particle H1 decayed to
 		int m_h2_decay_pdg{}; // abs(PDG) of particle H2 decayed to (true for true ZHH events)
 		int m_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (true for true ZZH events)
+
+		// Only for reco and TrueJet data
+		int m_misclustering_region{};
+		int m_misclustering_region_icns{};
+
+		float m_efrac1_reco{};
+		float m_efrac2_reco{};
+		float m_efrac1_true{};
+		float m_efrac2_true{};
+
+		float m_efrac1_icn_reco{};
+		float m_efrac2_icn_reco{};
+		float m_efrac1_icn_true{};
+		float m_efrac2_icn_true{};
 
 		// True
 		MCParticle *mcp_l1;
