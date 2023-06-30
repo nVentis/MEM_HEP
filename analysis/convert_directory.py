@@ -1,12 +1,15 @@
 #import click
 import numpy as np
 import uproot as ur
+from typing import Optional,Union
 
 from os import listdir, mkdir, getcwd
 from os.path import isfile, join, basename, isdir
 
 type_map = {
-    "int32_t": "i4"
+    "int32_t": "i4",
+    "float": "float32",
+    "double": "float64"
 }
 
 def convert_type(type_name: str):
@@ -16,7 +19,12 @@ def convert_type(type_name: str):
         return type_name
 
 # Loads a ROOT file and converts it into a numpy representation
-def root_to_numpy(source_path, in_file_location, merge_with_np_array=None, merge_by_columns=None):
+def root_to_numpy(source_path: str,
+                  in_file_location: str,
+                  merge_with_np_array: Optional[np.ndarray] = None,
+                  join_by: Optional[list]=None,
+                  merge_columns: Optional[list]=None):
+    
     with ur.open(source_path) as file:
         # Find data in file
         data = file[in_file_location]
@@ -28,36 +36,39 @@ def root_to_numpy(source_path, in_file_location, merge_with_np_array=None, merge
 
         for field_name in dtype_names:
             dtype_arr.append((field_name, convert_type(dtype_names[field_name])))
+
+        dtype_list2 = []
+        if merge_with_np_array is not None and join_by is not None:
+            dtype_list = list(dtype_names.keys())
+            # Get keys only in merge_with_np_array
+            dtype_list2 = list(set((merge_columns if merge_columns is not None else list(merge_with_np_array.dtype.fields.keys()))) - set(dtype_list))
             
-        if merge_with_np_array is not None and merge_by_columns is not None:
-            dtype_names2 = merge_with_np_array.typenames()
-            keys = keys + list(set(dtype_names2) - set(keys))
-            
-            for field_name in dtype_names2:
-                if field_name not in dtype_names:
-                    dtype_arr.append((field_name, convert_type(dtype_names[field_name])))
+            for field_name in dtype_list2:
+                dtype_arr.append((field_name, merge_with_np_array.dtype[field_name].name))
 
         # Convert data to (column-wise) arrays using numpy
         out = np.zeros(data.num_entries, dtype=dtype_arr)
-        out[:] = np.nan
 
         for i in range(0, len(keys)):
             key = keys[i]
             out[key] = data[key].array()
+        
+        if merge_with_np_array is not None and join_by is not None:
+            join_by_a = out[join_by]
+            join_by_b = merge_with_np_array[join_by]
             
-        if merge_with_np_array is not None and merge_by_columns is not None:
-            ...
+            join_by_a_view = join_by_a.view([('',join_by_a.dtype)]*len(join_by_a.dtype.names))
+            join_by_b_view = join_by_b.view([('',join_by_b.dtype)]*len(join_by_b.dtype.names))
+            
+            intersection, a_idx, b_idx = np.intersect1d(join_by_a_view, join_by_b_view, return_indices=True)
+            
+            for i in range(0, len(a_idx)):
+                out[dtype_list2][a_idx[i]] = tuple(merge_with_np_array[dtype_list2][b_idx[i]])
 
     return out
 
-# merge_with can be a dataframe or numpy array that will be appended to the output
-def convert_file(source_path, in_file_location, output_path = "", merge_with=None):
-    out = root_to_numpy(source_path, in_file_location, output_path)
-    
-    if output_path != "":
-        np.save(output_path, out, allow_pickle=True)
-
-    return out
+def convert_file(source_path: str, in_file_location: str, output_path: str):    
+    np.save(output_path, root_to_numpy(source_path, in_file_location), allow_pickle=True)
 
 # See https://uproot.readthedocs.io/en/latest/uproot.behaviors.TBranch.iterate.html
 #@click.command()
