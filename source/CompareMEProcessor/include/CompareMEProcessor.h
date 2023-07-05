@@ -39,7 +39,8 @@ enum ERRORS : unsigned int {
   INCOMPLETE_TRUEJET_COLLECTION = 202,
   
   NEITHER_BBBB_NOR_CCCC = 1200,
-  NO_JET_MATCHING_COLLECTION = 1203
+  NO_JET_MATCHING_SIG_COLLECTION = 1203,
+  NO_JET_MATCHING_BKG_COLLECTION = 1204
 };
 
 class CompareMEProcessor : public Processor, public TrueJet_Parser
@@ -77,7 +78,9 @@ class CompareMEProcessor : public Processor, public TrueJet_Parser
 		std::string m_inputPreSelectionCollection{};
 		std::string m_inputHdecayModeCollection{};
 		std::string m_inputHiggsPairCollection{};
-		std::string m_inputJetMatchingCollection{};
+
+		std::string m_inputJetMatchingSigCollection{};
+		std::string m_inputJetMatchingBkgCollection{};
 
 		std::string m_outputFile{};
 		std::string m_outputTree{};

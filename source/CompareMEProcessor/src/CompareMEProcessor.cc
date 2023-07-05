@@ -108,10 +108,17 @@ CompareMEProcessor::CompareMEProcessor() :
 				 );
 
   registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
-				 "JetMatchingCollection",
-				 "Name of collection holding parameters about reco/true jet matching",
-				 m_inputJetMatchingCollection,
-				 std::string("JetMatching")
+				 "JetMatchingSigCollection",
+				 "Name of collection c parameters about jet matching for the signal hypothesis",
+				 m_inputJetMatchingSigCollection,
+				 std::string("JetMatchingSig")
+				 );
+
+  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
+				 "JetMatchingBkgCollection",
+				 "Name of collection holding parameters about reco/true jet matching for the background hypothesis",
+				 m_inputJetMatchingBkgCollection,
+				 std::string("JetMatchingBkg")
 				 );
 
   registerProcessorParameter("RequirePreselectionPass",
@@ -696,112 +703,73 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       // As of now, assumes inputJetCol, inputLepPair, inputHiggsPair and inputHdecayMode
 
       // To be filled in both modes
-      vector<int> perm; 
-      vector<ReconstructedParticle*> reco_jets;
+      vector<int> perm_sig; // ZHH
+      vector<int> perm_bkg; // ZZH
+
+      vector<ReconstructedParticle*> sig_jets;
+      vector<ReconstructedParticle*> bkg_jets;
 
       // Check if JetMatching collection exists
       const vector<string> *reco_colls = pLCEvent->getCollectionNames();
-      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingCollection) == reco_colls->end())
-        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_COLLECTION);
+      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingSigCollection) == reco_colls->end())
+        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_SIG_COLLECTION);
+
+      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingBkgCollection) == reco_colls->end())
+        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_BKG_COLLECTION);
 
       // Fetching collections
-      streamlog_out(DEBUG) << " getting JetMatching collection: " << m_inputJetMatchingCollection << std::endl ;
-      const EVENT::LCParameters& jm_params = pLCEvent->getCollection( m_inputJetMatchingCollection )->getParameters();
+      streamlog_out(DEBUG) << " getting JetMatchingSig collection: " << m_inputJetMatchingSigCollection << std::endl ;
+      streamlog_out(DEBUG) << " getting JetMatchingBkg collection: " << m_inputJetMatchingBkgCollection << std::endl ;
 
-      if (m_mode == 2) {
+      const EVENT::LCParameters& jm_sig_params = pLCEvent->getCollection( m_inputJetMatchingSigCollection )->getParameters();
+      const EVENT::LCParameters& jm_bkg_params = pLCEvent->getCollection( m_inputJetMatchingBkgCollection )->getParameters();
+
+      if (jm_sig_params.getNInt(std::string("b1jet1id")) != 1)
+        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_SIG_COLLECTION);
+
+      if (jm_bkg_params.getNInt(std::string("b1jet1id")) != 1)
+        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_BKG_COLLECTION);
+
+      if (m_mode == 2) {        
         this->getall( pLCEvent );
         //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
 
-        vector<int> temp;
-        if (jm_params.getNInt("h1tjet1id") > 0) {
-          temp.push_back(jm_params.getIntVal("h1tjet1id"));
-          temp.push_back(jm_params.getIntVal("h1tjet2id"));
-          temp.push_back(jm_params.getIntVal("h2tjet1id"));
-          temp.push_back(jm_params.getIntVal("h2tjet2id"));
+        if (jm_sig_params.getNInt("b1tjet1id") > 0 &&
+            jm_bkg_params.getNInt("b1tjet1id") > 0) {
+              
+          perm_sig.push_back(jm_sig_params.getIntVal("b1tjet1id"));
+          perm_sig.push_back(jm_sig_params.getIntVal("b1tjet2id"));
+          perm_sig.push_back(jm_sig_params.getIntVal("b2tjet1id"));
+          perm_sig.push_back(jm_sig_params.getIntVal("b2tjet2id"));
 
-          for (int j = 0; j < 4; j++) {
-            ReconstructedParticle* true_jet = (ReconstructedParticle*) jet(temp[j]);
+          perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet1id"));
+          perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet2id"));
+          perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet1id"));
+          perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet2id"));
 
-            reco_jets.push_back(true_jet);
-            perm.push_back(j); // jets are already matched by true_jet_index
-          }
         } else
           return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
-        if (m_lepton_mode == 2 || m_lepton_mode == 0) {
-          unsigned int n_matching_l_jets = 0;
-          unsigned int n_matching_lb_jets = 0;
-          for (int i_jet = 0 ; i_jet < njets() ; i_jet++ ) {
-            if ( type_jet( i_jet ) == 2 ) { // 2 = leptonic jets
-              int jet_pdg = jet(i_jet)->getParticleIDs()[0]->getPDG();
-              if ( jet_pdg == m_z1_decay_pdg ) {
-                reco_l1 = (ReconstructedParticle*) jet(i_jet);
-                n_matching_l_jets++;
-              } else if ( jet_pdg == -m_z1_decay_pdg) {
-                reco_l2 = (ReconstructedParticle*) jet(i_jet);
-                n_matching_lb_jets++;
-              }
-            }
-          }
-
-          if (n_matching_l_jets != n_matching_lb_jets || n_matching_lb_jets != 1)
-            return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_LEPTON_PAIR);
-        }
       } else if (m_mode == 1) {
         // Fetching collections
         streamlog_out(DEBUG) << " getting jet collection: " << m_inputJetCollection << std::endl;
         inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
 
-        streamlog_out(DEBUG) << " getting higgs pair: " << m_inputHiggsPairCollection << std::endl;
-        inputHiggsPair = pLCEvent->getCollection( m_inputHiggsPairCollection );
+        // Get jet pairing from Misclustering processor
+        perm_sig.push_back(jm_sig_params.getIntVal("b1jet1id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b1jet2id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b2jet1id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b2jet2id"));
 
-        // Get Higgs decay jets
-        const EVENT::LCParameters& higgsParams = inputHiggsPair->getParameters();
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b1jet1id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b1jet2id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b2jet1id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b2jet2id"));
+      }
 
-        // Fetch jets and isolated leptons
-        for (int i=0; i < 4; ++i) {
-          ReconstructedParticle* reco_jet = (ReconstructedParticle*) inputJetCol->getElementAt(i);
-          reco_jets.push_back(reco_jet);
-        }
-
-        // Use jet pairing parameters from jm_params  
-        if (jm_params.getNInt(std::string("b1jet1id")) == 1 ||
-            higgsParams.getNInt(std::string("b1jet1id")) == 1) {
-
-          if (jm_params.getIntVal("b1jet1id") != higgsParams.getIntVal("b1jet1id") ||
-              jm_params.getIntVal("b1jet2id") != higgsParams.getIntVal("b1jet2id") ||
-              jm_params.getIntVal("b2jet1id") != higgsParams.getIntVal("b2jet1id") ||
-              jm_params.getIntVal("b2jet2id") != higgsParams.getIntVal("b2jet2id"))
-              return save_evt_with_error_code(9999);
-
-          // Jet pairing saved in collection (newer version)
-          perm.push_back(jm_params.getIntVal("b1jet1id"));
-          perm.push_back(jm_params.getIntVal("b1jet2id"));
-          perm.push_back(jm_params.getIntVal("b2jet1id"));
-          perm.push_back(jm_params.getIntVal("b2jet2id"));
-        } else {
-          vector<vector<int>> perms {
-            {0,1,2,3},
-            {0,2,1,3},
-            {0,3,1,2}
-          };
-
-          float chi2min = 99999. ;
-
-          // Pair first jet with three others and check where match is best
-          int best_idx = 0;
-          for (unsigned int i = 0; i < perms.size(); i++) {
-            float m1 = inv_mass(reco_jets[perms[i][0]], reco_jets[perms[i][1]]);
-            float chi2 = (m1-125)*(m1-125);
-
-            if (chi2 < chi2min) {
-              chi2min = chi2;
-              best_idx = i;
-            }
-          }
-
-          perm = perms[best_idx];
-        }
+      for (int j = 0; j < 4; j++) {
+        sig_jets.push_back((ReconstructedParticle*) jet(perm_sig[j]));
+        bkg_jets.push_back((ReconstructedParticle*) jet(perm_bkg[j]));
       }
 
       // Fetch leptons (errors 101 and 201)
@@ -814,6 +782,24 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
         reco_l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
         reco_l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
+      } else if (m_lepton_mode == 2 || (m_lepton_mode == 0 && m_mode == 2)) {
+        unsigned int n_matching_l_jets = 0;
+        unsigned int n_matching_lb_jets = 0;
+        for (int i_jet = 0 ; i_jet < njets() ; i_jet++ ) {
+          if ( type_jet( i_jet ) == 2 ) { // 2 = leptonic jets
+            int jet_pdg = jet(i_jet)->getParticleIDs()[0]->getPDG();
+            if ( jet_pdg == m_z1_decay_pdg ) {
+              reco_l1 = (ReconstructedParticle*) jet(i_jet);
+              n_matching_l_jets++;
+            } else if ( jet_pdg == -m_z1_decay_pdg) {
+              reco_l2 = (ReconstructedParticle*) jet(i_jet);
+              n_matching_lb_jets++;
+            }
+          }
+        }
+
+        if (n_matching_l_jets != n_matching_lb_jets || n_matching_lb_jets != 1)
+          return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_LEPTON_PAIR);
       }
 
       // Assign final state particles
@@ -821,20 +807,20 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       l2_lortz = v4(reco_l2);
 
       // Save info about regions
-      if (jm_params.getNInt("region") > 1)
-        m_misclustering_region = jm_params.getIntVal("region");
-      if (jm_params.getNInt("region_icns") == 1)
-        m_misclustering_region_icns = jm_params.getIntVal("region_icns");
+      if (jm_sig_params.getNInt("region") > 1)
+        m_misclustering_region = jm_sig_params.getIntVal("region");
+      if (jm_sig_params.getNInt("region_icns") == 1)
+        m_misclustering_region_icns = jm_sig_params.getIntVal("region_icns");
 
-      m_efrac1_reco = (float)jm_params.getDoubleVal("efrac1_reco");
-      m_efrac2_reco = (float)jm_params.getDoubleVal("efrac2_reco");
-      m_efrac1_true = (float)jm_params.getDoubleVal("efrac1_true");
-      m_efrac2_true = (float)jm_params.getDoubleVal("efrac2_true");
+      m_efrac1_reco = (float)jm_sig_params.getDoubleVal("efrac1_reco");
+      m_efrac2_reco = (float)jm_sig_params.getDoubleVal("efrac2_reco");
+      m_efrac1_true = (float)jm_sig_params.getDoubleVal("efrac1_true");
+      m_efrac2_true = (float)jm_sig_params.getDoubleVal("efrac2_true");
 
-      m_efrac1_icn_reco = (float)jm_params.getDoubleVal("efrac1_icn_reco");
-      m_efrac2_icn_reco = (float)jm_params.getDoubleVal("efrac2_icn_reco");
-      m_efrac1_icn_true = (float)jm_params.getDoubleVal("efrac1_icn_true");
-      m_efrac2_icn_true = (float)jm_params.getDoubleVal("efrac2_icn_true");
+      m_efrac1_icn_reco = (float)jm_sig_params.getDoubleVal("efrac1_icn_reco");
+      m_efrac2_icn_reco = (float)jm_sig_params.getDoubleVal("efrac2_icn_reco");
+      m_efrac1_icn_true = (float)jm_sig_params.getDoubleVal("efrac1_icn_true");
+      m_efrac2_icn_true = (float)jm_sig_params.getDoubleVal("efrac2_icn_true");
 
       // CHEATED: Extract information about decays
       int both_to_b = 0;
@@ -852,12 +838,15 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (!(both_to_b || both_to_c))
         return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
     
-      cerr << "processEvent : using Higgs jet pairing " << perm[0] << perm[1] << perm[2] << perm[3] << std::endl;
+      cerr << "processEvent : using signal jet pairing "     << perm_sig[0] << perm_sig[1] << perm_sig[2] << perm_sig[3] << std::endl;
+      cerr << "processEvent : using background jet pairing " << perm_bkg[0] << perm_bkg[1] << perm_bkg[2] << perm_bkg[3] << std::endl;
 
       // Assuming ZZH
-      zzh_z2f1_lortz = v4(reco_jets[perm[2]]);
-      zzh_z2f2_lortz = v4(reco_jets[perm[3]]);
-      zzh_h_lortz    = v4(reco_jets[perm[0]]) + v4(reco_jets[perm[1]]);
+      // b1 = Z
+      // b2 = H
+      zzh_z2f1_lortz = v4(bkg_jets[0]);
+      zzh_z2f2_lortz = v4(bkg_jets[1]);
+      zzh_h_lortz    = v4(bkg_jets[2]) + v4(bkg_jets[3]);
 
       m_z2_decay_pdg  = both_to_b ? 5 : 4; // PDGs: bottom->5, charm->4
       m_h1_decay_pdg  = both_to_b ? 5 : 4;
@@ -866,8 +855,9 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zhh_is_set = 1;
 
       // Assuming ZHH
-      zhh_h1_lortz = zzh_z2f1_lortz + zzh_z2f2_lortz;
-      zhh_h2_lortz = zzh_h_lortz;
+      // b1,b2 = H
+      zhh_h1_lortz = v4(sig_jets[2]) + v4(sig_jets[3]);
+      zhh_h2_lortz = v4(sig_jets[0]) + v4(sig_jets[1]);
 
       m_h2_decay_pdg = both_to_b ? 5 : 4;
       
