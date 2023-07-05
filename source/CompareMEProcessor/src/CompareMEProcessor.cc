@@ -765,20 +765,20 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         }
 
         // Use jet pairing parameters from jm_params  
-        if (jm_params.getNInt(std::string("h1jet1id")) == 1 ||
-            higgsParams.getNInt(std::string("h1jet1id")) == 1) {
+        if (jm_params.getNInt(std::string("b1jet1id")) == 1 ||
+            higgsParams.getNInt(std::string("b1jet1id")) == 1) {
 
-          if (jm_params.getIntVal("h1jet1id") != higgsParams.getIntVal("h1jet1id") ||
-              jm_params.getIntVal("h1jet2id") != higgsParams.getIntVal("h1jet2id") ||
-              jm_params.getIntVal("h2jet1id") != higgsParams.getIntVal("h2jet1id") ||
-              jm_params.getIntVal("h2jet2id") != higgsParams.getIntVal("h2jet2id"))
+          if (jm_params.getIntVal("b1jet1id") != higgsParams.getIntVal("b1jet1id") ||
+              jm_params.getIntVal("b1jet2id") != higgsParams.getIntVal("b1jet2id") ||
+              jm_params.getIntVal("b2jet1id") != higgsParams.getIntVal("b2jet1id") ||
+              jm_params.getIntVal("b2jet2id") != higgsParams.getIntVal("b2jet2id"))
               return save_evt_with_error_code(9999);
 
           // Jet pairing saved in collection (newer version)
-          perm.push_back(jm_params.getIntVal("h1jet1id"));
-          perm.push_back(jm_params.getIntVal("h1jet2id"));
-          perm.push_back(jm_params.getIntVal("h2jet1id"));
-          perm.push_back(jm_params.getIntVal("h2jet2id"));
+          perm.push_back(jm_params.getIntVal("b1jet1id"));
+          perm.push_back(jm_params.getIntVal("b1jet2id"));
+          perm.push_back(jm_params.getIntVal("b2jet1id"));
+          perm.push_back(jm_params.getIntVal("b2jet2id"));
         } else {
           vector<vector<int>> perms {
             {0,1,2,3},

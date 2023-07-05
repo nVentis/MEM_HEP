@@ -643,11 +643,25 @@
     <parameter name="Verbosity" type="string">WARNING</parameter>
   </processor>
 
-  <processor name="MyMisclustering" type="Misclustering">
+  <processor name="MyMisclusteringZHH" type="Misclustering">
     <!--Name of the input reconstructed Jet collection-->
     <parameter name="RecoJetCollection" type="string" lcioInType="ReconstructedParticle">RefinedJets</parameter>
     <parameter name="JetMatchingCollection" type="string" lcioOutType="ReconstructedParticle">JetMatching</parameter>
     <parameter name="matchMethod" type="int">0</parameter>
+    <parameter name="b1Type" type="string">H</parameter>
+    <parameter name="b2Type" type="string">H</parameter>
+    <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_Misclustering.root</parameter>
+    <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+    <parameter name="Verbosity" type="string">DEBUG</parameter>
+  </processor>
+
+  <processor name="MyMisclusteringZZH" type="Misclustering">
+    <!--Name of the input reconstructed Jet collection-->
+    <parameter name="RecoJetCollection" type="string" lcioInType="ReconstructedParticle">RefinedJets</parameter>
+    <parameter name="JetMatchingCollection" type="string" lcioOutType="ReconstructedParticle">JetMatching</parameter>
+    <parameter name="matchMethod" type="int">0</parameter>
+    <parameter name="b1Type" type="string">H</parameter>
+    <parameter name="b2Type" type="string">Z</parameter>
     <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_Misclustering.root</parameter>
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
     <parameter name="Verbosity" type="string">DEBUG</parameter>

@@ -157,7 +157,8 @@
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
    <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
    <parameter name="JetMatchingCollection" type="string" lcioInType="ReconstructedParticle"> JetMatching </parameter>
-
+   
+   <parameter name="SaveInputKinematics" type="int" value="1"/>
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="Mode" type="int" value="0"/>
    <parameter name="LeptonMode" type="int" value="0"/>
