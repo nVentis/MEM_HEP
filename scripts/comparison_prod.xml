@@ -156,15 +156,13 @@
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
    <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
-   <parameter name="JetMatchingCollection" type="string" lcioInType="ReconstructedParticle"> JetMatching </parameter>
-   
-   <parameter name="SaveInputKinematics" type="int" value="1"/>
+
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="Mode" type="int" value="0"/>
    <parameter name="LeptonMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_mcparticle.root"/>
+   <parameter name="outputFilename" type="string" value="root/prod/compare_mcparticle.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>
@@ -177,14 +175,15 @@
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
    <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
-   <parameter name="JetMatchingCollection" type="string" lcioInType="ReconstructedParticle"> JetMatching </parameter>
+   <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSig </parameter>
+   <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="Mode" type="int" value="1"/>
    <parameter name="LeptonMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_reco.root"/>
+   <parameter name="outputFilename" type="string" value="root/prod/compare_reco.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>
@@ -197,14 +196,15 @@
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
    <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
-   <parameter name="JetMatchingCollection" type="string" lcioInType="ReconstructedParticle"> JetMatching </parameter>
+   <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSig </parameter>
+   <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="Mode" type="int" value="2"/>
    <parameter name="LeptonMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
-   <parameter name="outputFilename" type="string" value="compare_truejet.root"/>
+   <parameter name="outputFilename" type="string" value="root/prod/compare_truejet.root"/>
    <parameter name="outputTree" type="string" value="dataTree"/>
    <parameter name="Verbosity" type="string">SILENT</parameter>
  </processor>
