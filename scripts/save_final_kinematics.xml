@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!-- ?xml-stylesheet type="text/xsl" href="http://ilcsoft.desy.de/marlin/marlin.xsl"? -->
+<!-- ?xml-stylesheet type="text/xsl" href="marlin.xsl"? -->
+
+<!-- Loading shared library : /Users/olddog/ilcsoft/MarlinReco/v00-17/lib/libMarlinReco.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/PandoraPFA/v03-02/lib/libPandoraPFA.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/LCFIVertex/v00-03/lib/libLCFIVertex.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/CEDViewer/v00-07-01/lib/libCEDViewer.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/Eutelescope/v00-00-07/lib/libEutelescope.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/MarlinTPC/v00-03-01/lib/libMarlinTPC.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/Overlay/v00-07/lib/libOverlay.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/SiliconDigi/v00-04-02/lib/libSiliconDigi.dylib -->
+<!-- Loading shared library : /Users/olddog/ilcsoft/CKFit/HEAD/lib/libCKFit.dylib -->
+<!--##########################################
+    #                                        #
+    #     Example steering file for marlin   #
+    #                                        #
+    ##########################################-->
+
+
+<marlin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ilcsoft.desy.de/marlin/marlin.xsd">
+  <execute>
+   <processor name="ReadAllKinematics"/>
+  </execute>
+
+ <global>
+  <!--
+
+    ZH: old,5(old with only ZDecayMode(5)):
+    /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/higgs/ILD_l5_o1_v02/v02-02/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I402001.Pe1e1h.eL.pR.n000.d_dstm_15089_0.slcio
+
+    ZHH (ffHH): e2e2hh_eL.pR (2nd with correctly set polarizations))
+    /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02/v02-02-03/00015739/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15739_0.slcio
+    /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2hh.eL.pR_fullflow_v2.slcio
+
+    ZZH (qqffH): e2e2qqh_eL.pR
+    /nfs/dust/ilc/user/jtorndal/PhysicsAnalysis/slcio/Pe2e2qqh.eL.pR_fullflow_v2.slcio
+
+  -->
+  <parameter name="LCIOInputFiles">
+    /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zhh/e2e2hh.slcio
+    /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zzh/e2e2zh.slcio
+  </parameter>
+  <!-- limit the number of processed records (run+evt): -->  
+  <parameter name="MaxRecordNumber" value="0" />  
+  <parameter name="SkipNEvents" value="0" />  
+  <parameter name="SupressCheck" value="false" />  
+<!--  <parameter name="GearXMLFile"> gear_ILD_o1_v05.xml </parameter>  -->
+<!--  <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> DEBUG  </parameter> -->
+  <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> SILENT  </parameter> 
+ </global>
+
+ <processor name="ReadAllKinematics" type="ReadAllKinematics">
+   <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
+   <parameter name="InputPreSelection" type="string" lcioInType="ReconstructedParticle"> preselection </parameter>
+   <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
+
+   <parameter name="RequirePreselectionPass" type="int" value="1"/>
+   <parameter name="outputFilename" type="string" value="root/dev/final_state_kinematics.root"/>
+   <parameter name="outputTree" type="string" value="dataTree"/>
+   <parameter name="Verbosity" type="string">DEBUG</parameter>
+ </processor>
+
+ <processor name="MyAIDAProcessor" type="AIDAProcessor">
+ <!--Processor that handles AIDA files. Creates on directory per processor.  Processors only need to create and fill the histograms, clouds and tuples. Needs to be the first ActiveProcessor-->
+  <!-- compression of output file 0: false >0: true (default) -->
+  <parameter name="Compress" type="int">1 </parameter>
+  <!-- filename without extension-->
+  <parameter name="FileName" type="string">output </parameter>
+  <!-- type of output file xml (default) or root ( only OpenScientist)-->
+  <parameter name="FileType" type="string">root </parameter>
+</processor>
+
+</marlin>

@@ -110,7 +110,6 @@
    <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="Mode" type="int" value="0"/>
@@ -129,7 +128,6 @@
    <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
    <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSig </parameter>
    <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
@@ -150,7 +148,6 @@
    <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="InputTrueJets" type="string" lcioInType="ReconstructedParticle"> TrueJets </parameter>
    <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSig </parameter>
    <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
