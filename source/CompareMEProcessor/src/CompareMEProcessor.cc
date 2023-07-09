@@ -134,21 +134,21 @@ CompareMEProcessor::CompareMEProcessor() :
         );
 
   registerProcessorParameter("Mode",
-        "mode of usage; 0:MCParticles, 1:RefinedJets using JetMatching collection, 1:TrueJet using JetMatching collection",
+        "calculate MEs based on 0: True/MCParticleSkimmed; (following both using JetClusteringSig/Bkg parameters) 1: RefinedJets; 2: TrueJet data",
         m_mode,
-        int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
+        int(0)
         );
 
   registerProcessorParameter("LeptonMode",
-        "for Mode=1,2; specifies which lepton data may be used; 0: same as Mode, 1: LeptonPair, 2: TrueJet",
+        "which data source to assume for the Z->mu+mu- decay; -1: same as Mode, 0:MCTruth, 1: LeptonPair, 2: TrueJet",
         m_lepton_mode,
-        int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
+        int(-1)
         );
 
   registerProcessorParameter("SaveInputKinematics",
         "0: no complete kinematics, 1: save x,y,z,E of all inputs",
         m_saveInputKinematics,
-        int(0) // 0: True/MCParticleSkimmed; 1: HiggsPair (e.g. RefinedJets with given jet pairing) 
+        int(0)
         );
 
 	registerProcessorParameter("HiggsMass",
@@ -626,12 +626,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_true_h1_decay_pdg = abs(mcp_zzh_h1_decay1->getPDG());
     }
 
-    if (m_mode == 0) {
-      // MCTruth mode
-      m_h1_decay_pdg = m_true_h1_decay_pdg;
-      m_h2_decay_pdg = m_true_h2_decay_pdg;
-      m_z2_decay_pdg = m_true_z2_decay_pdg;
-
+    if (m_mode == 0 || m_lepton_mode == 0) {
       // Fetch data from collection holding MCParticle 
       // Get particles of final state
       // Same IDs for final Z1 leptons in both true ZZH and ZHH processes
@@ -640,6 +635,13 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       l1_lortz = v4(mcp_l1);
       l2_lortz = v4(mcp_l2);
+    }
+
+    if (m_mode == 0) {
+      // MCTruth mode
+      m_h1_decay_pdg = m_true_h1_decay_pdg;
+      m_h2_decay_pdg = m_true_h2_decay_pdg;
+      m_z2_decay_pdg = m_true_z2_decay_pdg;
 
       if (m_is_zhh) {
         // Assumming ZHH
