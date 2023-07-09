@@ -50,7 +50,7 @@
   <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> SILENT  </parameter> 
  </global>
 
- <processor name="ReadAllKinematics" type="ReadAllKinematics">
+ <processor name="SaveFinalKinematics" type="SaveFinalKinematics">
    <parameter name="InputMCTrueCollection" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
    <parameter name="InputPreSelection" type="string" lcioInType="ReconstructedParticle"> preselection </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>

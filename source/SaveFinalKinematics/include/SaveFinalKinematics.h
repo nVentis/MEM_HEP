@@ -1,5 +1,5 @@
-#ifndef ReadAllKinematics_h
-#define ReadAllKinematics_h 1
+#ifndef SaveFinalKinematics_h
+#define SaveFinalKinematics_h 1
 
 #include "marlin/Processor.h"
 #include "IMPL/LCCollectionVec.h"
@@ -33,18 +33,18 @@ enum ERRORS : unsigned int {
   NO_JET_MATCHING_BKG_COLLECTION = 1204
 };
 
-class ReadAllKinematics : public Processor, public TrueJet_Parser
+class SaveFinalKinematics : public Processor, public TrueJet_Parser
 {
 	public:
 
 		virtual Processor*  newProcessor()
 		{
-			return new ReadAllKinematics;
+			return new SaveFinalKinematics;
 		}
-		ReadAllKinematics();
-		virtual ~ReadAllKinematics() = default;
-		ReadAllKinematics(const ReadAllKinematics&) = delete;
-		ReadAllKinematics& operator=(const ReadAllKinematics&) = delete;
+		SaveFinalKinematics();
+		virtual ~SaveFinalKinematics() = default;
+		SaveFinalKinematics(const SaveFinalKinematics&) = delete;
+		SaveFinalKinematics& operator=(const SaveFinalKinematics&) = delete;
 		virtual void init();
 		virtual void Clear();
 		virtual void processRunHeader( LCRunHeader*  /*run*/);

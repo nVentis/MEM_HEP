@@ -1,4 +1,4 @@
-#include "ReadAllKinematics.h"
+#include "SaveFinalKinematics.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -30,16 +30,16 @@ double inv_mass(T* p1, T* p2){
   return( sqrt( e*e - px*px - py*py - pz*pz  ) );
 }
 
-ReadAllKinematics aReadAllKinematics ;
+SaveFinalKinematics aSaveFinalKinematics ;
 
-ReadAllKinematics::ReadAllKinematics() :
+SaveFinalKinematics::SaveFinalKinematics() :
 
-  Processor("ReadAllKinematics"),
+  Processor("SaveFinalKinematics"),
   n_run(0),
   n_evt(0)
 {
 
-	_description = "ReadAllKinematics writes out final state 4 vectors based on MCTruth, TrueJet and reco data" ;
+	_description = "SaveFinalKinematics writes out final state 4 vectors based on MCTruth, TrueJet and reco data" ;
 
   registerInputCollection(LCIO::MCPARTICLE,
 				 "InputMCTrueCollection",
@@ -158,7 +158,7 @@ ReadAllKinematics::ReadAllKinematics() :
                             std::string("InitialColourNeutralLink") ) ;
 }
 
-void ReadAllKinematics::init()
+void SaveFinalKinematics::init()
 {
   streamlog_out(DEBUG) << "   init called  " << std::endl;
   this->Clear();
@@ -197,7 +197,7 @@ void ReadAllKinematics::init()
   streamlog_out(DEBUG) << "   init finished  " << std::endl;
 }
 
-void ReadAllKinematics::Clear() 
+void SaveFinalKinematics::Clear() 
 {
   streamlog_out(DEBUG) << "   Clear called  " << std::endl;
 
@@ -216,11 +216,11 @@ void ReadAllKinematics::Clear()
   truejet_jettypes.clear();
 }
 
-void ReadAllKinematics::processRunHeader( LCRunHeader*  /*run*/) { 
+void SaveFinalKinematics::processRunHeader( LCRunHeader*  /*run*/) { 
   n_run++ ;
 }
 
-void ReadAllKinematics::processEvent( EVENT::LCEvent *pLCEvent )
+void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
 {
   this->Clear();
   
@@ -291,18 +291,18 @@ void ReadAllKinematics::processEvent( EVENT::LCEvent *pLCEvent )
 
 }
 
-void ReadAllKinematics::check()
+void SaveFinalKinematics::check()
 {
     // nothing to check here - could be used to fill checkplots in reconstruction processor
 }
 
-void ReadAllKinematics::save_evt_with_error_code(int error_code)
+void SaveFinalKinematics::save_evt_with_error_code(int error_code)
 {
   error_code = error_code;
   m_pTTree->Fill();
 }
 
-void ReadAllKinematics::end()
+void SaveFinalKinematics::end()
 {
   m_pTFile->cd();
   m_pTTree->Write();
