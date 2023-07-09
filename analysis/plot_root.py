@@ -1,15 +1,10 @@
 from sys import platform
+import numpy as np
 if platform == "linux" or platform == "linux2":
     import ROOT
-    %jsroot off
+    # %jsroot off
     
-root_ref = None
 def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylabel="", units="", normalize=False, title="Likelihood-Analysis"):
-    global root_ref
-    if root_ref is not None:
-        root_ref = None
-    del root_ref
-        
     # Get colorpalette
     pal = colorpalette if colorpalette is not None else [2,4,5,6,7,8,9,10,11]
 

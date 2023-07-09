@@ -726,33 +726,33 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       const EVENT::LCParameters& jm_sig_params = pLCEvent->getCollection( m_inputJetMatchingSigCollection )->getParameters();
       const EVENT::LCParameters& jm_bkg_params = pLCEvent->getCollection( m_inputJetMatchingBkgCollection )->getParameters();
 
-      if (jm_sig_params.getNInt(std::string("b1jet1id")) != 1)
-        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_SIG_COLLECTION);
+      if (jm_sig_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
+        return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
-      if (jm_bkg_params.getNInt(std::string("b1jet1id")) != 1)
-        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_BKG_COLLECTION);
+      if (jm_bkg_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
+        return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
       if (m_mode == 2) {        
         this->getall( pLCEvent );
         //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
 
-        if (jm_sig_params.getNInt("b1tjet1id") > 0 &&
-            jm_bkg_params.getNInt("b1tjet1id") > 0) {
-              
-          perm_sig.push_back(jm_sig_params.getIntVal("b1tjet1id"));
-          perm_sig.push_back(jm_sig_params.getIntVal("b1tjet2id"));
-          perm_sig.push_back(jm_sig_params.getIntVal("b2tjet1id"));
-          perm_sig.push_back(jm_sig_params.getIntVal("b2tjet2id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b1tjet1id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b1tjet2id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b2tjet1id"));
+        perm_sig.push_back(jm_sig_params.getIntVal("b2tjet2id"));
 
-          perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet1id"));
-          perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet2id"));
-          perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet1id"));
-          perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet2id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet1id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet2id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet1id"));
+        perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet2id"));
 
-        } else
-          return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
+        for (int j = 0; j < 4; j++) {
+          sig_jets.push_back((ReconstructedParticle*) jet(perm_sig[j]));
+          bkg_jets.push_back((ReconstructedParticle*) jet(perm_bkg[j]));
+        }
 
       } else if (m_mode == 1) {
+
         // Fetching collections
         streamlog_out(DEBUG) << " getting jet collection: " << m_inputJetCollection << std::endl;
         inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
@@ -767,11 +767,11 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         perm_bkg.push_back(jm_bkg_params.getIntVal("b1jet2id"));
         perm_bkg.push_back(jm_bkg_params.getIntVal("b2jet1id"));
         perm_bkg.push_back(jm_bkg_params.getIntVal("b2jet2id"));
-      }
 
-      for (int j = 0; j < 4; j++) {
-        sig_jets.push_back((ReconstructedParticle*) jet(perm_sig[j]));
-        bkg_jets.push_back((ReconstructedParticle*) jet(perm_bkg[j]));
+        for (int j = 0; j < 4; j++) {
+          sig_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_sig[j]));
+          bkg_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_bkg[j]));
+        }
       }
 
       // Fetch leptons (errors 101 and 201)
@@ -809,7 +809,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       l2_lortz = v4(reco_l2);
 
       // Save info about regions
-      if (jm_sig_params.getNInt("region") > 1)
+      if (jm_sig_params.getNInt("region") == 1)
         m_misclustering_region = jm_sig_params.getIntVal("region");
       if (jm_sig_params.getNInt("region_icns") == 1)
         m_misclustering_region_icns = jm_sig_params.getIntVal("region_icns");
