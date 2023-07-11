@@ -266,10 +266,11 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
     }
 
     // Save reconstructed jets (if any)
-    for (int j = 0; j < inputJetCol->getNumberOfElements(); j++) {
-      ReconstructedParticle* particle = (ReconstructedParticle*) inputJetCol->getElementAt(j);
+    for (int i = 0; i < inputJetCol->getNumberOfElements(); i++) {
+      ReconstructedParticle* particle = (ReconstructedParticle*) inputJetCol->getElementAt(i);
+      ParticleID * pid = particle->getParticleIDUsed();
 
-      pdgs_recojet.push_back(particle->getParticleIDUsed()->getPDG());
+      pdgs_recojet.push_back(pid == 0 ? 0 : pid->getPDG());
       recojet_pid_used.push_back(particle->getParticleIDUsed()->getType());
       fm_recojet.push_back(fm(particle));
     }
@@ -277,8 +278,9 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
     if (false) {
       // Save TrueJet (if any)
       this->getall( pLCEvent );
-      for (int k = 0; k < this->njets(); k++) {
-        ReconstructedParticle* particle = (ReconstructedParticle*) this->jet(k);
+      for (int i = 0; i < this->njets(); i++) {
+        ReconstructedParticle* particle = (ReconstructedParticle*) this->jet(i);
+        ParticleID * pid = particle->getParticleIDUsed();
 
         pdgs_truejet.push_back(particle->getParticleIDUsed()->getPDG());
         fm_truejet.push_back(fm(particle));
