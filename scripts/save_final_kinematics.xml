@@ -20,7 +20,7 @@
 
 <marlin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ilcsoft.desy.de/marlin/marlin.xsd">
   <execute>
-   <processor name="ReadAllKinematics"/>
+   <processor name="SaveFinalKinematics"/>
   </execute>
 
  <global>

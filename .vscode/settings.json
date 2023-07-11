@@ -1,7 +1,9 @@
 {
     "cmake.sourceDirectory": "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",
     "cmake.buildDirectory": "${workspaceFolder}/source/build",
-    "C_Cpp.loggingLevel": "Debug",
+    //"C_Cpp.loggingLevel": "Debug",
+    //"C_Cpp.errorSquiggles": "enabled",
+    //"C_Cpp.intelliSenseEngineFallback": "disabled",
     "files.associations": {
         "string": "cpp",
         "iostream": "cpp",
@@ -91,5 +93,5 @@
     "cmake.preferredGenerators": [
         "Unix Makefiles"
     ],
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
 }

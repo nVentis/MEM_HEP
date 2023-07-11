@@ -12,5 +12,5 @@ cd ../..
 cd source
 compile_pkg CompareMEProcessor
 compile_pkg ZHHPostRecoMEProcessor
-compile_pkg ReadAllKinematics
+compile_pkg SaveFinalKinematics
 cd ..

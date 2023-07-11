@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "CentOS7",
             "includePath": [
                 "/cvmfs/ilc.desy.de/key4hep/spackages/root/6.26.06/x86_64-centos7-gcc11.2.0-opt/dctcyvzmo7xg4dehiooyfl24oevtaids/include/**", // Root
                 //"/cvmfs/ilc.desy.de/key4hep/spackages/physsim/0.4.2/x86_64-centos7-gcc11.2.0-opt/e26yiqeeecuwnx563aoawj2yhovjquox/include/**", // Physsim
@@ -12,7 +12,7 @@
                 "/cvmfs/ilc.desy.de/key4hep/spackages/ilcutil/1.7/x86_64-centos7-gcc11.2.0-opt/nnyawmpqncnl6tu3nfhufy4seyzdlfj2/include/**", // streamlog
                 "${workspaceFolder}/source/CompareMEProcessor/include/**",
                 "${workspaceFolder}/source/ZHHPostRecoMEProcessor/include/**",
-                "${workspaceFolder}/source/SaveFinalKinematics/include/**",
+                "${workspaceFolder}/source/SaveFinalKinematics/include/**"
             ],
             "defines": [],
             "compilerPath": "/cvmfs/ilc.desy.de/key4hep/spackages/gcc/11.2.0/x86_64-centos7-gcc4.8.5-opt/7isdlpuoi7cbcsugpa2hzuqhh5zgeapj/bin/g++",
@@ -22,6 +22,27 @@
             "intelliSenseMode": "linux-gcc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         },
+        /*{
+            "name": "Linux2",
+            "includePath": [
+                "/cvmfs/ilc.desy.de/key4hep/spackages/root/6.26.06/x86_64-centos7-gcc11.2.0-opt/dctcyvzmo7xg4dehiooyfl24oevtaids/include/*",
+                "/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim/include/*",
+                "/cvmfs/ilc.desy.de/key4hep/spackages/lcio/2.19/x86_64-centos7-gcc11.2.0-opt/lr4mjd4u7kmg2ugmdcvcr6vdjtrxxwwv/include/*",
+                "/cvmfs/ilc.desy.de/key4hep/spackages/marlin/1.19/x86_64-centos7-gcc11.2.0-opt/aj5n37vac5zzw4eil7raxolernp6o4vi/include/*",
+                "/cvmfs/ilc.desy.de/key4hep/spackages/marlinutil/1.17/x86_64-centos7-gcc11.2.0-opt/tfc4e34qxhplzktv6xs3lqxjsjx3uic7/include/marlinutil/*",
+                "/cvmfs/ilc.desy.de/key4hep/spackages/ilcutil/1.7/x86_64-centos7-gcc11.2.0-opt/nnyawmpqncnl6tu3nfhufy4seyzdlfj2/include/*",
+                "${workspaceFolder}/source/CompareMEProcessor/include",
+                "${workspaceFolder}/source/ZHHPostRecoMEProcessor/include",
+                "${workspaceFolder}/source/SaveFinalKinematics/include"
+            ],
+            "defines": [],
+            //"compilerPath": "/cvmfs/ilc.desy.de/key4hep/spackages/gcc/11.2.0/x86_64-centos7-gcc4.8.5-opt/7isdlpuoi7cbcsugpa2hzuqhh5zgeapj/bin/g++",
+            //"compilerPath": "/cvmfs/ilc.desy.de/key4hep/spackages/gcc/11.2.0/x86_64-centos7-gcc4.8.5-opt/7isdlpuoi7cbcsugpa2hzuqhh5zgeapj/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cpptools"
+        },*/
 
         {
             "name": "Windows",
@@ -41,7 +62,7 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "configurationProvider": "ms-vscode.cpptools"
         }
     ],
     "version": 4

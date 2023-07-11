@@ -53,7 +53,7 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		virtual void end();
 		
  protected:
-		void save_evt_with_error_code(int error_code);
+		void save_evt_with_error_code(int i_error_code);
 		
 		/**
 		 * Add the expected output collections
