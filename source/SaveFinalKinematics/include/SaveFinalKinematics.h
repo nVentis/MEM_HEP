@@ -70,6 +70,8 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		std::string m_inputJetMatchingSigCollection{};
 		std::string m_inputJetMatchingBkgCollection{};
 
+		int i_recoAlgoType{};
+
 		std::string m_outputFile{};
 		std::string m_outputTree{};
 

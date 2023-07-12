@@ -9,3 +9,5 @@ ee_zzh_cpp
 *.slcio
 compile_all.sh
 Ranlux.coonf
+.vscode/*.db
+.vscode/*.db-*

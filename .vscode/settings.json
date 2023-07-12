@@ -1,6 +1,4 @@
 {
-    "cmake.sourceDirectory": "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",
-    "cmake.buildDirectory": "${workspaceFolder}/source/build",
     //"C_Cpp.loggingLevel": "Debug",
     //"C_Cpp.errorSquiggles": "enabled",
     //"C_Cpp.intelliSenseEngineFallback": "disabled",
@@ -94,4 +92,12 @@
         "Unix Makefiles"
     ],
     "python.analysis.typeCheckingMode": "basic",
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode/vc.db",
+    "cmake.buildDirectory": "${sourceDirectory}/build",
+    "cmake.sourceDirectory": [
+        "${workspaceFolder}/source/SaveFinalKinematics",
+        "${workspaceFolder}/source/CompareMEProcessor",
+        "${workspaceFolder}/source/ZHHPostRecoMEProcessor"
+    ]
 }

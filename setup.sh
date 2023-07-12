@@ -35,6 +35,7 @@ export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH
 # CPATH header files; marlin and streamlog
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/marlin/1.19/x86_64-centos7-gcc11.2.0-opt/aj5n37vac5zzw4eil7raxolernp6o4vi/include
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/ilcutil/1.7/x86_64-centos7-gcc11.2.0-opt/nnyawmpqncnl6tu3nfhufy4seyzdlfj2/include
+export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/spackages/root/6.26.06/x86_64-centos7-gcc11.2.0-opt/dctcyvzmo7xg4dehiooyfl24oevtaids/include
 
 # MadGraph and madjax
 # export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_0/bin:$PATH

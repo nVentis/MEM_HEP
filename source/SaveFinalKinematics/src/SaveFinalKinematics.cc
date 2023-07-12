@@ -90,6 +90,12 @@ SaveFinalKinematics::SaveFinalKinematics() :
 				 std::string("JetMatchingBkg")
 				 );
 
+  registerProcessorParameter("recoAlgoType",
+        "which reconstruction type to use",
+        i_recoAlgoType,
+        int(1) // (-1) -> getPIDUsed(); (1) --> LCFIPlus
+        );
+
   registerProcessorParameter("outputFilename",
         "name of output root file",
         m_outputFile,
@@ -240,7 +246,7 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
     streamlog_out(DEBUG) << "        getting preselection_passed collection: " << m_inputPreSelectionCollection << std::endl ;
     preselectioncol = pLCEvent->getCollection( m_inputPreSelectionCollection );
 
-    streamlog_out(DEBUG) << " getting jet collection: " << m_inputJetCollection << std::endl;
+    streamlog_out(DEBUG) << "        getting jet collection: " << m_inputJetCollection << std::endl;
     inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
 
     // Check for preselection
@@ -268,23 +274,34 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
     // Save reconstructed jets (if any)
     for (int i = 0; i < inputJetCol->getNumberOfElements(); i++) {
       ReconstructedParticle* particle = (ReconstructedParticle*) inputJetCol->getElementAt(i);
-      ParticleID * pid = particle->getParticleIDUsed();
 
-      pdgs_recojet.push_back(pid == 0 ? 0 : pid->getPDG());
-      recojet_pid_used.push_back(particle->getParticleIDUsed()->getType());
+      //ParticleIDImpl* inPID = dynamic_cast<ParticleIDImpl*>(outputPFO->getParticleIDs()[j]);
+      ParticleID* pid;
+      if (i_recoAlgoType == -1)
+        pid = particle->getParticleIDUsed();
+      else {
+        for (unsigned int j=0; j < particle->getParticleIDs().size(); ++j) {
+          if (particle->getParticleIDs()[j]->getType() == i_recoAlgoType) {
+            pid = particle->getParticleIDs()[j];
+            break;
+          }
+        }
+      }
+
+      pdgs_recojet.push_back(pid == 0 ? -1 : pid->getPDG());
+      recojet_pid_used.push_back(pid == 0 ? -1 : pid->getType());
       fm_recojet.push_back(fm(particle));
     }
 
-    if (false) {
-      // Save TrueJet (if any)
-      this->getall( pLCEvent );
-      for (int i = 0; i < this->njets(); i++) {
-        ReconstructedParticle* particle = (ReconstructedParticle*) this->jet(i);
-        ParticleID * pid = particle->getParticleIDUsed();
+    // Save TrueJet (if any)
+    this->getall( pLCEvent );
+    for (int i = 0; i < this->njets(); i++) {
+      ReconstructedParticle* particle = (ReconstructedParticle*) this->jet(i);
+      ParticleID* pid = particle->getParticleIDUsed();
 
-        pdgs_truejet.push_back(particle->getParticleIDUsed()->getPDG());
-        fm_truejet.push_back(fm(particle));
-      }
+      pdgs_truejet.push_back(pid == 0 ? -1 : pid->getPDG());
+      truejet_jettypes.push_back(type_jet(i));
+      fm_truejet.push_back(fm(particle));
     }
 
     m_pTTree->Fill();
