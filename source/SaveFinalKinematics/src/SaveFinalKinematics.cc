@@ -6,10 +6,11 @@
 #include <EVENT/MCParticle.h>
 #include <EVENT/ReconstructedParticle.h>
 #include <IMPL/ReconstructedParticleImpl.h>
+#include <UTIL/PIDHandler.h>
+#include <TMath.h>
 
 using namespace lcio ;
 using namespace marlin ;
-using namespace std ;
 
 template<class T>
 TLorentzVector v4(T* p){
@@ -92,8 +93,20 @@ SaveFinalKinematics::SaveFinalKinematics() :
 
   registerProcessorParameter("recoAlgoType",
         "which reconstruction type to use",
-        i_recoAlgoType,
-        int(1) // (-1) -> getPIDUsed(); (1) --> LCFIPlus
+        m_recoAlgoType,
+        std::string("lcfiplus") // as of now, only lcfiplus implemented
+        );
+
+  registerProcessorParameter("minBLikeliness",
+        "threshold necessary for BTag value",
+        m_minBLikeliness,
+        float(0.2)
+        );
+
+  registerProcessorParameter("minCLikeliness",
+        "threshold necessary for CTag value",
+        m_minCLikeliness,
+        float(0.2)
         );
 
   registerProcessorParameter("outputFilename",
@@ -190,15 +203,16 @@ void SaveFinalKinematics::init()
   m_pTTree->Branch("error_code", &error_code, "error_code/I");
 
   m_pTTree->Branch("fm_mcp", &fm_mcp);
-  m_pTTree->Branch("fm_truejet", &fm_truejet);
   m_pTTree->Branch("fm_recojet", &fm_recojet);
+  m_pTTree->Branch("fm_truejet", &fm_truejet);
 
   m_pTTree->Branch("pdgs_mcp", &pdgs_mcp);
+  m_pTTree->Branch("pdgs_recojet", &pdgs_recojet);
   m_pTTree->Branch("pdgs_truejet", &pdgs_truejet);
-  m_pTTree->Branch("pdgs_recojet", &pdgs_truejet);
 
-  m_pTTree->Branch("recojet_pid_used", &recojet_pid_used);
   m_pTTree->Branch("truejet_jettypes", &truejet_jettypes);
+
+  some_switch = 0;
 
   streamlog_out(DEBUG) << "   init finished  " << std::endl;
 }
@@ -218,7 +232,6 @@ void SaveFinalKinematics::Clear()
   pdgs_recojet.clear();
   pdgs_truejet.clear();
 
-  recojet_pid_used.clear();
   truejet_jettypes.clear();
 }
 
@@ -233,7 +246,7 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
   n_run = pLCEvent->getRunNumber();
   n_evt = pLCEvent->getEventNumber();
 
-  streamlog_out(DEBUG) << "processing event: " << n_evt << "  in run: " << n_run << endl;
+  streamlog_out(DEBUG) << "processing event: " << n_evt << "  in run: " << n_run << std::endl;
 
   try {
     // Fetching collections
@@ -259,12 +272,12 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
     MCParticle* mcp_H_if_zzh = (MCParticle*) inputMCTrueCollection->getElementAt(12);
 
     bool m_is_zhh = (mcp_H_if_zhh->getPDG() == 25) && (mcp_H_if_zzh->getPDG() != 25);
-    bool m_is_zzh = (mcp_H_if_zzh->getPDG() == 25) && (mcp_H_if_zhh->getPDG() != 25);
+    // bool m_is_zzh = (mcp_H_if_zzh->getPDG() == 25) && (mcp_H_if_zhh->getPDG() != 25);
 
     // Save MCTruth
     const vector<int> mcp_ids = m_is_zhh ? mcp_ids_zhh : mcp_ids_zzh;
 
-    for (int i = 0; i < mcp_ids.size(); i++) {
+    for (int i = 0; i < (int)mcp_ids.size(); i++) {
       MCParticle* particle = (MCParticle*) inputMCTrueCollection->getElementAt(mcp_ids[i]);
       
       pdgs_mcp.push_back(particle->getPDG());
@@ -272,34 +285,77 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
     }
 
     // Save reconstructed jets (if any)
+    std::cerr << "Getting items: " << inputJetCol->getNumberOfElements() << std::endl;
+
     for (int i = 0; i < inputJetCol->getNumberOfElements(); i++) {
       ReconstructedParticle* particle = (ReconstructedParticle*) inputJetCol->getElementAt(i);
 
       //ParticleIDImpl* inPID = dynamic_cast<ParticleIDImpl*>(outputPFO->getParticleIDs()[j]);
-      ParticleID* pid;
-      if (i_recoAlgoType == -1)
-        pid = particle->getParticleIDUsed();
-      else {
-        for (unsigned int j=0; j < particle->getParticleIDs().size(); ++j) {
-          if (particle->getParticleIDs()[j]->getType() == i_recoAlgoType) {
-            pid = particle->getParticleIDs()[j];
-            break;
+      PIDHandler pidh( inputJetCol );
+
+      if (!some_switch) {
+        const EVENT::LCParameters& jet_params = pLCEvent->getCollection("RefinedJets")->getParameters();
+
+        ParticleIDVec pids = particle->getParticleIDs();
+
+        vector<std::string> pid_algo_names;
+        jet_params.getStringVals("PIDAlgorithmTypeName", pid_algo_names);
+
+        for (int j=0; j < (int)pids.size(); j++) {
+          std::string pid_algo_name = pid_algo_names[j];
+
+          vector<std::string> pid_param_names;
+          jet_params.getStringVals("ParameterNames_"+pid_algo_name, pid_param_names);
+
+          ParticleID *pid = pids[j];
+          FloatVec params = pid->getParameters();
+
+          std::cerr << "PIDAlgo ["  << j <<":" << pid_algo_name <<"]" << std::endl;
+          for (int k=0; k < (int)pid_param_names.size(); k++) {
+            std::cerr << "Parameter ["  << pid_param_names[k] <<"]=[" << params[k] << "]" << std::endl;
           }
+          std::cerr << std::endl;
         }
       }
 
-      pdgs_recojet.push_back(pid == 0 ? -1 : pid->getPDG());
-      recojet_pid_used.push_back(pid == 0 ? -1 : pid->getType());
+      if (m_recoAlgoType == "lcfiplus") {
+        int algo = pidh.getAlgorithmID("lcfiplus");
+        int ibtag = pidh.getParameterIndex(algo, "BTag");
+        int ictag = pidh.getParameterIndex(algo, "CTag");
+
+        const ParticleID &pid = pidh.getParticleID(particle, algo);
+
+        float bLikeliness = pid.getParameters()[ibtag];
+        float cLikeliness = pid.getParameters()[ictag];
+        float charge = particle->getCharge();
+
+        //std::cerr << "RecoPID of " << j << "(" << pids.size() << "):" << pid->getAlgorithmType() << "=" << pid->getPDG() << std::endl;
+        std::cerr << "Particle ["  << "] BTag=[" << bLikeliness << "] CTag=[" << cLikeliness << "]" << std::endl;
+
+        if (bLikeliness >= m_minBLikeliness && bLikeliness > cLikeliness)
+          pdgs_recojet.push_back(TMath::Sign(5, charge));
+        else if (cLikeliness >= m_minCLikeliness && cLikeliness > bLikeliness)
+          pdgs_recojet.push_back(TMath::Sign(4, charge));
+        else
+          pdgs_recojet.push_back(0);
+
+      } else
+        throw UnknownAlgorithm(m_recoAlgoType);
+
       fm_recojet.push_back(fm(particle));
+    }
+
+    if (!some_switch) {
+      some_switch=true;
     }
 
     // Save TrueJet (if any)
     this->getall( pLCEvent );
     for (int i = 0; i < this->njets(); i++) {
       ReconstructedParticle* particle = (ReconstructedParticle*) this->jet(i);
-      ParticleID* pid = particle->getParticleIDUsed();
+      ParticleID* pid = particle->getParticleIDs()[0];
 
-      pdgs_truejet.push_back(pid == 0 ? -1 : pid->getPDG());
+      pdgs_truejet.push_back(pid->getPDG());
       truejet_jettypes.push_back(type_jet(i));
       fm_truejet.push_back(fm(particle));
     }

@@ -59,8 +59,7 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		 * Add the expected output collections
 		 */
 		
-		/** Input collection name.
-		 */
+		// Input collection names
 		std::string m_inputMCTrueCollection{};
 		std::string m_inputLepPairCollection{};
 		std::string m_inputJetCollection{};
@@ -70,18 +69,25 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		std::string m_inputJetMatchingSigCollection{};
 		std::string m_inputJetMatchingBkgCollection{};
 
-		int i_recoAlgoType{};
+		// Inputs arguments
+		std::string m_recoAlgoType{};
+		float m_minBLikeliness{};
+		float m_minCLikeliness{};
 
 		std::string m_outputFile{};
 		std::string m_outputTree{};
 
+		int require_presel_pass{};
+
 		LCCollection *inputJetCol{};
 
+		int some_switch{};
+
+		// Runtime variables
 		int n_run;
         int n_evt;
 		int error_code{};
 		int passed_preselection{};
-		int require_presel_pass{};
 
 		// List of IDs in MCParticlesSkimmed collection in following order: µ-, µ+, B1dec1, B1dec2, B2dec1, B2dec2 (where B is either Z or H) 
 		const vector<int> mcp_ids_zhh = {8, 9, 12, 13, 14, 15};
@@ -95,7 +101,6 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		vector<int> pdgs_recojet{};
 		vector<int> pdgs_truejet{};
 
-		vector<int> recojet_pid_used{};
 		vector<int> truejet_jettypes{};
 
 		TFile *m_pTFile{};
