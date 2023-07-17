@@ -64,36 +64,21 @@ SaveFinalKinematics::SaveFinalKinematics() :
 				 );
 
   registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
-				 "InputHiggsPairCollection",
-				 "higgs pair collection (two particles)",
-				 m_inputHiggsPairCollection,
-				 std::string("HiggsPair")
-				 );
-  
-  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
-				 "InputLepPairCollection",
-				 "lepton pair collection (two leptons)",
-				 m_inputLepPairCollection,
-				 std::string("LeptonPair")
+				 "RecoParticleCollection",
+				 "collection of particle flow objects",
+				 m_inputRecoParticleCollection,
+				 std::string("PandoraPFOs")
 				 );
 
-  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
-				 "JetMatchingSigCollection",
-				 "Name of collection c parameters about jet matching for the signal hypothesis",
-				 m_inputJetMatchingSigCollection,
-				 std::string("JetMatchingSig")
-				 );
+  registerProcessorParameter("recoPfoAlgoType",
+        "which reconstruction algo to use for pfo pid",
+        m_recoPfoAlgoType,
+        std::string("LikelihoodPID") // as of now, only lcfiplus implemented
+        );
 
-  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
-				 "JetMatchingBkgCollection",
-				 "Name of collection holding parameters about reco/true jet matching for the background hypothesis",
-				 m_inputJetMatchingBkgCollection,
-				 std::string("JetMatchingBkg")
-				 );
-
-  registerProcessorParameter("recoAlgoType",
-        "which reconstruction type to use",
-        m_recoAlgoType,
+  registerProcessorParameter("recoJetAlgoType",
+        "which reconstruction type to use for jet pid",
+        m_recoJetAlgoType,
         std::string("lcfiplus") // as of now, only lcfiplus implemented
         );
 
@@ -203,12 +188,20 @@ void SaveFinalKinematics::init()
   m_pTTree->Branch("error_code", &error_code, "error_code/I");
 
   m_pTTree->Branch("fm_mcp", &fm_mcp);
+  m_pTTree->Branch("fm_recopfo", &fm_recopfo);
   m_pTTree->Branch("fm_recojet", &fm_recojet);
   m_pTTree->Branch("fm_truejet", &fm_truejet);
 
-  m_pTTree->Branch("pdgs_mcp", &pdgs_mcp);
-  m_pTTree->Branch("pdgs_recojet", &pdgs_recojet);
-  m_pTTree->Branch("pdgs_truejet", &pdgs_truejet);
+  m_pTTree->Branch("pdg_mcp", &pdg_mcp);
+  m_pTTree->Branch("pdg_recopfo", &pdg_recopfo);
+  m_pTTree->Branch("pdg_recojet", &pdg_recojet);
+  m_pTTree->Branch("pdg_truejet", &pdg_truejet);
+
+  m_pTTree->Branch("charge_mcp", &charge_mcp);
+  m_pTTree->Branch("charge_recopfo", &charge_recopfo);
+  m_pTTree->Branch("charge_recojet", &charge_recojet);
+  m_pTTree->Branch("charge_truejet", &charge_truejet);
+
 
   m_pTTree->Branch("truejet_jettypes", &truejet_jettypes);
 
@@ -226,11 +219,18 @@ void SaveFinalKinematics::Clear()
 
   fm_mcp.clear();
   fm_recojet.clear();
+  fm_recopfo.clear();
   fm_truejet.clear();
 
-  pdgs_mcp.clear();
-  pdgs_recojet.clear();
-  pdgs_truejet.clear();
+  pdg_mcp.clear();
+  pdg_recojet.clear();
+  pdg_recopfo.clear();
+  pdg_truejet.clear();
+
+  charge_mcp.clear();
+	charge_recojet.clear();
+	charge_recopfo.clear();
+	charge_truejet.clear();
 
   truejet_jettypes.clear();
 }
@@ -249,49 +249,75 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
   streamlog_out(DEBUG) << "processing event: " << n_evt << "  in run: " << n_run << std::endl;
 
   try {
+    // Check for preselection
+    if (require_presel_pass) {
+      streamlog_out(DEBUG) << "        getting preselection_passed collection: " << m_inputPreSelectionCollection << std::endl ;
+      LCCollection *preselectioncol = pLCEvent->getCollection( m_inputPreSelectionCollection );
+
+      if (!preselectioncol->parameters().getIntVal("isPassed"))
+        return save_evt_with_error_code(ERRORS::PRESELECTION_FAILED_BUT_REQUIRED);
+    }
+
     // Fetching collections
     LCCollection *inputMCTrueCollection{};
-    LCCollection *preselectioncol{};
+    LCCollection *inputPfoCol{};
+    LCCollection *inputJetCol{};
 
     streamlog_out(DEBUG) << "        getting true MC collection: " << m_inputMCTrueCollection << std::endl ;
     inputMCTrueCollection = pLCEvent->getCollection( m_inputMCTrueCollection );
 
-    streamlog_out(DEBUG) << "        getting preselection_passed collection: " << m_inputPreSelectionCollection << std::endl ;
-    preselectioncol = pLCEvent->getCollection( m_inputPreSelectionCollection );
+    streamlog_out(DEBUG) << "        getting particle flow object collection: " << m_inputRecoParticleCollection << std::endl;
+    inputPfoCol = pLCEvent->getCollection( m_inputRecoParticleCollection );
 
     streamlog_out(DEBUG) << "        getting jet collection: " << m_inputJetCollection << std::endl;
     inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
 
-    // Check for preselection
-    passed_preselection = preselectioncol->parameters().getIntVal("isPassed");
-    if (require_presel_pass && !passed_preselection)
-      return save_evt_with_error_code(ERRORS::PRESELECTION_FAILED_BUT_REQUIRED);
-
-    // Check whether true ZHH or ZZH event
+    // Save MCTruth
     MCParticle* mcp_H_if_zhh = (MCParticle*) inputMCTrueCollection->getElementAt(10);
     MCParticle* mcp_H_if_zzh = (MCParticle*) inputMCTrueCollection->getElementAt(12);
 
     bool m_is_zhh = (mcp_H_if_zhh->getPDG() == 25) && (mcp_H_if_zzh->getPDG() != 25);
-    // bool m_is_zzh = (mcp_H_if_zzh->getPDG() == 25) && (mcp_H_if_zhh->getPDG() != 25);
+    bool m_is_zzh = (mcp_H_if_zzh->getPDG() == 25) && (mcp_H_if_zhh->getPDG() != 25);
 
-    // Save MCTruth
-    const vector<int> mcp_ids = m_is_zhh ? mcp_ids_zhh : mcp_ids_zzh;
+    // Check whether true ZHH or ZZH event
+    if (m_is_zhh || m_is_zzh) {
+      const vector<int> mcp_ids = m_is_zhh ? mcp_ids_zhh : mcp_ids_zzh;
 
-    for (int i = 0; i < (int)mcp_ids.size(); i++) {
-      MCParticle* particle = (MCParticle*) inputMCTrueCollection->getElementAt(mcp_ids[i]);
-      
-      pdgs_mcp.push_back(particle->getPDG());
-      fm_mcp.push_back(fm(particle));
+      for (int i = 0; i < (int)mcp_ids.size(); i++) {
+        MCParticle* particle = (MCParticle*) inputMCTrueCollection->getElementAt(mcp_ids[i]);
+
+        pdg_mcp.push_back(particle->getPDG());
+        fm_mcp.push_back(fm(particle));
+        charge_mcp.push_back(particle->getCharge());
+      }
+    }
+
+    // Save PandoraPFOs
+    PIDHandler pidh_pfo ( inputPfoCol );
+    int algo_pfo = pidh_pfo.getAlgorithmID(m_recoPfoAlgoType);
+    for (int i = 0; i < inputPfoCol->getNumberOfElements(); i++) {
+      ReconstructedParticle* particle = (ReconstructedParticle*) inputPfoCol->getElementAt(i);
+      float charge = particle->getCharge();
+
+      const ParticleID &pid = pidh_pfo.getParticleID(particle, algo_pfo);
+      int pdg = TMath::Sign(pid.getPDG(), charge);
+
+      pdg_recopfo.push_back(pdg);
+
+      std::cerr << "Particle ["  << i << "] PDG=[" << pdg << "]" << std::endl;
+
+      fm_recopfo.push_back(fm(particle));
+      charge_recopfo.push_back(charge);
     }
 
     // Save reconstructed jets (if any)
-    std::cerr << "Getting items: " << inputJetCol->getNumberOfElements() << std::endl;
-
+    // As of now, with only using lcfiplus, only BTagging and CTagging are supported
+    PIDHandler pidh_jet ( inputJetCol );
     for (int i = 0; i < inputJetCol->getNumberOfElements(); i++) {
       ReconstructedParticle* particle = (ReconstructedParticle*) inputJetCol->getElementAt(i);
+      float charge = particle->getCharge();
 
       //ParticleIDImpl* inPID = dynamic_cast<ParticleIDImpl*>(outputPFO->getParticleIDs()[j]);
-      PIDHandler pidh( inputJetCol );
 
       if (debug_print) {
         const EVENT::LCParameters& jet_params = pLCEvent->getCollection("RefinedJets")->getParameters();
@@ -318,31 +344,31 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
         }
       }
 
-      if (m_recoAlgoType == "lcfiplus") {
-        int algo = pidh.getAlgorithmID("lcfiplus");
-        int ibtag = pidh.getParameterIndex(algo, "BTag");
-        int ictag = pidh.getParameterIndex(algo, "CTag");
+      if (m_recoJetAlgoType == "lcfiplus") {
+        int algo_jet = pidh_jet.getAlgorithmID("lcfiplus");
+        int ibtag = pidh_jet.getParameterIndex(algo_jet, "BTag");
+        int ictag = pidh_jet.getParameterIndex(algo_jet, "CTag");
 
-        const ParticleID &pid = pidh.getParticleID(particle, algo);
+        const ParticleID &pid = pidh_jet.getParticleID(particle, algo_jet);
 
         float bLikeliness = pid.getParameters()[ibtag];
         float cLikeliness = pid.getParameters()[ictag];
-        float charge = particle->getCharge();
 
         //std::cerr << "RecoPID of " << j << "(" << pids.size() << "):" << pid->getAlgorithmType() << "=" << pid->getPDG() << std::endl;
-        std::cerr << "Particle ["  << j << "] BTag=[" << bLikeliness << "] CTag=[" << cLikeliness << "]" << std::endl;
+        std::cerr << "Particle ["  << i << "] BTag=[" << bLikeliness << "] CTag=[" << cLikeliness << "]" << std::endl;
 
         if (bLikeliness >= m_minBLikeliness && bLikeliness > cLikeliness)
-          pdgs_recojet.push_back(TMath::Sign(5, charge));
+          pdg_recojet.push_back(TMath::Sign(5, charge));
         else if (cLikeliness >= m_minCLikeliness && cLikeliness > bLikeliness)
-          pdgs_recojet.push_back(TMath::Sign(4, charge));
+          pdg_recojet.push_back(TMath::Sign(4, charge));
         else
-          pdgs_recojet.push_back(0);
+          pdg_recojet.push_back(0);
 
       } else
-        throw UnknownAlgorithm(m_recoAlgoType);
+        throw UnknownAlgorithm(m_recoJetAlgoType);
 
       fm_recojet.push_back(fm(particle));
+      charge_recojet.push_back(particle->getCharge());
     }
 
     if (debug_print) {
@@ -355,9 +381,11 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
       ReconstructedParticle* particle = (ReconstructedParticle*) this->jet(i);
       ParticleID* pid = particle->getParticleIDs()[0];
 
-      pdgs_truejet.push_back(pid->getPDG());
-      truejet_jettypes.push_back(type_jet(i));
+      pdg_truejet.push_back(pid->getPDG());
       fm_truejet.push_back(fm(particle));
+      charge_truejet.push_back(particle->getCharge());
+
+      truejet_jettypes.push_back(type_jet(i));
     }
 
     m_pTTree->Fill();

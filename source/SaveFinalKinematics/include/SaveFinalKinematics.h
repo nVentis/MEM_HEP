@@ -61,16 +61,14 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		
 		// Input collection names
 		std::string m_inputMCTrueCollection{};
-		std::string m_inputLepPairCollection{};
 		std::string m_inputJetCollection{};
+		std::string m_inputRecoParticleCollection{};
 		std::string m_inputPreSelectionCollection{};
-		std::string m_inputHiggsPairCollection{};
-
-		std::string m_inputJetMatchingSigCollection{};
-		std::string m_inputJetMatchingBkgCollection{};
 
 		// Inputs arguments
-		std::string m_recoAlgoType{};
+		std::string m_recoJetAlgoType{};
+		std::string m_recoPfoAlgoType{};
+
 		float m_minBLikeliness{};
 		float m_minCLikeliness{};
 
@@ -78,8 +76,6 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		std::string m_outputTree{};
 
 		int require_presel_pass{};
-
-		LCCollection *inputJetCol{};
 
 		int debug_print{};
 
@@ -93,13 +89,20 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		const vector<int> mcp_ids_zhh = {8, 9, 12, 13, 14, 15};
 		const vector<int> mcp_ids_zzh = {8, 9, 11, 10, 13, 14};
 
+		vector<int> pdg_mcp{};
+		vector<int> pdg_recopfo{};
+		vector<int> pdg_recojet{};
+		vector<int> pdg_truejet{};
+
 		vector<vector<double>> fm_mcp{};
+		vector<vector<double>> fm_recopfo{};
 		vector<vector<double>> fm_recojet{};
 		vector<vector<double>> fm_truejet{};
 
-		vector<int> pdgs_mcp{};
-		vector<int> pdgs_recojet{};
-		vector<int> pdgs_truejet{};
+		vector<float> charge_mcp{};
+		vector<float> charge_recopfo{};
+		vector<float> charge_recojet{};
+		vector<float> charge_truejet{};
 
 		vector<int> truejet_jettypes{};
 
