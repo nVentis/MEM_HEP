@@ -212,7 +212,7 @@ void SaveFinalKinematics::init()
 
   m_pTTree->Branch("truejet_jettypes", &truejet_jettypes);
 
-  some_switch = 0;
+  debug_print = 1;
 
   streamlog_out(DEBUG) << "   init finished  " << std::endl;
 }
@@ -293,7 +293,7 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
       //ParticleIDImpl* inPID = dynamic_cast<ParticleIDImpl*>(outputPFO->getParticleIDs()[j]);
       PIDHandler pidh( inputJetCol );
 
-      if (!some_switch) {
+      if (debug_print) {
         const EVENT::LCParameters& jet_params = pLCEvent->getCollection("RefinedJets")->getParameters();
 
         ParticleIDVec pids = particle->getParticleIDs();
@@ -330,7 +330,7 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
         float charge = particle->getCharge();
 
         //std::cerr << "RecoPID of " << j << "(" << pids.size() << "):" << pid->getAlgorithmType() << "=" << pid->getPDG() << std::endl;
-        std::cerr << "Particle ["  << "] BTag=[" << bLikeliness << "] CTag=[" << cLikeliness << "]" << std::endl;
+        std::cerr << "Particle ["  << j << "] BTag=[" << bLikeliness << "] CTag=[" << cLikeliness << "]" << std::endl;
 
         if (bLikeliness >= m_minBLikeliness && bLikeliness > cLikeliness)
           pdgs_recojet.push_back(TMath::Sign(5, charge));
@@ -345,8 +345,8 @@ void SaveFinalKinematics::processEvent( EVENT::LCEvent *pLCEvent )
       fm_recojet.push_back(fm(particle));
     }
 
-    if (!some_switch) {
-      some_switch=true;
+    if (debug_print) {
+      debug_print=0;
     }
 
     // Save TrueJet (if any)

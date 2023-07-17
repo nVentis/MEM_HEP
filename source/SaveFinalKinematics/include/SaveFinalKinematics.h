@@ -81,7 +81,7 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 
 		LCCollection *inputJetCol{};
 
-		int some_switch{};
+		int debug_print{};
 
 		// Runtime variables
 		int n_run;
