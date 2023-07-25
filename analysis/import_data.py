@@ -28,3 +28,12 @@ def combine_columns(some_dict):
     df_new.reset_index(drop=True,inplace=True)
     
     return df_new
+
+def split_true_zhh_zzh(df:pd.DataFrame):
+    true_zzh = df[(df["is_zzh"] == 1)].copy()
+    true_zhh = df[(df["is_zhh"] == 1)].copy()
+
+    true_zzh.reset_index(drop=True, inplace=True)
+    true_zhh.reset_index(drop=True, inplace=True)
+    
+    return (true_zhh, true_zzh)

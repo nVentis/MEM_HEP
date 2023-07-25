@@ -7,10 +7,10 @@ source /cvmfs/ilc.desy.de/key4hep/setup.sh
 #source /cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/key4hep-stack/2023-05-24/x86_64-centos7-gcc12.3.0-opt/7emhu/setup.sh
 #export JUPYTER_PATH=${ROOTSYS}/etc/notebook:${JUPYTER_PATH}
 
-export PYTHON_INCLUDE_DIR=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/include/python3.10:$PYTHON_INCLUDE_DIR
-export PYTHON_LIBRARY=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/lib/libpython3.10.so:$PYTHON_LIBRARY
-export Python_EXECUTABLE=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/bin/python:$Python_EXECUTABLE
-export Python3_FIND_VIRTUALENV=STANDARD
+#export PYTHON_INCLUDE_DIR=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/include/python3.10:$PYTHON_INCLUDE_DIR
+#export PYTHON_LIBRARY=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/lib/libpython3.10.so:$PYTHON_LIBRARY
+#export Python_EXECUTABLE=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/bin/python:$Python_EXECUTABLE
+#export Python3_FIND_VIRTUALENV=STANDARD
 export PATH=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/bin/python:$PATH
 
 # Modules of ZHH

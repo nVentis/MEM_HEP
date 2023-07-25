@@ -6,16 +6,17 @@ from matplotlib import rcParams as rcp
 
 rcp['hatch.linewidth'] = 0.5  # previous pdf hatch linewidth
 
-def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylabel="", units="", normalize=False, title="Likelihood-Analysis"):
+def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylabel="", units="", normalize=False, title="Likelihood-Analysis", ax=None):
     
     # Autoscaling
     g_min = 0.98*data[x].min().min()
     g_max = 1.02*data[x].max().max()
     
-    fig, ax = plt.subplots()
-    fig.set_dpi(100)
-    fig.set_figwidth(8)
-    fig.set_figheight(6)
+    if ax == None:
+        fig, ax = plt.subplots()
+        fig.set_dpi(100)
+        fig.set_figwidth(8)
+        fig.set_figheight(6)
     
     if colorpalette is None:
         colorpalette = ["tab:red", "tab:blue", "y", "tab:pink", "tab:cyan", "tab:olive"]
@@ -30,7 +31,7 @@ def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylab
         max_val = np.max(values)
         bin_centers = np.linspace(min_val, max_val, bins)
         
-        plt.hist(values, bin_centers,
+        (plt if ax == None else ax).hist(values, bin_centers,
                  alpha=0.7,
                  label=h_name,
                  linestyle="solid",
@@ -49,7 +50,11 @@ def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylab
                  verticalalignment='center',
                  transform=ax.transAxes)
     
-    #plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1.05))
-    plt.title(title)
-    plt.xlim(g_min, g_max)
-    plt.show()
+    #plt_obj.legend(loc='upper right', bbox_to_anchor=(1.1, 1.05))
+    if ax == None: 
+        plt.title(title)
+        plt.xlim(g_min, g_max)
+        plt.show()
+    else:
+        ax.set_title(title)
+        ax.set_xlim(g_min, g_max)

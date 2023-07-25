@@ -1,0 +1,37 @@
+import sys, os
+import logging
+
+logger = logging.getLogger('mem_hep')
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setFormatter(logging.Formatter('[%(asctime)s %(levelname)s]: %(message)s'))
+logger.addHandler(ch)
+
+from analysis.commands.mem_plot import mem_plot
+
+# Examples:
+# python cli mem_plots /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/root/prod /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy
+if __name__ == '__main__':
+    logger.info("Started CLI")    
+    cmd_name = sys.argv[1]
+    
+    # Expects 3 arguments:
+    # 1. comparison_root file
+    # 2. comparison_out directory: Where to store the converted data and plots
+    # 3. name of the data series; should correspond to used CompareMEProcessor configuration 
+    if cmd_name == "mem_plot":
+        src_file = sys.argv[2]
+        dst_dir  = sys.argv[3]
+        name     = sys.argv[4]
+        convert  = int(sys.argv[5]) if len(sys.argv) > 5 else 1
+        plot     = int(sys.argv[6]) if len(sys.argv) > 6 else 1
+        
+        mem_plot(src_file, dst_dir, name, convert, plot)
+        
+    if cmd_name == "mem_plots":
+        src_dir = sys.argv[2]
+        dst_dir = sys.argv[3]
+        names   = sys.argv[4] if len(sys.argv) > 4 else "mcparticle,reco,truejet_matchingreco,truejet_seen,truejet_true"
+        
+        for name in names.split(","):
+            mem_plot(os.path.join(src_dir, "compare_" + name + ".root"), os.path.join(dst_dir, name), name, True, True)
