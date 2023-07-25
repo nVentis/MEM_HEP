@@ -4,10 +4,13 @@ ee_zhh_cpp
 ee_zzh_cpp
 *.root
 *.npy
+*.npz
 *.pyc
 *.png
 *.slcio
+.__afs*
 compile_all.sh
 Ranlux.coonf
 .vscode/*.db
 .vscode/*.db-*
+Use_TrueJet

@@ -36,6 +36,14 @@ TLorentzVector v4(T* p){
   return TLorentzVector( p->getMomentum(), p->getEnergy() );
 }
 
+/**
+ * Wrapper for TrueJet to TLorentzVector
+ * For TrueJet p4, p4[0] is energy, unlike for ROOT
+*/
+TLorentzVector v4(const Double_t * x0){
+  return TLorentzVector( x0[1], x0[2], x0[3], x0[0] );
+}
+
 template<class T>
 double inv_mass(T* p1, T* p2){
   double e = p1->getEnergy()+p2->getEnergy() ;
@@ -59,8 +67,7 @@ CompareMEProcessor::CompareMEProcessor() :
   Processor("CompareMEProcessor"),
   m_nRun(0),
   m_nEvt(0),
-  m_mode_me(1), // 0-> dsigma, 1-> ME^2
-  m_zzh_no_z_decay(0) // 0-> both Zs decay, 1-> 1 Z does not decay
+  m_mode_me(1) // 0-> dsigma, 1-> ME^2
 {
 
 	_description = "CompareMEProcessor writes relevant observables to root-file " ;
@@ -134,19 +141,25 @@ CompareMEProcessor::CompareMEProcessor() :
         );
 
   registerProcessorParameter("Mode",
-        "calculate MEs based on 0: True/MCParticleSkimmed; (following both using JetClusteringSig/Bkg parameters) 1: RefinedJets; 2: TrueJet data",
+        "calculate MEs based on 0: True/MCParticleSkimmed; (following both using JetClusteringSig/Bkg parameters) 1: RefinedJets; 2: TrueJet (with matching of Misclustering processor in ZHH github); 3: TrueJet (with matching according to TrueJet)",
         m_mode,
         int(0)
         );
 
   registerProcessorParameter("LeptonMode",
-        "which data source to assume for the Z->mu+mu- decay; -1: same as Mode, 0:MCTruth, 1: LeptonPair, 2: TrueJet",
+        "which data source to assume for the Z->mu+mu- decay; -1: same as Mode, 0:MCTruth, 1: LeptonPair, 2: TrueJet (deprecated)",
         m_lepton_mode,
         int(-1)
         );
 
+  registerProcessorParameter("TrueJetMode",
+        "0 for true, 1 for seen",
+        m_truejet_mode,
+        int(0)
+        );
+
   registerProcessorParameter("SaveInputKinematics",
-        "0: no complete kinematics, 1: save x,y,z,E of all inputs",
+        "0: no complete kinematics, 1: save x,y,z,E of all MEM inputs",
         m_saveInputKinematics,
         int(0)
         );
@@ -223,6 +236,13 @@ CompareMEProcessor::CompareMEProcessor() :
                             "Name of the  InitialColourNeutralLink input collection"  ,
                             _initialColourNeutralLink,
                             std::string("InitialColourNeutralLink") ) ;
+
+  registerInputCollection( LCIO::LCRELATION,
+                            "RecoMCTruthLink",
+                            "Name of the RecoMCTruthLink input collection"  ,
+                            _recoMCTruthLink,
+                            string("RecoMCTruthLink")
+                            );
 }
 
 void CompareMEProcessor::init()
@@ -283,6 +303,7 @@ void CompareMEProcessor::init()
 
   // 2.a ZHH output
   m_pTTree->Branch("zhh_sigma"  , &m_zhh_sigma  , "zhh_sigma/F");
+  
   m_pTTree->Branch("zhh_sigmall", &m_zhh_sigmall, "zhh_sigmall/F");
   m_pTTree->Branch("zhh_sigmalr", &m_zhh_sigmalr, "zhh_sigmalr/F");
   m_pTTree->Branch("zhh_sigmarl", &m_zhh_sigmarl, "zhh_sigmarl/F");
@@ -338,13 +359,6 @@ void CompareMEProcessor::init()
   m_pTTree->Branch("zzh_sigmarlr", &m_zzh_sigmarlr, "zzh_sigmarlr/F");
   m_pTTree->Branch("zzh_sigmarll", &m_zzh_sigmarll, "zzh_sigmarll/F");
 
-  if (m_zzh_no_z_decay == 1) {
-    m_pTTree->Branch("zzh_sigmallz", &m_zzh_sigmallz, "zzh_sigmallz/F");
-    m_pTTree->Branch("zzh_sigmalrz", &m_zzh_sigmalrz, "zzh_sigmalrz/F");
-    m_pTTree->Branch("zzh_sigmarrz", &m_zzh_sigmarrz, "zzh_sigmarrz/F");
-    m_pTTree->Branch("zzh_sigmarlz", &m_zzh_sigmarlz, "zzh_sigmarlz/F");
-  }
-
   m_pTTree->Branch("zzh_mz1"  , &m_zzh_mz1  , "zzh_mz1/F");
   m_pTTree->Branch("zzh_mz2"  , &m_zzh_mz2  , "zzh_mz2/F");
   m_pTTree->Branch("zzh_mzz" , &m_zzh_mzz , "zzh_mzz/F");
@@ -392,13 +406,13 @@ void CompareMEProcessor::init()
   // Core configuration
   m_z1_decay_mode = getZDecayModeFromPDG(m_z1_decay_pdg);
 
-  cerr << endl;
-  cerr << "ZHH MEM processor initializing with:\n";
-  cerr << " H_mass: "<< m_Hmass << "\n";
-  cerr << " Z1DecayMode: "<< m_z1_decay_mode << "\n";
-  cerr << " Pol_e: "<< pol_e << "\n";
-  cerr << " Pol_p: "<< pol_p << "\n";
-  cerr << " m_outputTree: " << m_outputTree << "\n";
+  std::cerr << endl;
+  std::cerr << "ZHH MEM processor initializing with:\n";
+  std::cerr << " H_mass: "<< m_Hmass << "\n";
+  std::cerr << " Z1DecayMode: "<< m_z1_decay_mode << "\n";
+  std::cerr << " Pol_e: "<< pol_e << "\n";
+  std::cerr << " Pol_p: "<< pol_p << "\n";
+  std::cerr << " m_outputTree: " << m_outputTree << "\n";
 
   _zhh = new LCMEZHH("LCMEZHH", "ZHH", m_Hmass, pol_e, pol_p);
   _zhh->SetZDecayMode(m_z1_decay_mode); // 5 (internal mapping) -> (13) PDG, muon
@@ -406,7 +420,7 @@ void CompareMEProcessor::init()
   _zhh->SetPropagator(1);
 
   _zzh = new LCMEZZH("LCMEZZH", "ZZH", m_Hmass, pol_e, pol_p);
-  _zzh->SetNoZDecay(m_zzh_no_z_decay); // default for ZHH (i.e. no Z decay)
+  _zzh->SetNoZDecay(0);
   _zzh->SetNoHDecay(1);
   _zzh->SetPropagator(1);
 
@@ -417,12 +431,12 @@ void CompareMEProcessor::init()
   }
   // zzh setZDecayMode adjusted every run
 
-  streamlog_out(DEBUG) << "   init finished  " << std::endl;
+  streamlog_out(DEBUG) << "init finished  " << std::endl;
 }
 
 void CompareMEProcessor::Clear() 
 {
-  streamlog_out(DEBUG) << "   Clear called  " << std::endl;
+  streamlog_out(DEBUG) << "clear called  " << std::endl;
 
   // Flags to decide whether to save entries for ZHH or ZZH (otherwise they'll all be empty)
   // Important for processes that are not supported by the ME processors (most important, Z->2 boson decay)
@@ -440,6 +454,16 @@ void CompareMEProcessor::Clear()
   m_misclustering_region      = -1;
   m_misclustering_region_icns = -1;
 
+  m_parton_1_e = 0.;
+  m_parton_2_e = 0.;
+  m_parton_3_e = 0.;
+  m_parton_4_e = 0.;
+
+  m_parton_1_pdg = 0;
+  m_parton_2_pdg = 0;
+  m_parton_3_pdg = 0;
+  m_parton_4_pdg = 0;
+
   m_efrac1_reco = 0.;
   m_efrac2_reco = 0.;
   m_efrac1_true = 0.;
@@ -455,6 +479,14 @@ void CompareMEProcessor::Clear()
   m_h2_decay_pdg  = 0;
   m_z2_decay_pdg  = 0;
   m_z2_decay_mode = 0;
+
+  m_jet_1_e = 0.;
+	m_jet_2_e = 0.;
+  m_jet_3_e = 0.;
+  m_jet_4_e = 0.;
+
+  m_lep_1_e = 0.;
+  m_lep_2_e = 0.;
 
   // 2.a ZHH output
   m_zhh_sigma     = 0.;
@@ -574,17 +606,17 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
   
   m_nRun = pLCEvent->getRunNumber();
   m_nEvt = pLCEvent->getEventNumber();
-  streamlog_out(DEBUG) << "processing event: " << pLCEvent->getEventNumber() << "  in run: " << pLCEvent->getRunNumber() << endl;
+  streamlog_out(DEBUG) << "processing event: " << pLCEvent->getEventNumber() << " in run: " << pLCEvent->getRunNumber() << endl;
 
   try {
     // Fetching collections
     LCCollection *inputMCTrueCollection{};
     LCCollection *preselectioncol{};
 
-    streamlog_out(DEBUG) << "        getting true MC collection: " << m_inputMCTrueCollection << std::endl ;
+    streamlog_out(DEBUG) << "  getting true MC collection: " << m_inputMCTrueCollection << std::endl ;
     inputMCTrueCollection = pLCEvent->getCollection( m_inputMCTrueCollection );
 
-    streamlog_out(DEBUG) << "        getting preselection_passed collection: " << m_inputPreSelectionCollection << std::endl ;
+    streamlog_out(DEBUG) << "  getting preselection_passed collection: " << m_inputPreSelectionCollection << std::endl ;
     preselectioncol = pLCEvent->getCollection( m_inputPreSelectionCollection );
 
     // Check for preselection
@@ -593,52 +625,156 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       return save_evt_with_error_code(ERRORS::PRESELECTION_FAILED_BUT_REQUIRED);
 
     // Check whether true ZHH or ZZH event
-    mcp_H_if_zhh = (MCParticle*) inputMCTrueCollection->getElementAt(10);
-    mcp_H_if_zzh = (MCParticle*) inputMCTrueCollection->getElementAt(12);
+    MCParticle *mcp_H_if_zhh = (MCParticle*) inputMCTrueCollection->getElementAt(10);
+    MCParticle *mcp_H_if_zzh = (MCParticle*) inputMCTrueCollection->getElementAt(12);
+
+    // TODO: Check if iterating over inputMCTrueCollection and checking for two H with same parent is "safer"
 
     m_is_zhh = (mcp_H_if_zhh->getPDG() == 25) && (mcp_H_if_zzh->getPDG() != 25);
     m_is_zzh = (mcp_H_if_zzh->getPDG() == 25) && (mcp_H_if_zhh->getPDG() != 25);
 
     // Lorentz vectors of final states
-    TLorentzVector l1_lortz;
-    TLorentzVector l2_lortz;
-
-    TLorentzVector zhh_h1_lortz;
-    TLorentzVector zhh_h2_lortz;
-    
-    TLorentzVector zzh_z2f1_lortz; // only used if m_zzh_no_z_decay == 0
-    TLorentzVector zzh_z2f2_lortz; // only used if m_zzh_no_z_decay == 0
-    TLorentzVector zzh_z2_lortz;   // only used if m_zzh_no_z_decay == 1
-    TLorentzVector zzh_h_lortz;
+    TLorentzVector l1_lortz, l2_lortz;
+    TLorentzVector zhh_h1_lortz, zhh_h2_lortz;
+    TLorentzVector zzh_z2f1_lortz, zzh_z2f2_lortz, zzh_h_lortz;
 
     // Save truth info about H/Z-decays
+    MCParticle *mcp_l1 = (MCParticle*) inputMCTrueCollection->getElementAt(8); 
+    MCParticle *mcp_l2 = (MCParticle*) inputMCTrueCollection->getElementAt(9);
+    
+    MCParticle *mcp_zhh_h1_decay1{}, *mcp_zhh_h1_decay2{}, *mcp_zhh_h2_decay1{}, *mcp_zhh_h2_decay2{};
+    MCParticle *mcp_zzh_z2_decay1{}, *mcp_zzh_z2_decay2{}, *mcp_zzh_h1_decay1{}, *mcp_zzh_h1_decay2{};
+
+    // Prepare TrueJet
+    TrueJet_Parser * tj = this;
+    tj->getall( pLCEvent );
+
+    if (tj->tjcol == NULL)
+      return save_evt_with_error_code(ERRORS::TRUEJET_NULL, false);
+
+    streamlog_out(DEBUG5) << " Number of TrueJets is " << tj->njets() << endl;
+    if ( tj->njets() == 0 )
+      return save_evt_with_error_code(ERRORS::TRUEJET_NO_JETS, false);
+
+    // Assign truth-PDGs
     if (m_is_zhh) {
       mcp_zhh_h1_decay1 = (MCParticle*) inputMCTrueCollection->getElementAt(12);
+      mcp_zhh_h1_decay2 = (MCParticle*) inputMCTrueCollection->getElementAt(13);
+      
       mcp_zhh_h2_decay1 = (MCParticle*) inputMCTrueCollection->getElementAt(14);
+      mcp_zhh_h2_decay2 = (MCParticle*) inputMCTrueCollection->getElementAt(15);
 
       m_true_h1_decay_pdg = abs(mcp_zhh_h1_decay1->getPDG());
       m_true_h2_decay_pdg = abs(mcp_zhh_h2_decay1->getPDG());
+
+      if (m_true_h1_decay_pdg > 0 && m_true_h1_decay_pdg < 7) {
+        m_parton_1_pdg = m_parton_2_pdg = m_true_h1_decay_pdg;
+
+        m_parton_1_e = mcp_zhh_h1_decay1->getEnergy();
+        m_parton_2_e = mcp_zhh_h1_decay2->getEnergy();
+      }
+
+      if (m_true_h2_decay_pdg > 0 && m_true_h2_decay_pdg < 7) {
+        m_parton_3_pdg = m_parton_4_pdg = m_true_h2_decay_pdg;
+
+        m_parton_3_e = mcp_zhh_h2_decay1->getEnergy();
+        m_parton_4_e = mcp_zhh_h2_decay2->getEnergy();
+      }
+        
     } else if (m_is_zzh) {
-      mcp_zzh_z2f1      = (MCParticle*) inputMCTrueCollection->getElementAt(10);
+      mcp_zzh_z2_decay1 = (MCParticle*) inputMCTrueCollection->getElementAt(10);
+      mcp_zzh_z2_decay2 = (MCParticle*) inputMCTrueCollection->getElementAt(11);
+
       mcp_zzh_h1_decay1 = (MCParticle*) inputMCTrueCollection->getElementAt(13);
+      mcp_zzh_h1_decay2 = (MCParticle*) inputMCTrueCollection->getElementAt(14);
 
-      m_true_z2_decay_pdg = abs(mcp_zzh_z2f1->getPDG());
+      m_true_z2_decay_pdg = abs(mcp_zzh_z2_decay1->getPDG());
       m_true_h1_decay_pdg = abs(mcp_zzh_h1_decay1->getPDG());
-    }
 
-    if (m_mode == 0 || m_lepton_mode == 0) {
-      // Fetch data from collection holding MCParticle 
-      // Get particles of final state
-      // Same IDs for final Z1 leptons in both true ZZH and ZHH processes
-      mcp_l1 = (MCParticle*) inputMCTrueCollection->getElementAt(8);
-      mcp_l2 = (MCParticle*) inputMCTrueCollection->getElementAt(9);
+      if (m_true_z2_decay_pdg > 0 && m_true_z2_decay_pdg < 7) {
+        m_parton_1_pdg = m_parton_2_pdg = m_true_z2_decay_pdg;
 
+        m_parton_1_e = mcp_zzh_z2_decay1->getEnergy();
+        m_parton_2_e = mcp_zzh_z2_decay2->getEnergy();
+      }
+
+      if (m_true_h1_decay_pdg > 0 && m_true_h1_decay_pdg < 7) {
+        m_parton_3_pdg = m_parton_4_pdg = m_true_h1_decay_pdg;
+
+        m_parton_3_e = mcp_zzh_h1_decay1->getEnergy();
+        m_parton_4_e = mcp_zzh_h1_decay2->getEnergy();
+      }
+    } else
+      return save_evt_with_error_code(ERRORS::UNHANDLED_PROCESS);  
+      
+    streamlog_out(DEBUG) << "  isZHH " << m_is_zhh << "|" << m_parton_1_pdg << ":" << m_parton_2_pdg << ":" << m_parton_3_pdg << ":" << m_parton_4_pdg  << std::endl;
+
+    m_lepton_mode = (m_lepton_mode == -1) ? m_mode : m_lepton_mode;
+
+    // Save parton-to-true-jet and lepton-to-true-jet-matching, especially for relation between partons and reco jets
+    int parton1_jet_i = m_parton_1_pdg ? tj->mcpjet(m_is_zhh ? mcp_zhh_h1_decay1 : mcp_zzh_z2_decay1) : -1;
+    int parton2_jet_i = m_parton_2_pdg ? tj->mcpjet(m_is_zhh ? mcp_zhh_h1_decay2 : mcp_zzh_z2_decay2) : -1;
+    int parton3_jet_i = m_parton_3_pdg ? tj->mcpjet(m_is_zhh ? mcp_zhh_h2_decay1 : mcp_zzh_h1_decay1) : -1;
+    int parton4_jet_i = m_parton_4_pdg ? tj->mcpjet(m_is_zhh ? mcp_zhh_h2_decay2 : mcp_zzh_h1_decay2) : -1;
+
+    int lepton1_jet_i = tj->mcpjet(mcp_l1);
+    int lepton2_jet_i = tj->mcpjet(mcp_l2);
+
+    streamlog_out(DEBUG) << " TrueJet " << parton1_jet_i << ":" << parton2_jet_i << ":" << parton3_jet_i << ":" << parton4_jet_i << ":" << lepton1_jet_i << ":" << lepton2_jet_i << std::endl;
+
+
+    // Get Lorentz vectors of charged leptons
+    if (m_lepton_mode == 0) {
       l1_lortz = v4(mcp_l1);
       l2_lortz = v4(mcp_l2);
+    } else if (m_lepton_mode == 1 || m_lepton_mode == 2) {
+      ReconstructedParticle *reco_l1{};
+      ReconstructedParticle *reco_l2{};
+
+      if (m_lepton_mode == 1) {
+        streamlog_out(DEBUG) << "  getting lepton pair: " << m_inputLepPairCollection << std::endl;
+        LCCollection *inputLepPair = pLCEvent->getCollection( m_inputLepPairCollection );
+
+        if (inputLepPair->getNumberOfElements() != 2)
+          return save_evt_with_error_code(ERRORS::INCOMPLETE_RECO_LEPTON_PAIR);
+
+        reco_l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
+        reco_l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
+      } else if (m_lepton_mode == 2) {
+        unsigned int n_matching_l_jets = 0;
+        unsigned int n_matching_lb_jets = 0;
+        for (int i_jet = 0 ; i_jet < tj->njets() ; i_jet++ ) {
+          if ( type_jet( i_jet ) == 2 ) { // 2 = leptonic jets
+            int jet_pdg = tj->jet(i_jet)->getParticleIDs()[0]->getPDG();
+            if ( jet_pdg == m_z1_decay_pdg ) {
+              reco_l1 = (ReconstructedParticle*) tj->jet(i_jet);
+              n_matching_l_jets++;
+            } else if ( jet_pdg == -m_z1_decay_pdg) {
+              reco_l2 = (ReconstructedParticle*) tj->jet(i_jet);
+              n_matching_lb_jets++;
+            }
+          }
+        }
+
+        if (n_matching_l_jets != n_matching_lb_jets || n_matching_lb_jets != 1)
+          return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_LEPTON_PAIR);
+      }
+
+      // Assign final state particles
+      l1_lortz = v4(reco_l1);
+      l2_lortz = v4(reco_l2);
+    } else if (m_lepton_mode == 3) {
+      l1_lortz = v4(m_truejet_mode == 0 ? this->p4true(lepton1_jet_i) : this->p4seen(lepton1_jet_i));
+      l2_lortz = v4(m_truejet_mode == 0 ? this->p4true(lepton2_jet_i) : this->p4seen(lepton2_jet_i));
     }
 
     if (m_mode == 0) {
-      // MCTruth mode
+      // True
+      MCParticle *mcp_zhh_h1{};
+      MCParticle *mcp_zhh_h2{};
+      MCParticle *mcp_zzh_h{};
+
+      // Truth mode: Get decay pdg from MCParticle
       m_h1_decay_pdg = m_true_h1_decay_pdg;
       m_h2_decay_pdg = m_true_h2_decay_pdg;
       m_z2_decay_pdg = m_true_z2_decay_pdg;
@@ -648,47 +784,32 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         mcp_zhh_h1 = (MCParticle*) inputMCTrueCollection->getElementAt(10);
         mcp_zhh_h2 = (MCParticle*) inputMCTrueCollection->getElementAt(11);
 
+        m_z2_decay_mode = getZDecayModeFromPDG(m_h1_decay_pdg);
+
         zhh_h1_lortz = v4(mcp_zhh_h1);
         zhh_h2_lortz = v4(mcp_zhh_h2);
 
         m_zhh_is_set = 1;
 
-        // Assuming ZZH
-        if (m_zzh_no_z_decay == 0) {
-          // Pretend that decay products of H1 are decay products of Z2 in ZZH
-          mcp_zhh_h1_decay2 = (MCParticle*) inputMCTrueCollection->getElementAt(13);
-          
-          zzh_z2f1_lortz = v4(mcp_zhh_h1_decay1);
-          zzh_z2f2_lortz = v4(mcp_zhh_h1_decay2);
+        // Assuming ZZH (pretend that decay products of H1 are decay products of Z2 in ZZH)          
+        zzh_z2f1_lortz = v4(mcp_zhh_h1_decay1);
+        zzh_z2f2_lortz = v4(mcp_zhh_h1_decay2);
 
-          m_z2_decay_mode = getZDecayModeFromPDG(m_h1_decay_pdg);
-
-          if (m_z2_decay_mode > 0) {
-            zzh_h_lortz = zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
-            m_zzh_is_set = 1;
-          }
-        } else if (m_zzh_no_z_decay == 1) {
-          zzh_z2_lortz = zhh_h1_lortz;
-          zzh_h_lortz  = zhh_h2_lortz;
+        if (m_z2_decay_mode > 0) {
+          zzh_h_lortz = zhh_h2_lortz; // identify H2 in ZHH as H in ZZH
           m_zzh_is_set = 1;
         }
         
       } else if (m_is_zzh) {
         // Assumming ZZH
-        //          zzh_z2f1 already assigned above, in truth info block
-        mcp_zzh_z2f2 = (MCParticle*) inputMCTrueCollection->getElementAt(11);
-        mcp_zzh_h    = (MCParticle*) inputMCTrueCollection->getElementAt(12);
+        mcp_zzh_h         = (MCParticle*) inputMCTrueCollection->getElementAt(12);
 
-        zzh_z2f1_lortz = v4(mcp_zzh_z2f1->getPDG() > 0 ? mcp_zzh_z2f1 : mcp_zzh_z2f2);
-        zzh_z2f2_lortz = v4(mcp_zzh_z2f1->getPDG() > 0 ? mcp_zzh_z2f2 : mcp_zzh_z2f1);
+        zzh_z2f1_lortz = v4(mcp_zzh_z2_decay1->getPDG() > 0 ? mcp_zzh_z2_decay1 : mcp_zzh_z2_decay2);
+        zzh_z2f2_lortz = v4(mcp_zzh_z2_decay1->getPDG() > 0 ? mcp_zzh_z2_decay2 : mcp_zzh_z2_decay1);
 
         zzh_h_lortz    = v4(mcp_zzh_h);
 
-        if (m_zzh_no_z_decay == 0) {
-          m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
-        } else if (m_zzh_no_z_decay == 1) {
-          zzh_z2_lortz = zzh_z2f1_lortz + zzh_z2f2_lortz;
-        }
+        m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
 
         m_zzh_is_set = 1;
 
@@ -698,13 +819,14 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         
         m_zhh_is_set = 1;
       }
+
     } else if (m_mode == 1 || m_mode == 2) {
       // Jet reconstruction mode
-      // Fetch data from Misclustering processor per default?
-      // 1 for RefinedJets (or any m_inputJetCollection) with inputHiggsPair; or 2 for TrueJet (requires output as from Misclustering) in https://github.com/nVentis/ZHH
-      // As of now, assumes inputJetCol, inputLepPair, inputHiggsPair and inputHdecayMode
+      // 1 for RefinedJets
+      // 2 for TrueJet
 
-      // To be filled in both modes
+
+      // For MEM calculation: Use di-jet matching from Misclustering processor
       vector<int> perm_sig; // ZHH
       vector<int> perm_bkg; // ZZH
 
@@ -720,8 +842,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_BKG_COLLECTION);
 
       // Fetching collections
-      streamlog_out(DEBUG) << " getting JetMatchingSig collection: " << m_inputJetMatchingSigCollection << std::endl ;
-      streamlog_out(DEBUG) << " getting JetMatchingBkg collection: " << m_inputJetMatchingBkgCollection << std::endl ;
+      streamlog_out(DEBUG) << "  getting JetMatchingSig collection: " << m_inputJetMatchingSigCollection << std::endl ;
+      streamlog_out(DEBUG) << "  getting JetMatchingBkg collection: " << m_inputJetMatchingBkgCollection << std::endl ;
 
       const EVENT::LCParameters& jm_sig_params = pLCEvent->getCollection( m_inputJetMatchingSigCollection )->getParameters();
       const EVENT::LCParameters& jm_bkg_params = pLCEvent->getCollection( m_inputJetMatchingBkgCollection )->getParameters();
@@ -732,8 +854,9 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (jm_bkg_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
         return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
-      if (m_mode == 2) {        
-        this->getall( pLCEvent );
+      if (m_mode == 2) {
+        // TrueJet mode, using matching by Misclustering processor  
+        
         //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
 
         perm_sig.push_back(jm_sig_params.getIntVal("b1tjet1id"));
@@ -747,14 +870,14 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet2id"));
 
         for (int j = 0; j < 4; j++) {
-          sig_jets.push_back((ReconstructedParticle*) jet(perm_sig[j]));
-          bkg_jets.push_back((ReconstructedParticle*) jet(perm_bkg[j]));
+          sig_jets.push_back((ReconstructedParticle*) tj->jet(perm_sig[j]));
+          bkg_jets.push_back((ReconstructedParticle*) tj->jet(perm_bkg[j]));
         }
 
       } else if (m_mode == 1) {
 
         // Fetching collections
-        streamlog_out(DEBUG) << " getting jet collection: " << m_inputJetCollection << std::endl;
+        streamlog_out(DEBUG) << "  getting jet collection: " << m_inputJetCollection << std::endl;
         inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
 
         // Get jet pairing from Misclustering processor
@@ -773,40 +896,6 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
           bkg_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_bkg[j]));
         }
       }
-
-      // Fetch leptons (errors 101 and 201)
-      if (m_lepton_mode == 1 || (m_lepton_mode == 0 && m_mode == 1)) {
-        streamlog_out(DEBUG) << " getting lepton pair: " << m_inputLepPairCollection << std::endl;
-        LCCollection *inputLepPair = pLCEvent->getCollection( m_inputLepPairCollection );
-
-        if (inputLepPair->getNumberOfElements() != 2)
-          return save_evt_with_error_code(ERRORS::INCOMPLETE_RECO_LEPTON_PAIR);
-
-        reco_l1 = (ReconstructedParticle*) inputLepPair->getElementAt(0);
-        reco_l2 = (ReconstructedParticle*) inputLepPair->getElementAt(1);
-      } else if (m_lepton_mode == 2 || (m_lepton_mode == 0 && m_mode == 2)) {
-        unsigned int n_matching_l_jets = 0;
-        unsigned int n_matching_lb_jets = 0;
-        for (int i_jet = 0 ; i_jet < njets() ; i_jet++ ) {
-          if ( type_jet( i_jet ) == 2 ) { // 2 = leptonic jets
-            int jet_pdg = jet(i_jet)->getParticleIDs()[0]->getPDG();
-            if ( jet_pdg == m_z1_decay_pdg ) {
-              reco_l1 = (ReconstructedParticle*) jet(i_jet);
-              n_matching_l_jets++;
-            } else if ( jet_pdg == -m_z1_decay_pdg) {
-              reco_l2 = (ReconstructedParticle*) jet(i_jet);
-              n_matching_lb_jets++;
-            }
-          }
-        }
-
-        if (n_matching_l_jets != n_matching_lb_jets || n_matching_lb_jets != 1)
-          return save_evt_with_error_code(ERRORS::INCOMPLETE_TRUEJET_LEPTON_PAIR);
-      }
-
-      // Assign final state particles
-      l1_lortz = v4(reco_l1);
-      l2_lortz = v4(reco_l2);
 
       // Save info about regions
       if (jm_sig_params.getNInt("region") == 1)
@@ -841,7 +930,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
     
       cerr << "processEvent : using signal jet pairing "     << perm_sig[0] << perm_sig[1] << perm_sig[2] << perm_sig[3] << std::endl;
-      cerr << "processEvent : using background jet pairing " << perm_bkg[0] << perm_bkg[1] << perm_bkg[2] << perm_bkg[3] << std::endl;
+      //cerr << "processEvent : using background jet pairing " << perm_bkg[0] << perm_bkg[1] << perm_bkg[2] << perm_bkg[3] << std::endl;
 
       // Assuming ZZH
       // b1 = Z
@@ -862,6 +951,58 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       zhh_h2_lortz = v4(sig_jets[0]) + v4(sig_jets[1]);
 
       m_h2_decay_pdg = both_to_b ? 5 : 4;
+      
+      m_zzh_is_set = 1;
+    } else if (m_mode == 3) {
+      // TrueJet only mode, assuming perfect jet-clustering
+
+      // Truth mode: Get decay pdg from MCParticle
+      m_h1_decay_pdg = m_true_h1_decay_pdg;
+      m_h2_decay_pdg = m_true_h2_decay_pdg;
+      m_z2_decay_pdg = m_true_z2_decay_pdg;
+
+      if (!(parton1_jet_i >= 0 && parton2_jet_i >= 0 && parton3_jet_i >= 0 && parton4_jet_i >= 0 && lepton1_jet_i >= 0 && lepton2_jet_i >= 0))
+        return save_evt_with_error_code(ERRORS::SOME_TRUEJET_NOT_FOUND);
+
+      // CHEATED: Extract information about decays
+      if (m_parton_1_pdg != m_parton_3_pdg)
+        return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
+
+      streamlog_out(DEBUG) << "  getting TrueJets" << std::endl;
+      TLorentzVector jet_1_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton1_jet_i) : this->p4seen(parton1_jet_i));
+      TLorentzVector jet_2_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton2_jet_i) : this->p4seen(parton2_jet_i));
+      TLorentzVector jet_3_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton3_jet_i) : this->p4seen(parton3_jet_i));
+      TLorentzVector jet_4_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton4_jet_i) : this->p4seen(parton4_jet_i));
+
+      streamlog_out(DEBUG) << "  getting TrueJets" << std::endl;
+
+      streamlog_out(DEBUG) << "  getting TrueJets" << std::endl;
+
+      // Saving jet energies for transfer function (for seen-mode)
+      m_jet_1_e = jet_1_p4.E();
+      m_jet_2_e = jet_2_p4.E();
+      m_jet_3_e = jet_3_p4.E();
+      m_jet_4_e = jet_4_p4.E();
+
+      // Assuming ZZH
+      // b1 = Z
+      // b2 = H
+      zzh_z2f1_lortz = jet_1_p4;
+      zzh_z2f2_lortz = jet_2_p4;
+      zzh_h_lortz    = jet_3_p4 + jet_4_p4;
+
+      m_z2_decay_pdg  = m_parton_1_pdg; // PDGs: bottom->5, charm->4
+      m_h1_decay_pdg  = m_parton_3_pdg;
+      m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
+
+      m_zhh_is_set = 1;
+
+      // Assuming ZHH
+      // b1,b2 = H
+      zhh_h1_lortz = jet_1_p4 + jet_2_p4;
+      zhh_h2_lortz = jet_3_p4 + jet_4_p4;
+
+      m_h2_decay_pdg = m_z2_decay_pdg;
       
       m_zzh_is_set = 1;
     }
@@ -926,27 +1067,10 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       Int_t vHelRRR[3] = { 1, 1, 1};
       
       // Set final states
-      if (m_zzh_no_z_decay == 0) {
-        TLorentzVector zzh_lortz[5] = {l1_lortz, l2_lortz, zzh_z2f1_lortz, zzh_z2f2_lortz, zzh_h_lortz};
-        
-        _zzh->SetZDecayMode(m_z1_decay_mode, m_z2_decay_mode);
-        _zzh->SetMomentumFinal(zzh_lortz);
-      } else if (m_zzh_no_z_decay == 1) {
-        TLorentzVector zzh_lortz[4] = {l1_lortz, l2_lortz, zzh_z2_lortz, zzh_h_lortz};
-
-        _zzh->SetZDecayMode(m_z1_decay_mode);
-        _zzh->SetMomentumFinalNoZdecay(zzh_lortz);
-
-        Int_t vHelLLZ[3] = {-1,-1, 0};
-        Int_t vHelLRZ[3] = {-1, 1, 0};
-        Int_t vHelRLZ[3] = { 1,-1, 0};
-        Int_t vHelRRZ[3] = { 1, 1, 0};
-
-        m_zzh_sigmallz = _zzh->GetMatrixElement2(vHelLLZ);
-        m_zzh_sigmalrz = _zzh->GetMatrixElement2(vHelLRZ);
-        m_zzh_sigmarlz = _zzh->GetMatrixElement2(vHelRLZ);
-        m_zzh_sigmarrz = _zzh->GetMatrixElement2(vHelRRZ);
-      }
+      TLorentzVector zzh_lortz[5] = {l1_lortz, l2_lortz, zzh_z2f1_lortz, zzh_z2f2_lortz, zzh_h_lortz};
+      
+      _zzh->SetZDecayMode(m_z1_decay_mode, m_z2_decay_mode);
+      _zzh->SetMomentumFinal(zzh_lortz);
 
       m_zzh_mz1  = TMath::Sqrt(_zzh->GetQ2Z1());
       m_zzh_mz2  = TMath::Sqrt(_zzh->GetQ2Z2());
@@ -978,17 +1102,10 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zzh_q2_z2 = _zzh->GetQ2Z2();
       m_zzh_q2_h  = _zzh->GetQ2H();
 
-      if (m_zzh_no_z_decay == 0) {
-        m_zzh_z2f1_E  = zzh_z2f1_lortz.E();
-        m_zzh_z2f1_px = zzh_z2f1_lortz.Px();
-        m_zzh_z2f1_py = zzh_z2f1_lortz.Py();
-        m_zzh_z2f1_pz = zzh_z2f1_lortz.Pz();
-      } else if (m_zzh_no_z_decay == 1) {
-        m_zzh_z2f1_E  = zzh_z2_lortz.E();
-        m_zzh_z2f1_px = zzh_z2_lortz.Px();
-        m_zzh_z2f1_py = zzh_z2_lortz.Py();
-        m_zzh_z2f1_pz = zzh_z2_lortz.Pz();
-      }
+      m_zzh_z2f1_E  = zzh_z2f1_lortz.E();
+      m_zzh_z2f1_px = zzh_z2f1_lortz.Px();
+      m_zzh_z2f1_py = zzh_z2f1_lortz.Py();
+      m_zzh_z2f1_pz = zzh_z2f1_lortz.Pz();
 
       m_zzh_z2f2_E  = zzh_z2f2_lortz.E();
       m_zzh_z2f2_px = zzh_z2f2_lortz.Px();
@@ -1023,6 +1140,10 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     m_zzh_l2_pz = l2_lortz.Pz();
 
     m_pTTree->Fill();
+
+    //this->delall();
+
+    streamlog_out(DEBUG) << "Processed event; " << m_zhh_is_set << "|" << m_zzh_is_set << std::endl;
     
   } catch(DataNotAvailableException &e) {
     streamlog_out(MESSAGE) << "processEvent : Input collections not found in event " << m_nEvt << std::endl;
@@ -1035,10 +1156,15 @@ void CompareMEProcessor::check()
     // nothing to check here - could be used to fill checkplots in reconstruction processor
 }
 
-void CompareMEProcessor::save_evt_with_error_code(int error_code)
+void CompareMEProcessor::save_evt_with_error_code(int error_code, bool del_tj)
 {
+  //if (del_tj)
+  //  this->delall();
+
   m_error_code = error_code;
   m_pTTree->Fill();
+
+  streamlog_out(DEBUG) << "Processed event with fault code " << error_code << std::endl;
 }
 
 void CompareMEProcessor::end()

@@ -89,20 +89,31 @@ class SaveFinalKinematics : public Processor, public TrueJet_Parser
 		const vector<int> mcp_ids_zhh = {8, 9, 12, 13, 14, 15};
 		const vector<int> mcp_ids_zzh = {8, 9, 11, 10, 13, 14};
 
+		// per event: vector of particle PDGs
 		vector<int> pdg_mcp{};
 		vector<int> pdg_recopfo{};
 		vector<int> pdg_recojet{};
 		vector<int> pdg_truejet{};
 
+		// per event: 4-momenta of particles/jet
 		vector<vector<double>> fm_mcp{};
 		vector<vector<double>> fm_recopfo{};
 		vector<vector<double>> fm_recojet{};
 		vector<vector<double>> fm_truejet{};
 
+		// per event: charges of particles/jet
 		vector<float> charge_mcp{};
 		vector<float> charge_recopfo{};
 		vector<float> charge_recojet{};
 		vector<float> charge_truejet{};
+
+		// per event: 2-element-vectors of structure [RECO_PFO_id, RECO/TRUE_JET_id]
+		vector<vector<int>> id_pfo2recojet{};
+		vector<vector<int>> id_pfo2truejet{};
+
+		// per event: (twice for every entry) 2-element-vectors of structure [RECO_PFO_id, ]
+		vector<vector<int>> id_pfo2recojet_edgeidx{};
+		vector<vector<int>> id_pfo2truejet_edgeidx{};
 
 		vector<int> truejet_jettypes{};
 

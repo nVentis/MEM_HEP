@@ -89,7 +89,7 @@
         "optional": "cpp",
         "variant": "cpp"
     },
-    "cmake.cmakePath": "/cvmfs/ilc.desy.de/key4hep/spackages/cmake/3.23.0/x86_64-centos7-gcc11.2.0-opt/mje3q7dbcg3ot3ptvn4pzypadohlejte/bin/cmake",
+    "cmake.cmakePath": "/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/cmake/3.26.3/x86_64-centos7-gcc12.3.0-opt/3ao37/bin/cmake",
     "cmake.preferredGenerators": [
         "Unix Makefiles"
     ],
@@ -98,8 +98,9 @@
     "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode/vc.db",
     "cmake.buildDirectory": "${sourceDirectory}/build",
     "cmake.sourceDirectory": [
-        "${workspaceFolder}/source/SaveFinalKinematics",
-        "${workspaceFolder}/source/CompareMEProcessor",
-        "${workspaceFolder}/source/ZHHPostRecoMEProcessor"
-    ]    
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/SaveFinalKinematics",
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/Use_TrueJet",
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/ZHHPostRecoMEProcessor"
+    ]
 }

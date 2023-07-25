@@ -440,7 +440,7 @@
     <parameter name="maxEvis" type="float"> 999. </parameter>
     <parameter name="minHHmass" type="float"> 0. </parameter>
     <parameter name="ECM" type="float"> 500. </parameter>
-    <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_PreSelection.root</parameter>
+    <parameter name="outputFilename" type="string">${OutputDirectory}/root/${OutputBaseName}_PreSelection.root</parameter>
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
     <parameter name="Verbosity" type="string">MESSAGE </parameter>
   </processor>
@@ -533,7 +533,7 @@
     <!--Whether create root file for new pfo collection or not true:create / false: do not create-->
     <parameter name="fillRootTree" type="bool">${createRootTree}</parameter>
     <!--Name of the output root file-->
-    <parameter name="RootFile" type="string">${OutputDirectory}/${OutputBaseName}_SLDCorrection.root</parameter>
+    <parameter name="RootFile" type="string">${OutputDirectory}/root/${OutputBaseName}_SLDCorrection.root</parameter>
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
     <parameter name="Verbosity" type="string">WARNING</parameter>
   </processor>
@@ -578,7 +578,7 @@
     <!-- name of fit hypothesis: MH, ZHH, ZZH, equal mass (default)-->
     <parameter name="fithypothesis">MH</parameter>
     <!-- name of Output root file -->
-    <parameter name="outputFilename">${OutputDirectory}/${OutputBaseName}_Kinfit.root</parameter>
+    <parameter name="outputFilename">${OutputDirectory}/root/${OutputBaseName}_Kinfit.root</parameter>
     <!-- Factor for scaling up inverse pT error for leptons (default: 1)-->
     <parameter name="SigmaInvPtScaleFactor" type="float"> 1.1 </parameter>
     <!-- Factor for scaling up energy error for jets (default: 1)-->
@@ -644,7 +644,7 @@
     <parameter name="matchMethod" type="int">0</parameter>
     <parameter name="b1Type" type="string">H</parameter>
     <parameter name="b2Type" type="string">H</parameter>
-    <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_MisclusteringSig.root</parameter>
+    <parameter name="outputFilename" type="string">${OutputDirectory}/root/${OutputBaseName}_MisclusteringSig.root</parameter>
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
     <parameter name="Verbosity" type="string">DEBUG</parameter>
   </processor>
@@ -656,7 +656,7 @@
     <parameter name="matchMethod" type="int">0</parameter>
     <parameter name="b1Type" type="string">Z</parameter>
     <parameter name="b2Type" type="string">H</parameter>
-    <parameter name="outputFilename" type="string">${OutputDirectory}/${OutputBaseName}_MisclusteringBkg.root</parameter>
+    <parameter name="outputFilename" type="string">${OutputDirectory}/root/${OutputBaseName}_MisclusteringBkg.root</parameter>
     <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
     <parameter name="Verbosity" type="string">DEBUG</parameter>
   </processor>
@@ -672,7 +672,7 @@
     <!--force keep of the named collections - overrules DropCollectionTypes (and DropCollectionNames)-->
     <parameter name="KeepCollectionNames" type="StringVec"> Durham_2Jets IsolatedLeptons ISOLeptons PandoraPFOsWithoutLepPair RefinedJets RefinedJetsPFOs OutputErrorFlowJets TrueJets FinalColourNeutrals InitialColourNeutrals TrueJetPFOLink TrueJetMCParticleLink FinalElementonLink InitialElementonLink FinalColourNeutralLink InitialColourNeutralLink HdecayMode IsolatedLeptons preselection JetMatching </parameter>
         <!-- name of output file -->
-    <parameter name="LCIOOutputFile" type="string">${OutputDirectory}/${OutputBaseName}.slcio</parameter>
+    <parameter name="LCIOOutputFile" type="string">${OutputDirectory}/slcio/${OutputBaseName}.slcio</parameter>
     <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
     <parameter name="LCIOWriteMode" type="string">WRITE_NEW</parameter>
     <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
