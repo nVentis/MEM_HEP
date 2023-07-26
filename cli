@@ -1,5 +1,6 @@
 import sys, os
 import logging
+import click
 
 logger = logging.getLogger('mem_hep')
 logger.setLevel(logging.DEBUG)
@@ -27,7 +28,8 @@ if __name__ == '__main__':
         plot     = int(sys.argv[6]) if len(sys.argv) > 6 else 1
         
         mem_plot(src_file, dst_dir, name, convert, plot)
-        
+    
+    # Expects 
     if cmd_name == "mem_plots":
         src_dir = sys.argv[2]
         dst_dir = sys.argv[3]

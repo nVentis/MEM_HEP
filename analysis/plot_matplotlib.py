@@ -5,6 +5,7 @@ import matplotlib.cm as cm
 from matplotlib import rcParams as rcp
 
 rcp['hatch.linewidth'] = 0.5  # previous pdf hatch linewidth
+rcp['font.family'] = 'monospace' # per default use monospace fonts
 
 def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylabel="", units="", normalize=False, title="Likelihood-Analysis", ax=None):
     
@@ -16,6 +17,7 @@ def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylab
         fig, ax = plt.subplots()
         fig.set_dpi(100)
         fig.set_figwidth(8)
+        
         fig.set_figheight(6)
     
     if colorpalette is None:

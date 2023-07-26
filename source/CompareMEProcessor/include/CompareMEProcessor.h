@@ -103,6 +103,7 @@ protected:
 	int m_lepton_mode{};
 	int m_truejet_mode{}; // 0 => True; 1 => Seen; (2 for True-of-Seen probably not required)
 	int m_saveInputKinematics{};
+	int m_saveTransferEnergies{};
 	int m_require_presel_pass{};
 	float m_Hmass{};
 
@@ -130,6 +131,9 @@ protected:
 	float m_parton_2_e{};
 	float m_parton_3_e{};
 	float m_parton_4_e{};
+
+	float m_true_lep_1_e{};
+	float m_true_lep_2_e{};
 
 	// Event data
 	int m_z1_decay_pdg{};  // as input from parameter; defaults to 5 (mu+mu-)

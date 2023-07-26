@@ -164,6 +164,12 @@ CompareMEProcessor::CompareMEProcessor() :
         int(0)
         );
 
+  registerProcessorParameter("SaveTransferEnergies",
+        "0: dont save parton and jets energies; 1: do it",
+        m_saveTransferEnergies,
+        int(1)
+        );
+
 	registerProcessorParameter("HiggsMass",
         "assumed Hmass",
         m_Hmass,
@@ -294,6 +300,29 @@ void CompareMEProcessor::init()
     m_pTTree->Branch("efrac2_icn_reco", &m_efrac2_icn_reco, "efrac1_icn_reco/F");
     m_pTTree->Branch("efrac1_icn_true", &m_efrac1_icn_true, "efrac1_icn_true/F");
     m_pTTree->Branch("efrac2_icn_true", &m_efrac2_icn_true, "efrac1_icn_true/F");
+  }
+
+  if (m_saveTransferEnergies > 0) {
+    m_pTTree->Branch("parton1_e", &m_parton_1_e);
+    m_pTTree->Branch("parton2_e", &m_parton_2_e);
+    m_pTTree->Branch("parton3_e", &m_parton_3_e);
+    m_pTTree->Branch("parton4_e", &m_parton_4_e);
+
+    m_pTTree->Branch("parton1_pdg", &m_parton_1_pdg);
+    m_pTTree->Branch("parton2_pdg", &m_parton_2_pdg);
+    m_pTTree->Branch("parton3_pdg", &m_parton_3_pdg);
+    m_pTTree->Branch("parton4_pdg", &m_parton_4_pdg);
+
+    m_pTTree->Branch("true_lep1_e", &m_true_lep_1_e);
+    m_pTTree->Branch("true_lep2_e", &m_true_lep_2_e);
+
+    m_pTTree->Branch("jet1_e", &m_jet_1_e);
+    m_pTTree->Branch("jet2_e", &m_jet_2_e);
+    m_pTTree->Branch("jet3_e", &m_jet_3_e);
+    m_pTTree->Branch("jet4_e", &m_jet_4_e);
+
+    m_pTTree->Branch("lep1_e", &m_lep_1_e);
+    m_pTTree->Branch("lep2_e", &m_lep_2_e);    
   }
 
   // 2. Event data
@@ -463,6 +492,9 @@ void CompareMEProcessor::Clear()
   m_parton_2_pdg = 0;
   m_parton_3_pdg = 0;
   m_parton_4_pdg = 0;
+
+  m_true_lep_1_e = 0.;
+  m_true_lep_2_e = 0.;
 
   m_efrac1_reco = 0.;
   m_efrac2_reco = 0.;
@@ -641,6 +673,9 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     // Save truth info about H/Z-decays
     MCParticle *mcp_l1 = (MCParticle*) inputMCTrueCollection->getElementAt(8); 
     MCParticle *mcp_l2 = (MCParticle*) inputMCTrueCollection->getElementAt(9);
+
+    m_true_lep_1_e = mcp_l1->getEnergy();
+    m_true_lep_2_e = mcp_l2->getEnergy();
     
     MCParticle *mcp_zhh_h1_decay1{}, *mcp_zhh_h1_decay2{}, *mcp_zhh_h2_decay1{}, *mcp_zhh_h2_decay2{};
     MCParticle *mcp_zzh_z2_decay1{}, *mcp_zzh_z2_decay2{}, *mcp_zzh_h1_decay1{}, *mcp_zzh_h1_decay2{};
@@ -723,7 +758,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     streamlog_out(DEBUG) << " TrueJet " << parton1_jet_i << ":" << parton2_jet_i << ":" << parton3_jet_i << ":" << parton4_jet_i << ":" << lepton1_jet_i << ":" << lepton2_jet_i << std::endl;
 
 
-    // Get Lorentz vectors of charged leptons
+    // A Charged leptons
     if (m_lepton_mode == 0) {
       l1_lortz = v4(mcp_l1);
       l2_lortz = v4(mcp_l2);
@@ -768,6 +803,10 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       l2_lortz = v4(m_truejet_mode == 0 ? this->p4true(lepton2_jet_i) : this->p4seen(lepton2_jet_i));
     }
 
+    m_lep_1_e = l1_lortz.E();
+    m_lep_2_e = l2_lortz.E();
+
+    // B Partons/Jets
     if (m_mode == 0) {
       // True
       MCParticle *mcp_zhh_h1{};
@@ -853,6 +892,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       if (jm_bkg_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
         return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
+
+      std::vector<int> = {};
 
       if (m_mode == 2) {
         // TrueJet mode, using matching by Misclustering processor  
