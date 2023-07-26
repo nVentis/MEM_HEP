@@ -10,7 +10,7 @@ compile_pkg ()
     mkdir -p build
     cd build
     cmake -DCMAKE_CXX_STANDARD=17 ..
-    make install || cd ../.. && return 1
+    make install || { cd ../.. ; return 1; }
     cd ../..
 }
 
@@ -19,11 +19,17 @@ cd source
 local module_to_compile=""
 for module_to_compile in $(ls .)
 do
-    compile_pkg $module_to_compile && echo "${GREEN}+++ Successfully compiled $module_to_compile +++${NC}" || echo "${RED}!!! Error [$?] while trying to compile $module_to_compile !!!${NC}" && cd .. && return 1
+    compile_pkg $module_to_compile && echo "${GREEN}+++ Successfully compiled $module_to_compile +++${NC}" || { echo "${RED}!!! Error [$?] while trying to compile $module_to_compile !!!${NC}"; cd ..; return 1; }
 done
 
+echo "${GREEN}+++ Successfully compiled MEM_HEP projects +++${NC}"
+
 unset module_to_compile
+unset compile_pkg
 unset RED
+unset GREEN
 unset NC
 
 cd ..
+
+return 0

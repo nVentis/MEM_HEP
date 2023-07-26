@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#source /cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-03/init_ilcsoft.sh
-#source /afs/desy.de/project/ilcsoft/sw/x86_64_gcc82_centos7/v02-02-03/init_ilcsoft.sh
-
 source /cvmfs/ilc.desy.de/key4hep/setup.sh
 #source /cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/key4hep-stack/2023-05-24/x86_64-centos7-gcc12.3.0-opt/7emhu/setup.sh
 #export JUPYTER_PATH=${ROOTSYS}/etc/notebook:${JUPYTER_PATH}
