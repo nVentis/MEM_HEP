@@ -7,11 +7,13 @@ source /cvmfs/ilc.desy.de/key4hep/setup.sh
 #source /cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/key4hep-stack/2023-05-24/x86_64-centos7-gcc12.3.0-opt/7emhu/setup.sh
 #export JUPYTER_PATH=${ROOTSYS}/etc/notebook:${JUPYTER_PATH}
 
-#export PYTHON_INCLUDE_DIR=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/include/python3.10:$PYTHON_INCLUDE_DIR
-#export PYTHON_LIBRARY=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/lib/libpython3.10.so:$PYTHON_LIBRARY
-#export Python_EXECUTABLE=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/bin/python:$Python_EXECUTABLE
-#export Python3_FIND_VIRTUALENV=STANDARD
+export Python_INCLUDE_DIR=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/include/python3.10:$Python_INCLUDE_DIR
+export Python_LIBRARY=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/lib/libpython3.10.so:$Python_LIBRARY
+export Python_EXECUTABLE=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/bin/python
+export Python_FIND_VIRTUALENV=STANDARD
+export Python_ROOT_DIR=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba
 export PATH=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/python/3.10.10/x86_64-centos7-gcc12.3.0-opt/3hqba/bin/python:$PATH
+export Python_FIND_STRATEGY=LOCATION
 
 # Modules of ZHH
 export ILD_ANASOFT_ZHH=/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/ZHH
@@ -49,6 +51,6 @@ export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/releases/089d775cf2/root/6.28.04/
 # export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_0/bin:$PATH
 # export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_9_15/bin:$PATH
 export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_8_1/bin:$PATH
-export PATH=/afs/desy.de/user/b/bliewert/.local/bin:$PATH
+#export PATH=/afs/desy.de/user/b/bliewert/.local/bin:$PATH
 
 # This is incompatible with py311 environment!

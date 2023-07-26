@@ -9,7 +9,7 @@ compile_pkg ()
     cd $1
     mkdir -p build
     cd build
-    #cmake -DCMAKE_CXX_STANDARD=17 ..
+    cmake -DCMAKE_CXX_STANDARD=17 ..
     make install || cd ../.. && return 1
     cd ../..
 }
