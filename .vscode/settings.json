@@ -87,7 +87,8 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "optional": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "source_location": "cpp"
     },
     "cmake.cmakePath": "/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/cmake/3.26.3/x86_64-centos7-gcc12.3.0-opt/3ao37/bin/cmake",
     "cmake.preferredGenerators": [

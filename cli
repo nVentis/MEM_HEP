@@ -8,12 +8,25 @@ ch = logging.StreamHandler()
 ch.setFormatter(logging.Formatter('[%(asctime)s %(levelname)s]: %(message)s'))
 logger.addHandler(ch)
 
-from analysis.commands.mem_plot import mem_plot
+#from analysis.commands.mem_plot import mem_plot
 
-# Examples:
-# python cli mem_plots /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/root/prod /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy
-if __name__ == '__main__':
-    logger.info("Started CLI")    
+from analysis.cli_plot import cli_plot
+from analysis.cli_convert import cli_convert
+from analysis.cli_commands.me import me_command, me_all_command
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+def initdb():
+    click.echo('Initialized the database')
+
+@click.command()
+def dropdb():
+    click.echo('Dropped the database')
+
+if False:
     cmd_name = sys.argv[1]
     
     # Expects 3 arguments:
@@ -37,3 +50,14 @@ if __name__ == '__main__':
         
         for name in names.split(","):
             mem_plot(os.path.join(src_dir, "compare_" + name + ".root"), os.path.join(dst_dir, name), name, True, True)
+
+# Examples:
+# python cli mem_analyze /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/root/prod /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy
+if __name__ == '__main__':
+    cli.add_command(cli_plot)
+    cli.add_command(cli_convert)
+    cli.add_command(initdb)
+    cli.add_command(dropdb)
+    cli.add_command(me_command)
+    cli.add_command(me_all_command)
+    cli()

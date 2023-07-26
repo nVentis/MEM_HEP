@@ -893,11 +893,9 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (jm_bkg_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
         return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
-      std::vector<int> = {};
-
       if (m_mode == 2) {
         // TrueJet mode, using matching by Misclustering processor  
-        
+
         //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
 
         perm_sig.push_back(jm_sig_params.getIntVal("b1tjet1id"));
@@ -916,6 +914,14 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         }
 
       } else if (m_mode == 1) {
+        // From TrueJet to reco matching, and MCParticle to TrueJet matching, we can identify the Reco->MCParticle matching
+        // Get TrueJet to reco matching
+        std::map<int, int> tj2reco = {
+          {jm_sig_params.getIntVal("b1tjet1id"), jm_sig_params.getIntVal("b1jet1id")},
+          {jm_sig_params.getIntVal("b1tjet2id"), jm_sig_params.getIntVal("b1jet2id")},
+          {jm_sig_params.getIntVal("b2tjet1id"), jm_sig_params.getIntVal("b2jet1id")},
+          {jm_sig_params.getIntVal("b2tjet2id"), jm_sig_params.getIntVal("b2jet2id")}
+        };
 
         // Fetching collections
         streamlog_out(DEBUG) << "  getting jet collection: " << m_inputJetCollection << std::endl;
@@ -936,6 +942,12 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
           sig_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_sig[j]));
           bkg_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_bkg[j]));
         }
+
+        // Assign et energies if there is a valid mapping in tj2reco
+        m_jet_1_e = (parton1_jet_i && tj2reco.count(parton1_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton1_jet_i]))->getEnergy() : -1;
+        m_jet_2_e = (parton2_jet_i && tj2reco.count(parton2_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton2_jet_i]))->getEnergy() : -1;
+        m_jet_3_e = (parton3_jet_i && tj2reco.count(parton3_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton3_jet_i]))->getEnergy() : -1;
+        m_jet_4_e = (parton4_jet_i && tj2reco.count(parton4_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton4_jet_i]))->getEnergy() : -1;
       }
 
       // Save info about regions
@@ -965,8 +977,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         both_to_c = (m_true_h1_decay_pdg == m_true_z2_decay_pdg) && (m_true_h1_decay_pdg == 4);
       }
       
-      // Necessary for ME calculation: b/c jets (only, because we cannot tell apart which [reco] jet might be which?) AND 2 isolated leptons (i.e. one LeptonPair)
-      // cerr << " both_to_b " << both_to_b << " both_to_c " << both_to_c << " lep_pair " << inputLepPair->getNumberOfElements() << endl;
+      // For now only analyze HH/ZH->bbbarbbbar
       if (!(both_to_b || both_to_c))
         return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
     

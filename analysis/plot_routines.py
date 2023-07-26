@@ -1,15 +1,13 @@
+from typing import Union,Optional,Dict
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cm
-import seaborn as sns
 import pandas as pd
 from analysis.import_data import combine_columns, split_true_zhh_zzh
 from analysis.plot_matplotlib import plot_hist
 
-from typing import Union,Optional,Dict
-
-def plot_summary(data, name: str, fig_path:Optional[str] = None):
+def plot_summary(data:pd.DataFrame, name: str, fig_path:Optional[str] = None):
     """Plots a summary about error occurences
 
     Args:
@@ -17,6 +15,9 @@ def plot_summary(data, name: str, fig_path:Optional[str] = None):
         name (str): _description_
         fig_path (Optional[str], optional): _description_. Defaults to None.
     """
+    
+    import seaborn as sns
+    
     fig, ((ax11, ax12)) = plt.subplots(1, 2, figsize=(9,6))
     fig.suptitle("Process summary: {}".format(name))
 

@@ -19,6 +19,8 @@ def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylab
         fig.set_figwidth(8)
         
         fig.set_figheight(6)
+    else:
+        fig = plt.gcf()
     
     if colorpalette is None:
         colorpalette = ["tab:red", "tab:blue", "y", "tab:pink", "tab:cyan", "tab:olive"]
@@ -43,12 +45,12 @@ def plot_hist(data, x, labels=None, colorpalette=None, bins=128, xlabel="", ylab
                  histtype="step",
                  ec=colorpalette[i],
                  density=normalize == True)
-        plt.text(1.05, 1. - 0.18*i,
+        fig.text(1.05, 1.05 - 0.18*i,
                  h_name + "\nEntries: {0}\nMean: {1:.2f}\nStd Dev: {2:.2f}".format(len(values), np.average(values), np.std(values)),
                  color=colorpalette[i],
                  bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
-                 fontsize=10,
-                 horizontalalignment='left',
+                 fontsize=9,
+                 horizontalalignment='right',
                  verticalalignment='center',
                  transform=ax.transAxes)
     

@@ -63,7 +63,7 @@ def dtf_dbgauss(coeffs, E_jet, E_part):
         
     return result
 
-def calc_llr_dtf_dbgauss(df, coeff, col_signal = "zhh_sigma", col_bg = "zzh_sigma"):
+def calc_nll_llr_dtf_dbgauss(df, coeff = None, col_signal = "zhh_sigma", col_bg = "zzh_sigma"):
     p4_true, p4_meas = extract_event_p4(df)
     
     def dtf(coeff, p4_meas, p4_int):
