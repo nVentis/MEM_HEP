@@ -2,6 +2,9 @@ import sys, os
 import logging
 import click
 
+# use conda environment py311 at /nfs/dust/ilc/user/bliewert/.mambaforge/envs/py311
+# execute by calling python cli
+
 logger = logging.getLogger('mem_hep')
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
@@ -26,33 +29,8 @@ def initdb():
 def dropdb():
     click.echo('Dropped the database')
 
-if False:
-    cmd_name = sys.argv[1]
-    
-    # Expects 3 arguments:
-    # 1. comparison_root file
-    # 2. comparison_out directory: Where to store the converted data and plots
-    # 3. name of the data series; should correspond to used CompareMEProcessor configuration 
-    if cmd_name == "mem_plot":
-        src_file = sys.argv[2]
-        dst_dir  = sys.argv[3]
-        name     = sys.argv[4]
-        convert  = int(sys.argv[5]) if len(sys.argv) > 5 else 1
-        plot     = int(sys.argv[6]) if len(sys.argv) > 6 else 1
-        
-        mem_plot(src_file, dst_dir, name, convert, plot)
-    
-    # Expects 
-    if cmd_name == "mem_plots":
-        src_dir = sys.argv[2]
-        dst_dir = sys.argv[3]
-        names   = sys.argv[4] if len(sys.argv) > 4 else "mcparticle,reco,truejet_matchingreco,truejet_seen,truejet_true"
-        
-        for name in names.split(","):
-            mem_plot(os.path.join(src_dir, "compare_" + name + ".root"), os.path.join(dst_dir, name), name, True, True)
-
 # Examples:
-# python cli mem_analyze /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/root/prod /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy
+# python cli me_all /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/root/prod /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy
 if __name__ == '__main__':
     cli.add_command(cli_plot)
     cli.add_command(cli_convert)
