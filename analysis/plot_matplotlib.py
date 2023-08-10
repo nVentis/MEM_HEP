@@ -2,14 +2,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cm
+import matplotlib.pylab as pylab
 from matplotlib import rcParams as rcp
 from typing import Optional, Union
+from math import sqrt
+#from scipy.stats import chisquare
 
 rcp['hatch.linewidth'] = 0.5  # previous pdf hatch linewidth
 rcp['font.family'] = 'monospace' # per default use monospace fonts
 
-def plot_hist(data, x:Union[str,list], labels=None, colorpalette=None, bins=128, xlabel="", ylabel="", units="", normalize=False, title="Likelihood-Analysis", ax=None, text_start_x=1.05, text_start_y=1.05):
-    """If x is a 
+def format_st(f, t = 0.01):
+    return f"{f:.2f}" if f >= t else f"<{t}"
+
+def plot_hist(data, x:Union[str,list], fit_func: None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[tuple] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, text_start_x=0.965, text_start_y=0.98, xscale = "linear", yscale = "linear", fontsize:Optional[str] = None):
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+        x (Union[str,list]): _description_
+        fit_func (Optional[function], optional): only supported if one column is to be plotted, i.e. x is a string
+        fit_opts (Optional[dict], opional): only used for printing
+        labels (_type_, optional): _description_. Defaults to None.
+        colorpalette (_type_, optional): _description_. Defaults to None.
+        bins (int, optional): _description_. Defaults to 128.
+        xlim_binning (bool, optional): _description_. Defaults to False.
+        xlim (Optional[tuple], optional): _description_. Defaults to None.
+        ylim (_type_, optional): _description_. Defaults to None.
+        xlabel (Optional[str], optional): _description_. Defaults to None.
+        ylabel (Optional[str], optional): _description_. Defaults to None.
+        units (str, optional): _description_. Defaults to "".
+        normalize (bool, optional): _description_. Defaults to False.
+        title (Optional[str], optional): _description_. Defaults to "Likelihood-Analysis".
+        ax (_type_, optional): _description_. Defaults to None.
+        text_start_x (float, optional): _description_. Defaults to 1.02.
+        text_start_y (float, optional): _description_. Defaults to 1.05.
+        xscale (str, optional): _description_. Defaults to "linear".
+        yscale (str, optional): _description_. Defaults to "linear".
+        fontsize (Optional[str], optional): _description_. Defaults to None.
     """
     
     if ax == None:
@@ -20,31 +49,47 @@ def plot_hist(data, x:Union[str,list], labels=None, colorpalette=None, bins=128,
         fig.set_figheight(6)
     else:
         fig = plt.gcf()
+        
+    # Set font size
+    if fontsize is not None:
+        pylab.rcParams.update(params = {
+            'legend.fontsize': fontsize,
+            'figure.figsize': (15, 5),
+            'axes.labelsize': fontsize,
+            'axes.titlesize': fontsize,
+            'xtick.labelsize': fontsize,
+            'ytick.labelsize': fontsize})
     
     if colorpalette is None:
-        colorpalette = ["tab:red", "tab:blue", "y", "tab:pink", "tab:cyan", "tab:olive"]
+        #colorpalette = ["tab:blue", "tab:red", "y", "tab:pink", "tab:cyan", "tab:olive"]
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        colorpalette = prop_cycle.by_key()['color']
     
     # If data is one-dimensional, only plot this
+    xlim_view = ()
+    
     if len(list(data.shape)) == 1:
         columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
-        g_min = 0.98*data.min()
-        g_max = 1.02*data.max()
+        xlim_view = (0.98*data.min(), 1.02*data.max()) if xlim is None else xlim
     else:
         columns = x
-        g_min = 0.98*data[x].min().min()
-        g_max = 1.02*data[x].max().max()
+        xlim_view = (0.98*data[x].min().min(), 1.02*data[x].max().max()) if xlim is None else xlim
 
     for i in range(len(columns)):
         column = columns[i]
         values = data if column is None else data[column]
+            
+        # Limits
+        min_val = xlim[0] if (xlim is not None and xlim_binning) else np.min(values)
+        max_val = xlim[1] if (xlim is not None and xlim_binning) else np.max(values)
         
+        bin_edges = np.linspace(min_val, max_val, bins + 1)
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            
+        # Additional behavior if only one column is to be plotted
         h_name  = (x if isinstance(x, str) else "Some Plot") if column is None else (column if labels is None else labels[i])
         
-        min_val = np.min(values)
-        max_val = np.max(values)
-        bin_centers = np.linspace(min_val, max_val, bins)
-        
-        (plt if ax == None else ax).hist(values, bin_centers,
+        bin_counts, _, patches = (plt if ax == None else ax).hist(values, bin_edges,
                  alpha=0.7,
                  label=h_name,
                  linestyle="solid",
@@ -53,21 +98,74 @@ def plot_hist(data, x:Union[str,list], labels=None, colorpalette=None, bins=128,
                  color="w",
                  histtype="step",
                  ec=colorpalette[i],
-                 density=normalize == True)
-        fig.text(text_start_x, text_start_y - 0.18*i,
-                 h_name + "\nEntries: {0}\nMean: {1:.2f}\nStd Dev: {2:.2f}".format(len(values), np.average(values), np.std(values)),
-                 color=colorpalette[i],
-                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
-                 fontsize=9,
+                 weights=np.ones_like(values)/(len(values) if normalize else 1))
+        
+        if isinstance(x, str):
+            if callable(fit_func):
+                fit_data = fit_func(bin_centers)
+                
+                if normalize:
+                    fit_data = fit_data/fit_data.sum()
+                    
+                MSE = ((bin_counts - fit_data)**2).sum()*1/(len(bin_counts))
+                RMSE = sqrt(MSE)
+                
+                ss_res = ((bin_counts - fit_data) ** 2).sum()
+                ss_tot = (((bin_counts - np.mean(bin_counts)) ** 2)).sum()
+                COE = 1 - (ss_res / ss_tot) # R^2
+                
+                (plt if ax == None else ax).plot(bin_centers, fit_data, color="red")
+                fig.text(text_start_x, text_start_y - 0.11,
+                 f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {format_st(MSE)}\nRMSE: {format_st(RMSE)}\nR^2: {COE:.2f}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
+                 #color=colorpalette[i],
+                 bbox=dict(edgecolor="red", facecolor="w"),
+                 fontsize='medium' if fontsize is None else fontsize,
                  horizontalalignment='right',
-                 verticalalignment='center',
+                 verticalalignment='top',
+                 transform=ax.transAxes)
+        
+        fig.text(text_start_x, text_start_y - 0.11*i,
+                 ("" if column is None else f"{h_name}\n") + "Entries: {0}\nMean: {1:.2f}\nStd Dev: {2:.2f}".format(len(values), np.average(values), np.std(values)),
+                 #color=colorpalette[i],
+                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
+                 fontsize='medium' if fontsize is None else fontsize,
+                 horizontalalignment='right',
+                 verticalalignment='top',
                  transform=ax.transAxes)
     
     #plt_obj.legend(loc='upper right', bbox_to_anchor=(1.1, 1.05))
+    
     if ax == None: 
-        plt.title(title)
-        plt.xlim(g_min, g_max)
+        if title is not None:
+            plt.title(title)
+            
+        if xlabel is not None:
+            plt.xlabel(xlabel)#, fontsize=fontsize)
+            
+        if ylabel is not None:
+            plt.ylabel(ylabel)#, fontsize=fontsize)
+            
+        plt.xscale(xscale)
+        plt.yscale(yscale)
+                    
+        plt.xlim(xlim_view)
         plt.show()
+        
+        if ylim is not None:
+            ax.ylim(ylim)
     else:
-        ax.set_title(title)
-        ax.set_xlim(g_min, g_max)
+        if title is not None:
+            ax.set_title(title)
+            
+        ax.set_xlim(xlim_view)
+        ax.set_xscale(xscale)
+        ax.set_yscale(yscale)
+        
+        if xlabel is not None:
+            ax.set_xlabel(xlabel)#, fontsize=fontsize)
+            
+        if ylabel is not None:
+            ax.set_ylabel(ylabel)#, fontsize=fontsize)
+        
+        if ylim is not None:
+            ax.set_ylim(ylim)

@@ -13,4 +13,4 @@ error = /nfs/dust/ilc/user/bliewert/fullflow_v3/zzh/log/$(ProcId).err
 
 transfer_output_files = ""
 
-queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/input_files/zzh_initial.txt
+queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/input_files/1_zzh.txt

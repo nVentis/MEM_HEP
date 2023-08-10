@@ -16,9 +16,12 @@ cd ./job${2}
 filename=${1}
 bname=`basename -s .slcio $filename`
 
-Marlin "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/e2e2hh.xml" --global.LCIOInputFiles="${filename}" --constant.OutputDirectory="." --constant.OutputBaseName="${bname}" --global.MaxRecordNumber=2500
-mv *.root ../root
-mv *.slcio ../slcio
+mkdir root
+mkdir slcio
+
+Marlin "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/e2e2hh.xml" --global.LCIOInputFiles="${filename}" --constant.OutputDirectory="." --constant.OutputBaseName="${bname}" --global.MaxRecordNumber=0
+mv root/*.root ../root
+mv slcio/*.slcio ../slcio
 
 cd ..
 rm -rf job${2}

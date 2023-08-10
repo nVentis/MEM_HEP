@@ -9,7 +9,6 @@ logger = logging.getLogger('mem_hep')
 # Expects two arguments:
 # 1. comparison_root file
 # 2. comparison_out directory: Where to store the converted data and plots
-# 3. optional: production plot mode; if true, uses ROOT, otherwise uses matplotlib
 
 from analysis.convert import convert_file
 from analysis.import_data import import_data, filter_data, combine_columns, split_true_zhh_zzh
@@ -21,7 +20,8 @@ def me(src_file:str, dst:str, name:str, convert:bool, plot:bool, calc:bool = Tru
     logger.info("Analyzing {}".format(name))
     
     root_file = os.path.basename(src_file)
-    cnv_file = dst if os.path.splitext(root_file)[1] == "npy" else os.path.join(dst, os.path.splitext(root_file)[0] + ".npy")
+    cnv_file = dst if os.path.splitext(dst)[1] == ".npy" else os.path.join(dst, os.path.splitext(root_file)[0] + ".npy")
+
     dst_dir = os.path.dirname(cnv_file)
     
     if convert:
@@ -53,12 +53,15 @@ def me(src_file:str, dst:str, name:str, convert:bool, plot:bool, calc:bool = Tru
             # Filter to only contain entries without errors (error_code = 0) and with matrix elements > 0 for ZHH and ZZH (zhh_sigmalr and zzh_sigmalr)
             filtered = filter_data(raw)
             
-            # A Delta-distributions as transfer functions
+            # A Delta-distributions as transfer function
             
             # First, calculate the log likelihood ratio in case of delta distributions as transfer functions,
             # i.e. assuming measured properties are parton-level-properties; useful only for MCParticle/TrueJet assumption
             # Breaks down when real detector response is taken into account
-            data = calc_nll_llr_dtf_delta(filtered) if dtf == "delta" else (calc_nll_llr_dtf_dbgauss(filtered) if dtf == "dbgauss" else None)
+            if dtf != "delta":
+                raise Exception("Parameters required for dbgauss")
+            
+            data = calc_nll_llr_dtf_delta(filtered)#if dtf == "delta" else (calc_nll_llr_dtf_dbgauss(filtered) if dtf == "dbgauss" else None)
             if data is None:
                 raise Exception("Could not fetch likelihoods from event data. Check the transfer function")
             

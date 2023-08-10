@@ -15,7 +15,7 @@
 #include "lcio.h"
 #include <string>
 #include <TFile.h>
-#include <TTree.h>>
+#include <TTree.h>
 #include <vector>
 #include "TLorentzVector.h"
 #include "physsim/LCMEZHH.h"
@@ -73,7 +73,7 @@ public:
 	int getZDecayModeFromPDG(int pdg);
 
 protected:
-	void save_evt_with_error_code(int error_code, bool del_tj = true);
+	void save_evt_with_error_code(int error_code);
 
 	/**
 	 * Add the expected output collections
@@ -102,8 +102,8 @@ protected:
 	int m_mode{}; // 0 => use MCTruth data; 1 => use reconstructed data (HiggsPair, LeptonPair, HdecayMode, and some jet e.g. RefinedJets)
 	int m_lepton_mode{};
 	int m_truejet_mode{}; // 0 => True; 1 => Seen; (2 for True-of-Seen probably not required)
-	int m_saveInputKinematics{};
 	int m_saveTransferEnergies{};
+	int m_saveTransferKinematics{};
 	int m_require_presel_pass{};
 	float m_Hmass{};
 
@@ -122,18 +122,20 @@ protected:
 	int m_true_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (!= 0 only for true ZZH events)
 
 	// partons_{1,2,3,4} only != 0 if there indeed were quarks
-	int m_parton_1_pdg{};
-	int m_parton_2_pdg{};
-	int m_parton_3_pdg{};
-	int m_parton_4_pdg{};
+	int m_parton1_pdg{};
+	int m_parton2_pdg{};
+	int m_parton3_pdg{};
+	int m_parton4_pdg{};
 	
-	float m_parton_1_e{};
-	float m_parton_2_e{};
-	float m_parton_3_e{};
-	float m_parton_4_e{};
+	float m_parton1_e{};
+	float m_parton2_e{};
+	float m_parton3_e{};
+	float m_parton4_e{};
 
-	float m_true_lep_1_e{};
-	float m_true_lep_2_e{};
+	std::vector<float> m_parton1_p{};
+
+	float m_true_lep1_e{};
+	float m_true_lep2_e{};
 
 	// Event data
 	int m_z1_decay_pdg{};  // as input from parameter; defaults to 5 (mu+mu-)
@@ -148,13 +150,13 @@ protected:
 	int m_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (>0 only for true ZZH events)
 
 	// Only for reco and TrueJet data; thus only filled for m_mode=1
-	float m_jet_1_e{};
-	float m_jet_2_e{};
-	float m_jet_3_e{};
-	float m_jet_4_e{};
+	float m_jet1_e{};
+	float m_jet2_e{};
+	float m_jet3_e{};
+	float m_jet4_e{};
 
-	float m_lep_1_e{};
-	float m_lep_2_e{};
+	float m_lep1_e{};
+	float m_lep2_e{};
 
 	// Di-jet properties
 	int m_misclustering_region{}; //e.g. AA, BB; see Misclustering code
@@ -198,26 +200,6 @@ protected:
 	float m_zhh_q2_h1{};
 	float m_zhh_q2_h2{};
 
-	float m_zhh_l1_E{};
-	float m_zhh_l1_px{};
-	float m_zhh_l1_py{};
-	float m_zhh_l1_pz{};
-
-	float m_zhh_l2_E{};
-	float m_zhh_l2_px{};
-	float m_zhh_l2_py{};
-	float m_zhh_l2_pz{};
-
-	float m_zhh_h1_E{};
-	float m_zhh_h1_px{};
-	float m_zhh_h1_py{};
-	float m_zhh_h1_pz{};
-
-	float m_zhh_h2_E{};
-	float m_zhh_h2_px{};
-	float m_zhh_h2_py{};
-	float m_zhh_h2_pz{};
-
 	// 1. Assuming ZZH
 	// 1.a ZZH output
 	float m_zzh_sigma{};
@@ -257,31 +239,6 @@ protected:
 	float m_zzh_q2_z1{};
 	float m_zzh_q2_z2{};
 	float m_zzh_q2_h{};
-
-	float m_zzh_l1_E{};
-	float m_zzh_l1_px{};
-	float m_zzh_l1_py{};
-	float m_zzh_l1_pz{};
-
-	float m_zzh_l2_E{};
-	float m_zzh_l2_px{};
-	float m_zzh_l2_py{};
-	float m_zzh_l2_pz{};
-
-	float m_zzh_z2f1_E{};
-	float m_zzh_z2f1_px{};
-	float m_zzh_z2f1_py{};
-	float m_zzh_z2f1_pz{};
-
-	float m_zzh_z2f2_E{};
-	float m_zzh_z2f2_px{};
-	float m_zzh_z2f2_py{};
-	float m_zzh_z2f2_pz{};
-
-	float m_zzh_h_E{};
-	float m_zzh_h_px{};
-	float m_zzh_h_py{};
-	float m_zzh_h_pz{};
 };
 
 #endif

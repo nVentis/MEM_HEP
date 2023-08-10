@@ -16,8 +16,11 @@ def import_data(path):
     return df
 
 # Filters out only events with ZHH/ZZH->µµbar+qqbar+qqbar AND without any error 
-def filter_data(df):
-    df = df[(df["error_code"] == 0) & (df["zhh_sigma"] > 0) & (df["zzh_sigma"] > 0)]
+def filter_data(df, check_only_error=False):
+    df = df[(df["error_code"] == 0)]
+    if not check_only_error:
+        df = df[((df["zhh_sigma"] > 0) & (df["zzh_sigma"] > 0))]
+    
     df = df.copy()
     df.reset_index(drop=True, inplace=True)
     

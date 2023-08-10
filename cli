@@ -16,6 +16,7 @@ logger.addHandler(ch)
 from analysis.cli_plot import cli_plot
 from analysis.cli_convert import cli_convert
 from analysis.cli_commands.me import me_command, me_all_command
+from analysis.energy_transfer import plot_jet_energy_transfer_from_file_command
 
 @click.group()
 def cli():
@@ -31,6 +32,7 @@ def dropdb():
 
 # Examples:
 # python cli me_all /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/root/prod /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy
+# python cli jet_et_plot /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/npy/reco/compare_reco.npy /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/results/jet_et 
 if __name__ == '__main__':
     cli.add_command(cli_plot)
     cli.add_command(cli_convert)
@@ -38,4 +40,5 @@ if __name__ == '__main__':
     cli.add_command(dropdb)
     cli.add_command(me_command)
     cli.add_command(me_all_command)
+    cli.add_command(plot_jet_energy_transfer_from_file_command)
     cli()

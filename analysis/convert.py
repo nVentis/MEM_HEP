@@ -95,11 +95,11 @@ def convert_file(source_path: str, in_file_location: str, output_path:Optional[s
         str: output file path
     """
     
-    output_path = source_path if output_path is None else output_path
-
-    root_file = source_path
-    cnv_file = output_path if splitext(root_file)[1] == "npy" else join(output_path, splitext(root_file)[0] + ".npy")
+    output_path = dirname(source_path) if output_path is None else output_path
+    root_file = basename(source_path)
     
+    cnv_file = output_path if splitext(output_path)[1] == ".npy" else join(output_path, splitext(root_file)[0] + ".npy")
+
     dst_dir = dirname(cnv_file)
     
     if not isdir(dst_dir):

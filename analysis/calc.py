@@ -35,22 +35,6 @@ def integrate(some_func, bounds):
 def normal_dist(x, mu, sigma):
     return 1/(sigma*np.sqrt(2*np.pi)) * np.exp(-1/2 * ((x-mu)/sigma)**2)
 
-def dbgauss(a, b, E_jet, E_part):
-    # Parametization according to thesis https://inspirehep.net/files/b8064e6fd21931e696b7b91410462128
-    p1 = a[0] + b[0]*E_part
-    p2 = a[1] + b[1]*E_part
-    p3 = a[2] + b[2]*E_part
-    p4 = a[3] + b[3]*E_part
-    p5 = a[4] + b[4]*E_part
-    # or: p = a + b*E_Part
-    
-    dE = E_jet - E_part
-    
-    return (
-             np.exp( -((dE-p1)**2)/(2*p2**2) ) +
-        p3 * np.exp( -((dE-p4)**2)/(2*p5**2) )
-    )
-
 def dtf_dbgauss(coeffs, E_jet, E_part):
     result = 1
     

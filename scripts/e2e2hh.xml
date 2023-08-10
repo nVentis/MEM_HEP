@@ -270,7 +270,7 @@
      <parameter name="LeptonPair" type="string" lcioOutType="ReconstructedParticle">LeptonPair</parameter>
      <parameter name="PandoraPFOsWithoutLepPair" type="string" lcioOutType="ReconstructedParticle">PandoraPFOsWithoutLepPair</parameter>
      <parameter name="fillRootTree" type="bool">true</parameter>
-    <parameter name="RootFile" type="string">${OutputDirectory}/${OutputBaseName}_LeptonPairing.root</parameter>
+    <parameter name="RootFile" type="string">${OutputDirectory}/root/${OutputBaseName}_LeptonPairing.root</parameter>
     <parameter name="Verbosity" type="string">MESSAGE</parameter>
   </processor>
 
