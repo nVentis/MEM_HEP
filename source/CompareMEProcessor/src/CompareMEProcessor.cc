@@ -43,6 +43,14 @@ TLorentzVector v4(const Double_t * x0){
 }
 
 template<class T>
+void set_v4(TLorentzVector &t, T* p){
+  t.SetPx(p->getMomentum()[0]);
+  t.SetPy(p->getMomentum()[1]);
+  t.SetPz(p->getMomentum()[2]);
+  t.SetE(p->getEnergy());
+}
+
+template<class T>
 double inv_mass(T* p1, T* p2){
   double e = p1->getEnergy()+p2->getEnergy() ;
   double px = p1->getMomentum()[0]+p2->getMomentum()[0];
@@ -58,7 +66,21 @@ CompareMEProcessor::CompareMEProcessor() :
   Processor("CompareMEProcessor"),
   m_nRun(0),
   m_nEvt(0),
-  m_mode_me(1) // 0-> dsigma, 1-> ME^2
+  m_mode_me(1), // 0-> dsigma, 1-> ME^2
+
+  parton1(0., 0., 0., 0.),
+  parton2(0., 0., 0., 0.),
+  parton3(0., 0., 0., 0.),
+  parton4(0., 0., 0., 0.),
+  true_lep1(0., 0., 0., 0.),
+  true_lep2(0., 0., 0., 0.),
+
+  jet1(0., 0., 0., 0.),
+  jet2(0., 0., 0., 0.),
+  jet3(0., 0., 0., 0.),
+  jet4(0., 0., 0., 0.),
+  lep1(0., 0., 0., 0.),
+  lep2(0., 0., 0., 0.)
 {
 
 	_description = "CompareMEProcessor writes relevant observables to root-file " ;
@@ -293,16 +315,16 @@ void CompareMEProcessor::init()
     m_pTTree->Branch("efrac2_icn_true", &m_efrac2_icn_true, "efrac1_icn_true/F");
   }
 
+  m_pTTree->Branch("parton1_pdg", &m_parton1_pdg);
+  m_pTTree->Branch("parton2_pdg", &m_parton2_pdg);
+  m_pTTree->Branch("parton3_pdg", &m_parton3_pdg);
+  m_pTTree->Branch("parton4_pdg", &m_parton4_pdg);
+
   if (m_saveTransferEnergies > 0) {
     m_pTTree->Branch("parton1_e", &m_parton1_e);
     m_pTTree->Branch("parton2_e", &m_parton2_e);
     m_pTTree->Branch("parton3_e", &m_parton3_e);
     m_pTTree->Branch("parton4_e", &m_parton4_e);
-
-    m_pTTree->Branch("parton1_pdg", &m_parton1_pdg);
-    m_pTTree->Branch("parton2_pdg", &m_parton2_pdg);
-    m_pTTree->Branch("parton3_pdg", &m_parton3_pdg);
-    m_pTTree->Branch("parton4_pdg", &m_parton4_pdg);
 
     m_pTTree->Branch("true_lep1_e", &m_true_lep1_e);
     m_pTTree->Branch("true_lep2_e", &m_true_lep2_e);
@@ -314,6 +336,56 @@ void CompareMEProcessor::init()
 
     m_pTTree->Branch("lep1_e", &m_lep1_e);
     m_pTTree->Branch("lep2_e", &m_lep2_e);
+  }
+
+  if (m_saveTransferKinematics > 0) {
+    m_pTTree->Branch("parton1_px", &m_parton1_px);
+    m_pTTree->Branch("parton1_py", &m_parton1_py);
+    m_pTTree->Branch("parton1_pz", &m_parton1_pz);
+
+    m_pTTree->Branch("parton2_px", &m_parton2_px);
+    m_pTTree->Branch("parton2_py", &m_parton2_py);
+    m_pTTree->Branch("parton2_pz", &m_parton2_pz);
+
+    m_pTTree->Branch("parton3_px", &m_parton3_px);
+    m_pTTree->Branch("parton3_py", &m_parton3_py);
+    m_pTTree->Branch("parton3_pz", &m_parton3_pz);
+
+    m_pTTree->Branch("parton4_px", &m_parton4_px);
+    m_pTTree->Branch("parton4_py", &m_parton4_py);
+    m_pTTree->Branch("parton4_pz", &m_parton4_pz);
+
+    m_pTTree->Branch("true_lep1_px", &m_true_lep1_px);
+    m_pTTree->Branch("true_lep1_py", &m_true_lep1_py);
+    m_pTTree->Branch("true_lep1_pz", &m_true_lep1_pz);
+
+    m_pTTree->Branch("true_lep2_px", &m_true_lep2_px);
+    m_pTTree->Branch("true_lep2_py", &m_true_lep2_py);
+    m_pTTree->Branch("true_lep2_pz", &m_true_lep2_pz);
+
+    m_pTTree->Branch("jet1_px", &m_jet1_px);
+    m_pTTree->Branch("jet1_py", &m_jet1_py);
+    m_pTTree->Branch("jet1_pz", &m_jet1_pz);
+
+    m_pTTree->Branch("jet2_px", &m_jet2_px);
+    m_pTTree->Branch("jet2_py", &m_jet2_py);
+    m_pTTree->Branch("jet2_pz", &m_jet2_pz);
+
+    m_pTTree->Branch("jet3_px", &m_jet3_px);
+    m_pTTree->Branch("jet3_py", &m_jet3_py);
+    m_pTTree->Branch("jet3_pz", &m_jet3_pz);
+
+    m_pTTree->Branch("jet4_px", &m_jet4_px);
+    m_pTTree->Branch("jet4_py", &m_jet4_py);
+    m_pTTree->Branch("jet4_pz", &m_jet4_pz);
+
+    m_pTTree->Branch("lep1_px", &m_lep1_px);
+    m_pTTree->Branch("lep1_py", &m_lep1_py);
+    m_pTTree->Branch("lep1_pz", &m_lep1_pz);
+
+    m_pTTree->Branch("lep2_px", &m_lep2_px);
+    m_pTTree->Branch("lep2_py", &m_lep2_py);
+    m_pTTree->Branch("lep2_pz", &m_lep2_pz);
   }
 
   // 2. Event data
@@ -417,6 +489,48 @@ void CompareMEProcessor::Clear()
   m_zzh_is_set = 0;
   m_error_code = 0;
 
+  // Energy+impulse transfer
+  parton1.SetPxPyPzE(0, 0, 0, 0);
+  parton2.SetPxPyPzE(0, 0, 0, 0);
+  parton3.SetPxPyPzE(0, 0, 0, 0);
+  parton4.SetPxPyPzE(0, 0, 0, 0);
+
+  true_lep1.SetPxPyPzE(0, 0, 0, 0);
+  true_lep2.SetPxPyPzE(0, 0, 0, 0);
+
+  jet1.SetPxPyPzE(0, 0, 0, 0);
+  jet2.SetPxPyPzE(0, 0, 0, 0);
+  jet3.SetPxPyPzE(0, 0, 0, 0);
+  jet4.SetPxPyPzE(0, 0, 0, 0);
+
+  lep1.SetPxPyPzE(0, 0, 0, 0);
+  lep2.SetPxPyPzE(0, 0, 0, 0);
+
+  m_parton1_pdg = 0;
+  m_parton2_pdg = 0;
+  m_parton3_pdg = 0;
+  m_parton4_pdg = 0;
+
+  m_parton1_e  = m_parton2_e  = m_parton3_e  = m_parton4_e  = 0.;
+  m_parton1_px = m_parton2_px = m_parton3_px = m_parton4_px = 0.;
+  m_parton1_py = m_parton2_py = m_parton3_py = m_parton4_py = 0.;
+  m_parton1_pz = m_parton2_pz = m_parton3_pz = m_parton4_pz = 0.;
+
+  m_true_lep1_e  = m_true_lep2_e  = 0.;
+  m_true_lep1_px = m_true_lep2_px = 0.;
+  m_true_lep1_py = m_true_lep2_py = 0.;
+  m_true_lep1_pz = m_true_lep2_pz = 0.;
+
+  m_jet1_e  = m_jet2_e  = m_jet3_e  = m_jet4_e  = 0.;
+  m_jet1_px = m_jet2_px = m_jet3_px = m_jet4_px = 0.;
+  m_jet1_py = m_jet2_py = m_jet3_py = m_jet4_py = 0.;
+  m_jet1_pz = m_jet2_pz = m_jet3_pz = m_jet4_pz = 0.;
+
+  m_lep1_e  = m_lep2_e  = 0.;
+  m_lep1_px = m_lep2_px = 0.;
+  m_lep1_py = m_lep2_py = 0.;
+  m_lep1_pz = m_lep2_pz = 0.;
+
   // 1. True
   m_true_h1_decay_pdg         = 0;
   m_true_h2_decay_pdg         = 0;
@@ -426,19 +540,6 @@ void CompareMEProcessor::Clear()
   m_is_zzh                    = 0;
   m_misclustering_region      = -1;
   m_misclustering_region_icns = -1;
-
-  m_parton1_e = 0.;
-  m_parton2_e = 0.;
-  m_parton3_e = 0.;
-  m_parton4_e = 0.;
-
-  m_parton1_pdg = 0;
-  m_parton2_pdg = 0;
-  m_parton3_pdg = 0;
-  m_parton4_pdg = 0;
-
-  m_true_lep1_e = 0.;
-  m_true_lep2_e = 0.;
 
   m_efrac1_reco = 0.;
   m_efrac2_reco = 0.;
@@ -455,14 +556,6 @@ void CompareMEProcessor::Clear()
   m_h2_decay_pdg  = 0;
   m_z2_decay_pdg  = 0;
   m_z2_decay_mode = 0;
-
-  m_jet1_e = 0.;
-	m_jet2_e = 0.;
-  m_jet3_e = 0.;
-  m_jet4_e = 0.;
-
-  m_lep1_e = 0.;
-  m_lep2_e = 0.;
 
   // 2.a ZHH output
   m_zhh_sigma     = 0.;
@@ -528,6 +621,76 @@ void CompareMEProcessor::processRunHeader( LCRunHeader*  /*run*/) {
   m_nRun++ ;
 }
 
+// Writes the data in four-momenta into their corresponding float/double values for writing them to ROOT
+void CompareMEProcessor::transfer_four_momenta()
+{
+  m_parton1_e = parton1.E();
+  m_parton2_e = parton2.E();
+  m_parton3_e = parton3.E();
+  m_parton4_e = parton4.E();
+
+  m_parton1_px = parton1.Px();
+  m_parton1_py = parton1.Py();
+  m_parton1_pz = parton1.Pz();
+
+  m_parton2_px = parton2.Px();
+  m_parton2_py = parton2.Py();
+  m_parton2_pz = parton2.Pz();
+
+  m_parton3_px = parton3.Px();
+  m_parton3_py = parton3.Py();
+  m_parton3_pz = parton3.Pz();
+
+  m_parton4_px = parton4.Px();
+  m_parton4_py = parton4.Py();
+  m_parton4_pz = parton4.Pz();
+
+  m_true_lep1_e = true_lep1.E();
+  m_true_lep2_e = true_lep2.E();
+
+  m_true_lep1_px = true_lep1.Px();
+  m_true_lep1_py = true_lep1.Py();
+  m_true_lep1_pz = true_lep1.Pz();
+
+  m_true_lep2_px = true_lep2.Px();
+  m_true_lep2_py = true_lep2.Py();
+  m_true_lep2_pz = true_lep2.Pz();
+
+  // -----------   RECO    ---------
+
+  m_jet1_e = jet1.E();
+  m_jet2_e = jet2.E();
+  m_jet3_e = jet3.E();
+  m_jet4_e = jet4.E();
+
+  m_jet1_px = jet1.Px();
+  m_jet1_py = jet1.Py();
+  m_jet1_pz = jet1.Pz();
+
+  m_jet2_px = jet2.Px();
+  m_jet2_py = jet2.Py();
+  m_jet2_pz = jet2.Pz();
+
+  m_jet3_px = jet3.Px();
+  m_jet3_py = jet3.Py();
+  m_jet3_pz = jet3.Pz();
+
+  m_jet4_px = jet4.Px();
+  m_jet4_py = jet4.Py();
+  m_jet4_pz = jet4.Pz();
+
+  m_lep1_e = lep1.E();
+  m_lep2_e = lep2.E();
+  
+  m_lep1_px = lep1.Px();
+  m_lep1_py = lep1.Py();
+  m_lep1_pz = lep1.Pz();
+
+  m_lep2_px = lep2.Px();
+  m_lep2_py = lep2.Py();
+  m_lep2_pz = lep2.Pz();
+}
+
 void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 {
   this->Clear();
@@ -570,8 +733,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     MCParticle *mcp_l1 = (MCParticle*) inputMCTrueCollection->getElementAt(8); 
     MCParticle *mcp_l2 = (MCParticle*) inputMCTrueCollection->getElementAt(9);
 
-    m_true_lep1_e = mcp_l1->getEnergy();
-    m_true_lep2_e = mcp_l2->getEnergy();
+    true_lep1 = v4(mcp_l1);
+    true_lep2 = v4(mcp_l2);
     
     MCParticle *mcp_zhh_h1_decay1{}, *mcp_zhh_h1_decay2{}, *mcp_zhh_h2_decay1{}, *mcp_zhh_h2_decay2{};
     MCParticle *mcp_zzh_z2_decay1{}, *mcp_zzh_z2_decay2{}, *mcp_zzh_h1_decay1{}, *mcp_zzh_h1_decay2{};
@@ -601,15 +764,15 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (m_true_h1_decay_pdg > 0 && m_true_h1_decay_pdg < 7) {
         m_parton1_pdg = m_parton2_pdg = m_true_h1_decay_pdg;
 
-        m_parton1_e = mcp_zhh_h1_decay1->getEnergy();
-        m_parton2_e = mcp_zhh_h1_decay2->getEnergy();
+        set_v4(parton1, mcp_zhh_h1_decay1);
+        set_v4(parton2, mcp_zhh_h1_decay2);
       }
 
       if (m_true_h2_decay_pdg > 0 && m_true_h2_decay_pdg < 7) {
         m_parton3_pdg = m_parton4_pdg = m_true_h2_decay_pdg;
 
-        m_parton3_e = mcp_zhh_h2_decay1->getEnergy();
-        m_parton4_e = mcp_zhh_h2_decay2->getEnergy();
+        set_v4(parton3, mcp_zhh_h2_decay1);
+        set_v4(parton4, mcp_zhh_h2_decay2);
       }
         
     } else if (m_is_zzh) {
@@ -625,15 +788,15 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (m_true_z2_decay_pdg > 0 && m_true_z2_decay_pdg < 7) {
         m_parton1_pdg = m_parton2_pdg = m_true_z2_decay_pdg;
 
-        m_parton1_e = mcp_zzh_z2_decay1->getEnergy();
-        m_parton2_e = mcp_zzh_z2_decay2->getEnergy();
+        set_v4(parton1, mcp_zzh_z2_decay1);
+        set_v4(parton2, mcp_zzh_z2_decay2);
       }
 
       if (m_true_h1_decay_pdg > 0 && m_true_h1_decay_pdg < 7) {
         m_parton3_pdg = m_parton4_pdg = m_true_h1_decay_pdg;
 
-        m_parton3_e = mcp_zzh_h1_decay1->getEnergy();
-        m_parton4_e = mcp_zzh_h1_decay2->getEnergy();
+        set_v4(parton3, mcp_zzh_h1_decay1);
+        set_v4(parton4, mcp_zzh_h1_decay2);
       }
     } else
       return save_evt_with_error_code(ERRORS::UNHANDLED_PROCESS);  
@@ -652,7 +815,6 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     int lepton2_jet_i = tj->mcpjet(mcp_l2);
 
     streamlog_out(DEBUG) << " TrueJet_IDs|" << parton1_jet_i << ":" << parton2_jet_i << ":" << parton3_jet_i << ":" << parton4_jet_i << ":" << lepton1_jet_i << ":" << lepton2_jet_i << std::endl;
-
 
     // A Charged leptons
     if (m_lepton_mode == 0) {
@@ -699,8 +861,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       l2_lortz = v4(m_truejet_mode == 0 ? this->p4true(lepton2_jet_i) : this->p4seen(lepton2_jet_i));
     }
 
-    m_lep1_e = l1_lortz.E();
-    m_lep2_e = l2_lortz.E();
+    lep1 = l1_lortz;
+    lep2 = l2_lortz;
 
     // B Partons/Jets
     if (m_mode == 0) {
@@ -849,16 +1011,16 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         streamlog_out(DEBUG) << " TrueJet Matching " << debug_msg << std::endl;
 
         // Assign et energies if there is a valid mapping in tj2reco
-        m_jet1_e = (parton1_jet_i > -1 && tj2reco.count(parton1_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton1_jet_i]))->getEnergy() : -1;
-        m_jet2_e = (parton2_jet_i > -1 && tj2reco.count(parton2_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton2_jet_i]))->getEnergy() : -1;
-        m_jet3_e = (parton3_jet_i > -1 && tj2reco.count(parton3_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton3_jet_i]))->getEnergy() : -1;
-        m_jet4_e = (parton4_jet_i > -1 && tj2reco.count(parton4_jet_i)) ? ((ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton4_jet_i]))->getEnergy() : -1;
-      
+        if (parton1_jet_i > -1 && tj2reco.count(parton1_jet_i)) set_v4(jet1, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton1_jet_i]));
+        if (parton2_jet_i > -1 && tj2reco.count(parton2_jet_i)) set_v4(jet2, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton2_jet_i]));
+        if (parton3_jet_i > -1 && tj2reco.count(parton3_jet_i)) set_v4(jet3, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton3_jet_i]));
+        if (parton4_jet_i > -1 && tj2reco.count(parton4_jet_i)) set_v4(jet4, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton4_jet_i]));
+
         debug_msg.Form("Parton:Jet Energies | %.2f:%.2f | %.2f:%.2f | %.2f:%.2f | %.2f:%.2f",
-          m_parton1_e, m_jet1_e,
-          m_parton2_e, m_jet2_e,
-          m_parton3_e, m_jet3_e,
-          m_parton4_e, m_jet4_e);
+          parton1.E(), jet1.E(),
+          parton2.E(), jet2.E(),
+          parton3.E(), jet3.E(),
+          parton4.E(), jet4.E());
           
         streamlog_out(DEBUG) << debug_msg << std::endl;
       }
@@ -932,23 +1094,18 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       if (m_parton1_pdg != m_parton3_pdg)
         return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
 
-      TLorentzVector jet_1_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton1_jet_i) : this->p4seen(parton1_jet_i));
-      TLorentzVector jet_2_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton2_jet_i) : this->p4seen(parton2_jet_i));
-      TLorentzVector jet_3_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton3_jet_i) : this->p4seen(parton3_jet_i));
-      TLorentzVector jet_4_p4 = v4(m_truejet_mode == 0 ? this->p4true(parton4_jet_i) : this->p4seen(parton4_jet_i));
-
       // Saving jet energies for transfer function (for seen-mode)
-      m_jet1_e = jet_1_p4.E();
-      m_jet2_e = jet_2_p4.E();
-      m_jet3_e = jet_3_p4.E();
-      m_jet4_e = jet_4_p4.E();
+      jet1 = v4(m_truejet_mode == 0 ? this->p4true(parton1_jet_i) : this->p4seen(parton1_jet_i));
+      jet2 = v4(m_truejet_mode == 0 ? this->p4true(parton2_jet_i) : this->p4seen(parton2_jet_i));
+      jet3 = v4(m_truejet_mode == 0 ? this->p4true(parton3_jet_i) : this->p4seen(parton3_jet_i));
+      jet4 = v4(m_truejet_mode == 0 ? this->p4true(parton4_jet_i) : this->p4seen(parton4_jet_i));
 
       // Assuming ZZH
       // b1 = Z
       // b2 = H
-      zzh_z2f1_lortz = jet_1_p4;
-      zzh_z2f2_lortz = jet_2_p4;
-      zzh_h_lortz    = jet_3_p4 + jet_4_p4;
+      zzh_z2f1_lortz = jet1;
+      zzh_z2f2_lortz = jet2;
+      zzh_h_lortz    = jet3 + jet4;
 
       m_z2_decay_pdg  = m_parton1_pdg; // PDGs: bottom->5, charm->4
       m_h1_decay_pdg  = m_parton3_pdg;
@@ -958,8 +1115,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       // Assuming ZHH
       // b1,b2 = H
-      zhh_h1_lortz = jet_1_p4 + jet_2_p4;
-      zhh_h2_lortz = jet_3_p4 + jet_4_p4;
+      zhh_h1_lortz = jet1 + jet2;
+      zhh_h2_lortz = jet3 + jet4;
 
       m_h2_decay_pdg = m_z2_decay_pdg;
       
@@ -1052,6 +1209,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       m_zzh_q2_h  = _zzh->GetQ2H();
     }
 
+    transfer_four_momenta();
     m_pTTree->Fill();
 
     streamlog_out(MESSAGE) << "Processed event | Success | calcZHH:" << m_zhh_is_set << " | calcZZH:" << m_zzh_is_set << std::endl;
@@ -1070,6 +1228,8 @@ void CompareMEProcessor::check()
 void CompareMEProcessor::save_evt_with_error_code(int error_code)
 {
   m_error_code = error_code;
+
+  transfer_four_momenta();
   m_pTTree->Fill();
 
   streamlog_out(MESSAGE) << "Processed event | Fault | Fault code:" << error_code << std::endl;

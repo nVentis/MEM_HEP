@@ -74,6 +74,7 @@ public:
 
 protected:
 	void save_evt_with_error_code(int error_code);
+	void transfer_four_momenta();
 
 	/**
 	 * Add the expected output collections
@@ -127,15 +128,45 @@ protected:
 	int m_parton3_pdg{};
 	int m_parton4_pdg{};
 	
+	TLorentzVector parton1{};
+	TLorentzVector parton2{};
+	TLorentzVector parton3{};
+	TLorentzVector parton4{};
+
 	float m_parton1_e{};
 	float m_parton2_e{};
 	float m_parton3_e{};
 	float m_parton4_e{};
 
-	std::vector<float> m_parton1_p{};
+	float m_parton1_px{};
+	float m_parton1_py{};
+	float m_parton1_pz{};
+
+	float m_parton2_px{};
+	float m_parton2_py{};
+	float m_parton2_pz{};
+
+	float m_parton3_px{};
+	float m_parton3_py{};
+	float m_parton3_pz{};
+
+	float m_parton4_px{};
+	float m_parton4_py{};
+	float m_parton4_pz{};
+
+	TLorentzVector true_lep1{};
+	TLorentzVector true_lep2{};
 
 	float m_true_lep1_e{};
 	float m_true_lep2_e{};
+
+	float m_true_lep1_px{};
+	float m_true_lep1_py{};
+	float m_true_lep1_pz{};
+
+	float m_true_lep2_px{};
+	float m_true_lep2_py{};
+	float m_true_lep2_pz{};
 
 	// Event data
 	int m_z1_decay_pdg{};  // as input from parameter; defaults to 5 (mu+mu-)
@@ -150,13 +181,45 @@ protected:
 	int m_z2_decay_pdg{}; // abs(PDG) of particle Z2 decayed to (>0 only for true ZZH events)
 
 	// Only for reco and TrueJet data; thus only filled for m_mode=1
+	TLorentzVector jet1{};
+	TLorentzVector jet2{};
+	TLorentzVector jet3{};
+	TLorentzVector jet4{};
+
 	float m_jet1_e{};
 	float m_jet2_e{};
 	float m_jet3_e{};
 	float m_jet4_e{};
 
+	float m_jet1_px{};
+	float m_jet1_py{};
+	float m_jet1_pz{};
+
+	float m_jet2_px{};
+	float m_jet2_py{};
+	float m_jet2_pz{};
+
+	float m_jet3_px{};
+	float m_jet3_py{};
+	float m_jet3_pz{};
+
+	float m_jet4_px{};
+	float m_jet4_py{};
+	float m_jet4_pz{};
+
+	TLorentzVector lep1{};
+	TLorentzVector lep2{};
+
 	float m_lep1_e{};
 	float m_lep2_e{};
+
+	float m_lep1_px{};
+	float m_lep1_py{};
+	float m_lep1_pz{};
+
+	float m_lep2_px{};
+	float m_lep2_py{};
+	float m_lep2_pz{};
 
 	// Di-jet properties
 	int m_misclustering_region{}; //e.g. AA, BB; see Misclustering code
