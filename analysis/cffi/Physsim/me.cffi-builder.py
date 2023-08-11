@@ -15,8 +15,8 @@ ffibuilder.set_source(
     #header_source='',
     source='double calc();',
     sources=[
-        '../../source/CalculateME/main.c',
-        '../../source/CalculateME/CalculateME.cpp'
+        './CalculateME/main.c',
+        './CalculateME/CalculateME.cpp'
     ],     # other sources -- file containing fcn(x, dim)
     library_dirs=[
         '/nfs/dust/ilc/user/bliewert/.mambaforge/envs/py311/lib',

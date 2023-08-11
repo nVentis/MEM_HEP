@@ -15,3 +15,4 @@ Ranlux.coonf
 .vscode/*.db-*
 Use_TrueJet
 results
+analysis/cffi/mg5/mg5/*

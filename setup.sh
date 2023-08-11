@@ -48,9 +48,9 @@ export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/ilcutil/1.7/x
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/root/6.28.04/x86_64-centos7-gcc12.3.0-opt/owni5/include
 
 # MadGraph and madjax
-# export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_0/bin:$PATH
+export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_1/bin:$PATH
 # export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_9_15/bin:$PATH
-export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_8_1/bin:$PATH
+#export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v2_8_1/bin:$PATH
 #export PATH=/afs/desy.de/user/b/bliewert/.local/bin:$PATH
 
 # This is incompatible with py311 environment!
