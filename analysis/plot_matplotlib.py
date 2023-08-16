@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pylab as pylab
+import pandas as pd
 from matplotlib import rcParams as rcp
 from typing import Optional, Union
 from math import sqrt
@@ -14,19 +15,30 @@ rcp['font.family'] = 'monospace' # per default use monospace fonts
 def format_st(f, t = 0.01):
     return f"{f:.2f}" if f >= t else f"<{t}"
 
-def plot_hist(data, x:Union[str,list], fit_func: None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[tuple] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, text_start_x=0.965, text_start_y=0.98, xscale = "linear", yscale = "linear", fontsize:Optional[str] = None):
+def fontsize(fs):
+    pylab.rcParams.update(params = {
+        'legend.fontsize': fs,
+        'axes.labelsize': fs,
+        'axes.titlesize': fs,
+        'xtick.labelsize': fs,
+        'ytick.labelsize': fs})
+
+def plot_hist(data:Union[dict,pd.DataFrame], x:Union[str,list], fit_func = None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale = "linear", yscale = "linear", fontsize:Optional[str] = None):
     """_summary_
+    
+    text_spacing_y: 0.11 for high-res
+    
 
     Args:
-        data (_type_): _description_
-        x (Union[str,list]): _description_
+        data (Union[dict,pd.DataFrame]): Can be a pd.DataFrame or simple dict (preferrable for columns of unequal size)
+        x (Union[str,list]): one column or a list of columns in data to be histogrammed.
         fit_func (Optional[function], optional): only supported if one column is to be plotted, i.e. x is a string
         fit_opts (Optional[dict], opional): only used for printing
         labels (_type_, optional): _description_. Defaults to None.
         colorpalette (_type_, optional): _description_. Defaults to None.
         bins (int, optional): _description_. Defaults to 128.
         xlim_binning (bool, optional): _description_. Defaults to False.
-        xlim (Optional[tuple], optional): _description_. Defaults to None.
+        xlim (Optional[list], optional): _description_. Defaults to None.
         ylim (_type_, optional): _description_. Defaults to None.
         xlabel (Optional[str], optional): _description_. Defaults to None.
         ylabel (Optional[str], optional): _description_. Defaults to None.
@@ -34,8 +46,10 @@ def plot_hist(data, x:Union[str,list], fit_func: None, fit_opts:Optional[dict] =
         normalize (bool, optional): _description_. Defaults to False.
         title (Optional[str], optional): _description_. Defaults to "Likelihood-Analysis".
         ax (_type_, optional): _description_. Defaults to None.
+        filter_nan (): Whether or not to filter out nan data; useful for DataFrames of unequal sizes. Defaults to False.
         text_start_x (float, optional): _description_. Defaults to 1.02.
         text_start_y (float, optional): _description_. Defaults to 1.05.
+        text_spacing_y (float, optional): Height of each textbox . Defaults to 0.11.
         xscale (str, optional): _description_. Defaults to "linear".
         yscale (str, optional): _description_. Defaults to "linear".
         fontsize (Optional[str], optional): _description_. Defaults to None.
@@ -66,18 +80,37 @@ def plot_hist(data, x:Union[str,list], fit_func: None, fit_opts:Optional[dict] =
         colorpalette = prop_cycle.by_key()['color']
     
     # If data is one-dimensional, only plot this
-    xlim_view = ()
+    xlim_view = xlim
     
-    if len(list(data.shape)) == 1:
-        columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
-        xlim_view = (0.98*data.min(), 1.02*data.max()) if xlim is None else xlim
-    else:
-        columns = x
-        xlim_view = (0.98*data[x].min().min(), 1.02*data[x].max().max()) if xlim is None else xlim
+    if isinstance(data, dict):
+        if len(data.keys()) == 1:
+            columns = [None]
+            data = data[data.keys()[0]]
+            xlim_view = [0.98*data.min(), 1.02*data.max()] if xlim is None else xlim
+        else:
+            columns = x
+            if xlim_view is None:
+                xlim_view = [float('inf'), float('-inf')]
+                for x in data:
+                    xlim_view[0] = min(xlim_view[0], 0.98*data[x].min())
+                    xlim_view[1] = max(xlim_view[1], 1.02*data[x].max())
+                
+    else: # DataFrame
+        if len(list(data.shape)) == 1:
+            columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
+            if xlim_view is None:
+                xlim_view = [0.98*data.min(), 1.02*data.max()]
+        else:
+            columns = x
+            if xlim_view is None:
+                xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
 
     for i in range(len(columns)):
         column = columns[i]
         values = data if column is None else data[column]
+        
+        if filter_nan == True:
+            values = values[~np.isnan(values)]
             
         # Limits
         min_val = xlim[0] if (xlim is not None and xlim_binning) else np.min(values)
@@ -115,7 +148,7 @@ def plot_hist(data, x:Union[str,list], fit_func: None, fit_opts:Optional[dict] =
                 COE = 1 - (ss_res / ss_tot) # R^2
                 
                 (plt if ax == None else ax).plot(bin_centers, fit_data, color="red")
-                fig.text(text_start_x, text_start_y - 0.11,
+                fig.text(text_start_x, text_start_y - text_spacing_y,
                  f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {format_st(MSE)}\nRMSE: {format_st(RMSE)}\nR^2: {COE:.2f}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
                  #color=colorpalette[i],
                  bbox=dict(edgecolor="red", facecolor="w"),
@@ -124,8 +157,8 @@ def plot_hist(data, x:Union[str,list], fit_func: None, fit_opts:Optional[dict] =
                  verticalalignment='top',
                  transform=ax.transAxes)
         
-        fig.text(text_start_x, text_start_y - 0.11*i,
-                 ("" if column is None else f"{h_name}\n") + "Entries: {0}\nMean: {1:.2f}\nStd Dev: {2:.2f}".format(len(values), np.average(values), np.std(values)),
+        fig.text(text_start_x, text_start_y - text_spacing_y*i,
+                 ("" if column is None else f"{h_name}\nEntries: {len(values)}\nMean: {np.average(values):.2f}\nStd Dev: {np.std(values):.2f}"),
                  #color=colorpalette[i],
                  bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
                  fontsize='medium' if fontsize is None else fontsize,

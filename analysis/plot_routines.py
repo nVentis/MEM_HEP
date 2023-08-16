@@ -34,7 +34,7 @@ def plot_summary(data:pd.DataFrame, name: str, fig_path:Optional[str] = None):
         
     plt.close(fig)
 
-def plot_nll(data:pd.DataFrame, name:str, zhh_path:Optional[str] = None, zzh_path:Optional[str] = None):
+def plot_nll(data:pd.DataFrame, name:str, zhh_path:Optional[str] = None, zzh_path:Optional[str] = None, zhh_nll:str = "zhh_nll", zzh_nll:str = "zzh_nll"):
     """Plots the negative-log likelihood for true ZHH and true ZZH events
 
     Args:
@@ -47,7 +47,7 @@ def plot_nll(data:pd.DataFrame, name:str, zhh_path:Optional[str] = None, zzh_pat
     true_zhh, true_zzh = split_true_zhh_zzh(data)
     
     fig, ax = plt.subplots()
-    plot_hist(true_zhh, x = ["zhh_nll", "zzh_nll"], title="ZHH event data", normalize=True, labels=["ZHH {}".format(name), "ZZH".format(name)], xlabel="nll", ax=ax)
+    plot_hist(true_zhh, x = [zhh_nll, zzh_nll], title="ZHH event data", normalize=True, labels=["ZHH {}".format(name), "ZZH".format(name)], xlabel="nll", ax=ax)
     
     if zhh_path is not None:
         fig.savefig(zhh_path)
@@ -57,7 +57,7 @@ def plot_nll(data:pd.DataFrame, name:str, zhh_path:Optional[str] = None, zzh_pat
     plt.close(fig)
     
     fig, ax = plt.subplots()
-    plot_hist(true_zzh, x = ["zhh_nll", "zzh_nll"], title="ZZH event data", normalize=True, labels=["ZHH {}".format(name), "ZZH".format(name)], xlabel="nll", ax=ax)
+    plot_hist(true_zzh, x = [zhh_nll, zzh_nll], title="ZZH event data", normalize=True, labels=["ZHH {}".format(name), "ZZH".format(name)], xlabel="nll", ax=ax)
     
     if zzh_path is not None:
         fig.savefig(zzh_path)
@@ -67,7 +67,7 @@ def plot_nll(data:pd.DataFrame, name:str, zhh_path:Optional[str] = None, zzh_pat
     plt.close(fig)
     
     
-def plot_llr(data:pd.DataFrame, name:str, fig_path:Optional[str] = None):
+def plot_llr(data:pd.DataFrame, name:str, fig_path:Optional[str] = None, llr_column:str="llr"):
     """Plots the Log-Likelihood-Ratio for signal/background (ZHH/ZZH)
 
     Args:
@@ -76,11 +76,14 @@ def plot_llr(data:pd.DataFrame, name:str, fig_path:Optional[str] = None):
         fig_path (Optional[str], optional): path where plot should be saved. if None, will attempt to plot in running python session. Defaults to None.
     """
     true_zhh, true_zzh = split_true_zhh_zzh(data)
-    
-    llr = combine_columns({ "zhh_llr": true_zhh["llr"], "zzh_llr": true_zzh["llr"] })
+
+    llr = {
+        "zhh_llr": true_zhh[llr_column],
+        "zzh_llr": true_zzh[llr_column]
+    }
     
     fig, ax = plt.subplots()
-    plot_hist(llr, x = ["zhh_llr", "zzh_llr"], labels=["ZHH event data", "ZZH event data"], title="LLR: {}".format(name), normalize=True, xlabel="llr", ax=ax)
+    plot_hist(llr, x = ["zhh_llr", "zzh_llr"], labels=["ZHH event data", "ZZH event data"], title="LLR: {}".format(name), text_start_x= 0.26, normalize=True, xlabel="llr", ax=ax)
     
     if fig_path is not None:
         fig.savefig(fig_path)

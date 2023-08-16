@@ -15,7 +15,7 @@ import numpy as np
 def plot_energy_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss", true_label = "parton", reco_label = "jet"):
     from scipy.optimize import curve_fit
     
-    fig, axes = plt.subplots(1, 4, figsize=(6*len(data),8))
+    fig, axes = plt.subplots(1, len(data), figsize=(6*len(data),8))
     fig.suptitle(name + r": $E_{" + reco_label + r"}-E_{" + true_label + r"}$", fontsize=18)
     
     for i in range(1,1+len(data)):

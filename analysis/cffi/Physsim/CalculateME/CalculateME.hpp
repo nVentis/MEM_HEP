@@ -25,7 +25,7 @@ class calc_zhh {
     calc_zhh& operator=(calc_zhh const&) = delete;
     ~calc_zhh();
 
-    double calc_zhh_calc(double l1_fm[], double l2_fm[], double H1_fm[], double H2_fm[]) const;
+    double calc_zhh_calc(double momenta[]) const;
 
 };
 
@@ -38,7 +38,7 @@ class calc_zzh {
     calc_zzh& operator=(calc_zzh const&) = delete;
     ~calc_zzh();
 
-    double calc_zzh_calc(double l1_fm[], double l2_fm[], double z2_d1_fm[], double z2_d2_fm[], double H_fm[]) const;
+    double calc_zzh_calc(double momenta[]) const;
 
 };
 
@@ -51,13 +51,13 @@ typedef void* pStat;
 
 EXPORT_C pStat   calc_zhh_new(double H_mass, double pol_e, double pol_p, int z_decay_mode, int me_type);
 EXPORT_C void    calc_zhh_del (pStat self);
-EXPORT_C double  calc_zhh_calc(pStat self, double l1_fm[], double l2_fm[], double H1_fm[], double H2_fm[]);
+EXPORT_C double  calc_zhh_calc(pStat self, double momenta[]);
 
 //============ C-interface for class calc_zzh ============//
 
 EXPORT_C pStat   calc_zzh_new(double H_mass, double pol_e, double pol_p, int z1_decay_mode, int z2_decay_mode, int me_type);
 EXPORT_C void    calc_zzh_del (pStat self);
-EXPORT_C double  calc_zzh_calc(pStat self, double l1_fm[], double l2_fm[], double z2_d1_fm[], double z2_d2_fm[], double H_fm[]);
+EXPORT_C double  calc_zzh_calc(pStat self, double momenta[]);
 
 
 #endif

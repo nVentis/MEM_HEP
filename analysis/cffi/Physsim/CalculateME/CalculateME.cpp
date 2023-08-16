@@ -19,31 +19,29 @@ calc_zhh::calc_zhh(double H_mass, double pol_e, double pol_p, int z_decay_mode, 
     _zhh->SetMEType(me_type);
 
 
-    std::cout << " [TRACE] LCMEZHH created Ok." << std::endl;
+    //std::cout << " [TRACE] LCMEZHH created Ok." << std::endl;
 }
 
 calc_zhh::~calc_zhh()
 {
-    std::cout << " [TRACE] LCMEZHH deleted OK" << std::endl;
+    //std::cout << " [TRACE] LCMEZHH deleted OK" << std::endl;
 }
 
-// Px,Py,Pz,E
-double calc_zhh::calc_zhh_calc(double l1_fm[], double l2_fm[], double H1_fm[], double H2_fm[]) const
+/**
+ * E,Px,Py,Pz
+*/
+double calc_zhh::calc_zhh_calc(double momenta[]) const
 {
-    TLorentzVector zhh_lortz[4] = {
-        TLorentzVector(l1_fm),
-        TLorentzVector(l2_fm),
-        TLorentzVector(H1_fm),
-        TLorentzVector(H2_fm)
+    TLorentzVector zhh_lortz[5] = {
+        TLorentzVector(momenta[ 1], momenta[ 2], momenta[ 3], momenta[ 0]),
+        TLorentzVector(momenta[ 5], momenta[ 6], momenta[ 7], momenta[ 4]),
+        TLorentzVector(momenta[ 9], momenta[10], momenta[11], momenta[ 8]),
+        TLorentzVector(momenta[13], momenta[14], momenta[15], momenta[12]),
     };
 
     _zhh->SetMomentumFinal(zhh_lortz);
 
-    double result = _zhh->GetMatrixElement2();
-
-    std::cout << result << std::endl;
-
-    return result;
+    return _zhh->GetMatrixElement2();
 }
 
 //----------- Implementation of class calc_zzh -----------//
@@ -58,31 +56,33 @@ calc_zzh::calc_zzh(double H_mass, double pol_e, double pol_p, int z1_decay_mode,
     _zzh->SetPropagator(1);
     _zzh->SetMEType(me_type);
 
-    std::cout << " [TRACE] LCMEZZH created Ok." << std::endl;
+    //std::cout << " [TRACE] LCMEZZH created Ok." << std::endl;
 }
 
 calc_zzh::~calc_zzh()
 {
-    std::cout << " [TRACE] LCMEZZH deleted OK" << std::endl;
+    //std::cout << " [TRACE] LCMEZZH deleted OK" << std::endl;
 }
 
-double calc_zzh::calc_zzh_calc(double l1_fm[], double l2_fm[], double z2_d1_fm[], double z2_d2_fm[], double H_fm[]) const
+/**
+ * momenta[]: for lep1, lep2, z2d1, z2d2, H
+ * order: E,x,y,z
+ * 
+ * 
+*/
+double calc_zzh::calc_zzh_calc(double momenta[]) const
 {
     TLorentzVector zzh_lortz[5] = {
-        TLorentzVector(l1_fm),
-        TLorentzVector(l2_fm),
-        TLorentzVector(z2_d1_fm),
-        TLorentzVector(z2_d2_fm),
-        TLorentzVector(H_fm)
+        TLorentzVector(momenta[ 1], momenta[ 2], momenta[ 3], momenta[ 0]),
+        TLorentzVector(momenta[ 5], momenta[ 6], momenta[ 7], momenta[ 4]),
+        TLorentzVector(momenta[ 9], momenta[10], momenta[11], momenta[ 8]),
+        TLorentzVector(momenta[13], momenta[14], momenta[15], momenta[12]),
+        TLorentzVector(momenta[17], momenta[18], momenta[19], momenta[16])
     };
 
     _zzh->SetMomentumFinal(zzh_lortz);
 
-    double result = _zzh->GetMatrixElement2();
-
-    std::cout << result << std::endl;
-
-    return result;
+    return _zzh->GetMatrixElement2();
 }
 
 
@@ -100,10 +100,14 @@ void calc_zhh_del(pStat self)
     delete reinterpret_cast<calc_zhh*>(self);
 }
 
-double calc_zhh_calc(pStat self, double l1_fm[], double l2_fm[], double H1_fm[], double H2_fm[])
+/**
+ * l1_fm[4], l2_fm[4], H1_fm[4], H2_fm[4]
+ * -> double momenta[16]
+*/
+double calc_zhh_calc(pStat self, double momenta[])
 {
     auto p = reinterpret_cast<calc_zhh*>(self);
-    return p->calc_zhh_calc(l1_fm, l2_fm, H1_fm, H2_fm);
+    return p->calc_zhh_calc(momenta);
 }
 
 //---------- C-Interface for class lcmezzh ---------------------//
@@ -118,10 +122,14 @@ void calc_zzh_del(pStat self)
     delete reinterpret_cast<calc_zzh*>(self);
 }
 
-double calc_zzh_calc(pStat self, double l1_fm[], double l2_fm[], double z2_d1_fm[], double z2_d2_fm[], double H_fm[])
+/**
+ * l1_fm[4], l2_fm[4], z2_d1_fm[4], z2_d2_fm[4], H_fm[4]
+ * -> double momenta[20]
+*/
+double calc_zzh_calc(pStat self, double momenta[])
 {
     auto p = reinterpret_cast<calc_zzh*>(self);
-    return p->calc_zzh_calc(l1_fm, l2_fm, z2_d1_fm, z2_d2_fm, H_fm);
+    return p->calc_zzh_calc(momenta);
 }
 
 

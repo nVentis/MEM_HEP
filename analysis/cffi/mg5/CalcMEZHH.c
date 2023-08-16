@@ -566,49 +566,220 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 /************************************************************/
 
-double calc(int iters);
+double calc_rambo(const char param_card[], double energy, int helicity_selection[], int selected_helicities);
+                    double* calc(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double momenta[], int n_elements);
 
 /************************************************************/
 
 static void *_cffi_types[] = {
-/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 3), // double()(int)
-/*  1 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7), // int
-/*  2 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/*  3 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
+/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // double *()(char const *, double, int *, int, double *, int)
+/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 17), // char const *
+/*  2 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
+/*  3 */ _CFFI_OP(_CFFI_OP_POINTER, 4), // int *
+/*  4 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7), // int
+/*  5 */ _CFFI_OP(_CFFI_OP_POINTER, 2), // double *
+/*  6 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/*  7 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/*  8 */ _CFFI_OP(_CFFI_OP_FUNCTION, 2), // double()(char const *, double, int *, int)
+/*  9 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
+/* 10 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 11 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
+/* 12 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 13 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 14 */ _CFFI_OP(_CFFI_OP_FUNCTION, 18), // void()(void *)
+/* 15 */ _CFFI_OP(_CFFI_OP_POINTER, 18), // void *
+/* 16 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 17 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 2), // char
+/* 18 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
-static double _cffi_d_calc(int x0)
+static double * _cffi_d_calc(char const * x0, double x1, int * x2, int x3, double * x4, int x5)
 {
-  return calc(x0);
+  return calc(x0, x1, x2, x3, x4, x5);
 }
 #ifndef PYPY_VERSION
 static PyObject *
-_cffi_f_calc(PyObject *self, PyObject *arg0)
+_cffi_f_calc(PyObject *self, PyObject *args)
 {
-  int x0;
-  double result;
+  char const * x0;
+  double x1;
+  int * x2;
+  int x3;
+  double * x4;
+  int x5;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+  double * result;
   PyObject *pyresult;
+  PyObject *arg0;
+  PyObject *arg1;
+  PyObject *arg2;
+  PyObject *arg3;
+  PyObject *arg4;
+  PyObject *arg5;
 
-  x0 = _cffi_to_c_int(arg0, int);
-  if (x0 == (int)-1 && PyErr_Occurred())
+  if (!PyArg_UnpackTuple(args, "calc", 6, 6, &arg0, &arg1, &arg2, &arg3, &arg4, &arg5))
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(1), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (char const *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(1), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x1 = (double)_cffi_to_c_double(arg1);
+  if (x1 == (double)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(3), arg2, (char **)&x2);
+  if (datasize != 0) {
+    x2 = ((size_t)datasize) <= 640 ? (int *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(3), arg2, (char **)&x2,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x3 = _cffi_to_c_int(arg3, int);
+  if (x3 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(5), arg4, (char **)&x4);
+  if (datasize != 0) {
+    x4 = ((size_t)datasize) <= 640 ? (double *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(5), arg4, (char **)&x4,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x5 = _cffi_to_c_int(arg5, int);
+  if (x5 == (int)-1 && PyErr_Occurred())
     return NULL;
 
   Py_BEGIN_ALLOW_THREADS
   _cffi_restore_errno();
-  { result = calc(x0); }
+  { result = calc(x0, x1, x2, x3, x4, x5); }
   _cffi_save_errno();
   Py_END_ALLOW_THREADS
 
   (void)self; /* unused */
-  pyresult = _cffi_from_c_double(result);
+  pyresult = _cffi_from_c_pointer((char *)result, _cffi_type(5));
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
   return pyresult;
 }
 #else
 #  define _cffi_f_calc _cffi_d_calc
 #endif
 
+static double _cffi_d_calc_rambo(char const * x0, double x1, int * x2, int x3)
+{
+  return calc_rambo(x0, x1, x2, x3);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_calc_rambo(PyObject *self, PyObject *args)
+{
+  char const * x0;
+  double x1;
+  int * x2;
+  int x3;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+  double result;
+  PyObject *pyresult;
+  PyObject *arg0;
+  PyObject *arg1;
+  PyObject *arg2;
+  PyObject *arg3;
+
+  if (!PyArg_UnpackTuple(args, "calc_rambo", 4, 4, &arg0, &arg1, &arg2, &arg3))
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(1), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (char const *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(1), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x1 = (double)_cffi_to_c_double(arg1);
+  if (x1 == (double)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(3), arg2, (char **)&x2);
+  if (datasize != 0) {
+    x2 = ((size_t)datasize) <= 640 ? (int *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(3), arg2, (char **)&x2,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x3 = _cffi_to_c_int(arg3, int);
+  if (x3 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { result = calc_rambo(x0, x1, x2, x3); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  pyresult = _cffi_from_c_double(result);
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
+  return pyresult;
+}
+#else
+#  define _cffi_f_calc_rambo _cffi_d_calc_rambo
+#endif
+
+static void _cffi_d_free(void * x0)
+{
+  free(x0);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_free(PyObject *self, PyObject *arg0)
+{
+  void * x0;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(15), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (void *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(15), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { free(x0); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+#else
+#  define _cffi_f_free _cffi_d_free
+#endif
+
 static const struct _cffi_global_s _cffi_globals[] = {
-  { "calc", (void *)_cffi_f_calc, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 0), (void *)_cffi_d_calc },
+  { "calc", (void *)_cffi_f_calc, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 0), (void *)_cffi_d_calc },
+  { "calc_rambo", (void *)_cffi_f_calc_rambo, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 8), (void *)_cffi_d_calc_rambo },
+  { "free", (void *)_cffi_f_free, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 14), (void *)_cffi_d_free },
 };
 
 static const struct _cffi_type_context_s _cffi_type_context = {
@@ -618,12 +789,12 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   NULL,  /* no struct_unions */
   NULL,  /* no enums */
   NULL,  /* no typenames */
-  1,  /* num_globals */
+  3,  /* num_globals */
   0,  /* num_struct_unions */
   0,  /* num_enums */
   0,  /* num_typenames */
   NULL,  /* no includes */
-  4,  /* num_types */
+  19,  /* num_types */
   0,  /* flags */
 };
 
@@ -633,7 +804,7 @@ static const struct _cffi_type_context_s _cffi_type_context = {
 
 #ifdef PYPY_VERSION
 PyMODINIT_FUNC
-_cffi_pypyinit_CalcME(const void *p[])
+_cffi_pypyinit_CalcMEZHH(const void *p[])
 {
     p[0] = (const void *)0x2601;
     p[1] = &_cffi_type_context;
@@ -644,22 +815,22 @@ _cffi_pypyinit_CalcME(const void *p[])
 #  ifdef _MSC_VER
      PyMODINIT_FUNC
 #  if PY_MAJOR_VERSION >= 3
-     PyInit_CalcME(void) { return NULL; }
+     PyInit_CalcMEZHH(void) { return NULL; }
 #  else
-     initCalcME(void) { }
+     initCalcMEZHH(void) { }
 #  endif
 #  endif
 #elif PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC
-PyInit_CalcME(void)
+PyInit_CalcMEZHH(void)
 {
-  return _cffi_init("CalcME", 0x2601, &_cffi_type_context);
+  return _cffi_init("CalcMEZHH", 0x2601, &_cffi_type_context);
 }
 #else
 PyMODINIT_FUNC
-initCalcME(void)
+initCalcMEZHH(void)
 {
-  _cffi_init("CalcME", 0x2601, &_cffi_type_context);
+  _cffi_init("CalcMEZHH", 0x2601, &_cffi_type_context);
 }
 #endif
 

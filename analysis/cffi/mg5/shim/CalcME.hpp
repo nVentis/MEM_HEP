@@ -23,14 +23,16 @@
 class calc_me {
   private:
     CPPProcess *_cppp;
+    double E{};
 
   public:
-    calc_me();
+    calc_me(std::string param_card, double energy);
     calc_me(calc_me const&)            = delete;
     calc_me& operator=(calc_me const&) = delete;
     ~calc_me();
 
-    double calc_me_calc();
+    void set_helicity(int particle, int helicity);
+    double* calc_me_multi(double momenta[], int n_elements, double buffer[]);
     double calc_me_rambo();
 
 };
@@ -42,9 +44,10 @@ class calc_me {
 // Opaque pointer type alias for C-lang
 typedef void* pStat;
 
-EXPORT_C pStat   calc_me_new  ();
-EXPORT_C void    calc_me_del  (pStat self);
-EXPORT_C double  calc_me_calc (pStat self);
-EXPORT_C double  calc_me_rambo(pStat self);
+EXPORT_C pStat   calc_me_new          (const char param_card[], double energy);
+EXPORT_C void    calc_me_set_helicity (pStat self, int particle, int helicity);
+EXPORT_C void    calc_me_del          (pStat self);
+EXPORT_C double* calc_me_multi        (pStat self, double momenta[], int n_elements);
+EXPORT_C double  calc_me_rambo        (pStat self);
 
 #endif
