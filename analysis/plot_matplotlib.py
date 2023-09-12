@@ -23,7 +23,7 @@ def fontsize(fs):
         'xtick.labelsize': fs,
         'ytick.labelsize': fs})
 
-def plot_hist(data:Union[dict,pd.DataFrame], x:Union[str,list], fit_func = None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale = "linear", yscale = "linear", fontsize:Optional[str] = None):
+def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_func = None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale = "linear", yscale = "linear", fontsize:Optional[str] = None):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -31,7 +31,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Union[str,list], fit_func = None,
 
     Args:
         data (Union[dict,pd.DataFrame]): Can be a pd.DataFrame or simple dict (preferrable for columns of unequal size)
-        x (Union[str,list]): one column or a list of columns in data to be histogrammed.
+        x (Optional[Union[str,list]]): one column or a list of columns in data to be histogrammed.
         fit_func (Optional[function], optional): only supported if one column is to be plotted, i.e. x is a string
         fit_opts (Optional[dict], opional): only used for printing
         labels (_type_, optional): _description_. Defaults to None.
@@ -148,7 +148,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Union[str,list], fit_func = None,
                 COE = 1 - (ss_res / ss_tot) # R^2
                 
                 (plt if ax == None else ax).plot(bin_centers, fit_data, color="red")
-                fig.text(text_start_x, text_start_y - text_spacing_y,
+                fig.text(text_start_x, text_start_y - text_spacing_y*2*i,
                  f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {format_st(MSE)}\nRMSE: {format_st(RMSE)}\nR^2: {COE:.2f}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
                  #color=colorpalette[i],
                  bbox=dict(edgecolor="red", facecolor="w"),
@@ -157,14 +157,14 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Union[str,list], fit_func = None,
                  verticalalignment='top',
                  transform=ax.transAxes)
         
-        fig.text(text_start_x, text_start_y - text_spacing_y*i,
-                 ("" if column is None else f"{h_name}\nEntries: {len(values)}\nMean: {np.average(values):.2f}\nStd Dev: {np.std(values):.2f}"),
-                 #color=colorpalette[i],
-                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
-                 fontsize='medium' if fontsize is None else fontsize,
-                 horizontalalignment='right',
-                 verticalalignment='top',
-                 transform=ax.transAxes)
+        fig.text(text_start_x, text_start_y - text_spacing_y*((2*i+1) if callable(fit_func) else i),
+                f"{h_name}\nEntries: {len(values)}\nMean: {np.average(values):.2f}\nStd Dev: {np.std(values):.2f}",
+                #color=colorpalette[i],
+                bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
+                fontsize='medium' if fontsize is None else fontsize,
+                horizontalalignment='right',
+                verticalalignment='top',
+                transform=ax.transAxes)
     
     #plt_obj.legend(loc='upper right', bbox_to_anchor=(1.1, 1.05))
     

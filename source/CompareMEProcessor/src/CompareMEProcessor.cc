@@ -146,6 +146,12 @@ CompareMEProcessor::CompareMEProcessor() :
         m_require_presel_pass,
         int(0)
         );
+  /*
+  registerProcessorParameter("RequireMCEnergyConservation",
+        "whether (1) or not to skip (1) events that did not pass preselection",
+        m_require_mc_energycnsv,
+        int(0)
+        );*/
 
 	registerProcessorParameter("Z1DecayPDG",
         "MEM processor mode of decay of Z1 (=Z for ZHH, Z1 for ZZH)",
