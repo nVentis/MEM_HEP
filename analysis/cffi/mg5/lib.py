@@ -13,8 +13,8 @@ def zhh_mc_batch(reco_kin,
     """Monte Carlo integrand
 
     Args:
-        reco_kin (_type_): _description_
-        int_variables (_type_): _description_
+        reco_kin (_type_): expects kinematics in (E,px,py,pz) form for (mu-,mu+,b,b,b,b)
+        int_variables (_type_): integration variables
         helicities (list, optional): _description_. Defaults to [0,-1,1,1].
         energy (float, optional): _description_. Defaults to 500..
         param_card (str, optional): _description_. Defaults to "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat".
