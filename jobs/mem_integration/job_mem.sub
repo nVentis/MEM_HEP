@@ -1,0 +1,16 @@
+executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/job_mem.sh
+arguments = $(event) $(ProcId)
+should_transfer_files = True
+transfer_executable = True
+
+Requirements = (OpSysAndVer == "CentOS7")
+request_cpus = 1
+request_memory = 2000 Mb
+
+log = /nfs/dust/ilc/user/bliewert/mem_integrate/log/$(ProcId).log
+output = /nfs/dust/ilc/user/bliewert/mem_integrate/log/$(ProcId).out
+error = /nfs/dust/ilc/user/bliewert/mem_integrate/log/$(ProcId).err
+
+transfer_output_files = ""
+
+queue event from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/event_numbers.txt

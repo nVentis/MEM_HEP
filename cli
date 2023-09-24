@@ -13,8 +13,12 @@ logger.addHandler(ch)
 
 #from analysis.commands.mem_plot import mem_plot
 
+# Grouped commands
 from analysis.cli_plot import cli_plot
 from analysis.cli_convert import cli_convert
+from analysis.cli_mem import cli_mem
+
+# Individual commands
 from analysis.cli_commands.me import me_command, me_all_command
 from analysis.energy_transfer import plot_jet_energy_transfer_from_file_command
 
@@ -36,6 +40,7 @@ def dropdb():
 if __name__ == '__main__':
     cli.add_command(cli_plot)
     cli.add_command(cli_convert)
+    cli.add_command(cli_mem)
     cli.add_command(initdb)
     cli.add_command(dropdb)
     cli.add_command(me_command)

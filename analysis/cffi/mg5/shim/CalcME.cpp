@@ -48,15 +48,13 @@ double calc_me::calc_jac(
     );
 }
 
-int calc_me::calc_kinematics_from_int(
-    double mH2, double Thb1, double Phb1, double Rhb1,
-    double Thb1b, double Phb1b, double Rhb2, double Thb2
-) {
-    double arg_b1E_sqrt = mb_pow2 + std::pow(Rhb1, 2.);
-    if (arg_b1E_sqrt < 0)
-        return err_map[0];
-    
-    double b1E = std::sqrt(arg_b1E_sqrt);
+#ifndef NWA
+int calc_me::calc_kinematics_from_int(double mH2, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
+#else
+int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
+#endif
+{  
+    double b1E = std::sqrt(mb_pow2 + std::pow(Rhb1, 2.));
     
     vec3 b1e = vec3_sph(Thb1, Phb1, 1);
     
@@ -64,7 +62,13 @@ int calc_me::calc_kinematics_from_int(
     vec3 b1be = vec3_sph(Thb1b, Phb1b, 1);
     double dot = vec3_dot(b1e, b1be);
     
-    double dmH2 = (mH2 - 2*mb_pow2)/2;
+    double dmH2 = (
+        #ifndef NWA
+            mH2
+        #else
+            std::pow(125., 2.)
+        #endif
+         - 2*mb_pow2)/2;
     double d = (dmH2*Rhb1*dot)/(std::pow(Rhb1*dot, 2.) - std::pow(b1E, 2.) );
     
     double arg_Rhb1b_sqrt = (std::pow(b1E, 2.)*mb_pow2 - std::pow(dmH2, 2.))/(std::pow(Rhb1*dot, 2.) - std::pow(b1E, 2.)) + std::pow(d, 2.);
@@ -75,11 +79,7 @@ int calc_me::calc_kinematics_from_int(
     if (Rhb1b < 0)
         return err_map[2];
     
-    double arg_b1bE_sqrt = mb_pow2 + std::pow(Rhb1b, 2.);
-    if (arg_b1bE_sqrt < 0)
-        return err_map[3];
-    
-    double b1bE = std::sqrt(arg_b1bE_sqrt);
+    double b1bE = std::sqrt(mb_pow2 + std::pow(Rhb1b, 2.));
     
     std::array<double, 4> pB2 {
         constants.system_E -(b1E+b1bE),
@@ -89,14 +89,12 @@ int calc_me::calc_kinematics_from_int(
     };
 
     // Calculate Rhb2b
-    double arg_b2E_sqrt = mb_pow2 + std::pow(Rhb2, 2.);
-    if (arg_b2E_sqrt < 0)
-        return err_map[4];
-    double b2E = sqrt(arg_b2E_sqrt);
+    double b2E = std::sqrt(mb_pow2 + std::pow(Rhb2, 2.));
     
     double b2bE = pB2[0] - b2E;
-    if (b2bE < 0)
+    if (b2bE < 0) {
         return err_map[5];
+    }
     
     double arg_Rhb2b_sqrt = std::pow(b2bE, 2.) - mb_pow2;
     if (arg_Rhb2b_sqrt < 0)
@@ -107,11 +105,11 @@ int calc_me::calc_kinematics_from_int(
     double arg_Thb2b_acos = 1/Rhb2b*(pB2[3] - Rhb2*std::cos(Thb2));
     if (std::abs(arg_Thb2b_acos) > 1)
         return err_map[7];
-    double Thb2b = acos(arg_Thb2b_acos);
+    double Thb2b = std::acos(arg_Thb2b_acos);
     
     double a_pow2 = std::pow(pB2[1], 2.);
     double b_pow2 = std::pow(pB2[2], 2.);
-    double c = (-std::pow(Rhb2*sin(Thb2), 2.) + std::pow(Rhb2b*sin(Thb2b), 2.) + a_pow2 + b_pow2)/(2*Rhb2b*std::sin(Thb2b));
+    double c = (-std::pow(Rhb2*sin(Thb2), 2.) + std::pow(Rhb2b*std::sin(Thb2b), 2.) + a_pow2 + b_pow2)/(2*Rhb2b*std::sin(Thb2b));
     
     double arg_Phb2b_atan_sqrt = a_pow2 + b_pow2 - std::pow(c, 2.);
     if (arg_Phb2b_atan_sqrt < 0)
@@ -122,14 +120,14 @@ int calc_me::calc_kinematics_from_int(
         }
 
     // Two solutions to calculate Phb2b with atan; try out both, use the one that is closest to target   
-    double Phb2b_1 = 2*std::atan((pB2[2] + sqrt(arg_Phb2b_atan_sqrt))/(pB2[1]+c));
-    double Phb2b_2 = 2*std::atan((pB2[2] - sqrt(arg_Phb2b_atan_sqrt))/(pB2[1]+c));
+    double Phb2b_1 = 2*std::atan((pB2[2] + std::sqrt(arg_Phb2b_atan_sqrt))/(pB2[1]+c));
+    double Phb2b_2 = 2*std::atan((pB2[2] - std::sqrt(arg_Phb2b_atan_sqrt))/(pB2[1]+c));
     
     double arg_Phb2_1_acos = (pB2[1] - Rhb2b*std::sin(Thb2b)*std::cos(Phb2b_1))/(Rhb2*sin(Thb2));
     double arg_Phb2_2_acos = (pB2[1] - Rhb2b*std::sin(Thb2b)*std::cos(Phb2b_2))/(Rhb2*sin(Thb2));
     
     if (std::abs(arg_Phb2_1_acos) && std::abs(arg_Phb2_2_acos) > 1)
-        return -err_map[9];
+        return err_map[9];
     
     // Check which solution is better    
     double Phb2 = 0;
@@ -147,13 +145,13 @@ int calc_me::calc_kinematics_from_int(
         if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b))/(std::sin(Thb2)) < 0)
             Phb2 = -Phb2;
     } else {
-        double Phb2_1 = acos(arg_Phb2_1_acos);
-        double Phb2_2 = acos(arg_Phb2_2_acos);
+        double Phb2_1 = std::acos(arg_Phb2_1_acos);
+        double Phb2_2 = std::acos(arg_Phb2_2_acos);
         
-        if ((pB2[2] - Rhb2b*sin(Thb2b)*sin(Phb2b_1))/sin(Thb2) < 0)
+        if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b_1))/std::sin(Thb2) < 0)
             Phb2_1 = -Phb2_1;
             
-        if ((pB2[2] - Rhb2b*sin(Thb2b)*sin(Phb2b_2))/sin(Thb2) < 0)
+        if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b_2))/std::sin(Thb2) < 0)
             Phb2_2 = -Phb2_2;
         
         vec3 b2_1p = vec3_sph(Thb2, Phb2_1, Rhb2);
@@ -211,9 +209,9 @@ int calc_me::calc_kinematics_from_int(
     kin[15] = Rhb1*b1e[2];
 
     kin[16] = b1bE;
-    kin[17] = Rhb1*b1be[0];
-    kin[18] = Rhb1*b1be[1];
-    kin[19] = Rhb1*b1be[2];
+    kin[17] = Rhb1b*b1be[0];
+    kin[18] = Rhb1b*b1be[1];
+    kin[19] = Rhb1b*b1be[2];
 
     kin[20] = b2E;
     kin[21] = b2p[0];
@@ -233,10 +231,17 @@ int calc_me::calc_kinematics_from_int(
         constants.system_pz -kin[15] -kin[19] -kin[23] -kin[27]
     };
     
-    double dE = check[0];
-    double dp = sqrt(std::pow(check[1], 2) + std::pow(check[2], 2) + std::pow(check[3], 2));
-    
-    if (dE > constants.dEmax || dp > constants.dpmax)
+    double dp = std::sqrt(std::pow(check[1], 2.) + std::pow(check[2], 2.) + std::pow(check[3], 2.));
+
+    #ifdef DEBUG_VVV
+    // debug print
+    std::cout << "dE:" << check[0] << std::endl;
+    std::cout << "dp:" << dp << std::endl;
+
+    kin_debug_print();
+    #endif
+
+    if (check[0] > constants.dEmax || dp > constants.dpmax)
         return err_map[10];
     else
         return 1;
@@ -267,8 +272,8 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     double jacobian = 0.;
 
     int i,j,k;
+    int kin_res = 0;
 
-    // 
     std::array<std::array<double, 2>, 4> reco_angles = get_reco_angles(reco_kin);
 
     constants.system_E = constants.sqrt_s - reco_kin[0] - reco_kin[4];
@@ -307,7 +312,8 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     full_kin.push_back(new double[4]);
 
     for (i = 0; i < n_elements; i++) {
-        if(calc_kinematics_from_int(
+        kin_res = calc_kinematics_from_int(
+            #ifndef NWA
             int_variables[i*8],
             int_variables[i*8+1],
             int_variables[i*8+2],
@@ -316,17 +322,54 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             int_variables[i*8+5],
             int_variables[i*8+6],
             int_variables[i*8+7]
-        ) < 0){
+            #else
+            int_variables[i*7],
+            int_variables[i*7+1],
+            int_variables[i*7+2],
+            int_variables[i*7+3],
+            int_variables[i*7+4],
+            int_variables[i*7+5],
+            int_variables[i*7+6],
+            #endif
+        );
+
+        if(kin_res < 0){
+            #ifdef DEBUG_V
+                std::cout << "Failed with error " << kin_res << std::endl;
+            #endif
             buffer[i] = 0.;
         } else {
+            #ifdef DEBUG_V
+                std::cout << "Found PS-point at [" << i << "]" << std::endl;
+            #endif
+
             // Adjust current parton four-momenta, evaluate matrix element
             for (j = 0; j < 4; j++) {
                 for (k = 0; k < 4; k++) {
-                    full_kin[2+j][k] = kin[12+j];
+                    full_kin[4+j][k] = kin[12+(j*4)+k];
                 }
             }
 
+            #ifdef DEBUG_VVV
+                int i_part = 0;
+                int i_dim = 0;
+                std::cout << "----------------------------------------------------" << std::endl;
+                std::cout << "mc_batch full_kin [" << std::endl;
+                for(i_part = 0; i_part < 8; i_part++){
+                    std::cout << "Particle " << int(i_part+1) << ": ";
+                    for (i_dim = 0; i_dim < 4; i_dim++) {
+                        std::cout << full_kin[i_part][i_dim] << " ";
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << "]" << std::endl;
+                std::cout << std::endl << "----------------------------------------------------" << std::endl;
+            #endif
+
             me_element = calc_me_single_full_kin(full_kin);
+            #ifdef DEBUG_V
+                std::cout << " ME:" << me_element;
+            #endif
             
             // Energy and angle transfer
             transfer = 1.;
@@ -335,6 +378,9 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
                 transfer = transfer*calc_tf_Th(reco_angles[j][0], kin[1 + j*3]);
                 transfer = transfer*calc_tf_Ph(reco_angles[j][1], kin[2 + j*3]);
             }
+            #ifdef DEBUG_V
+                std::cout << " TF:" << transfer;
+            #endif
 
             // Calculate jacobian
             jacobian = calc_jac(
@@ -343,7 +389,11 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
                 kin[6], kin[7], kin[8],
                 kin[9], kin[10], kin[11]
             );
-                
+            
+            #ifdef DEBUG_V
+                std::cout << " JAC:" << jacobian << std::endl;
+            #endif
+
             buffer[i] = me_element*transfer*jacobian;
         }
     }
@@ -368,6 +418,51 @@ double calc_me::calc_tf_Th(double a, double b) {
 double calc_me::calc_tf_Ph(double a, double b) {
     // a:Measured, b:True
     return 1/(M_PI*tf_Ph_args[1]*(1 + std::pow( ((a-b)-tf_Ph_args[0])/tf_Ph_args[1], 2.) ));
+}
+
+void calc_me::kin_debug_print(){
+    int t = 0;
+    int s = 1;
+    int m = 0;
+    int n = 0;
+    
+    std::cout << "----------------------------------------------------" << std::endl;
+
+    std::cout << "Spherical coordinates:" << std::endl << "Particle 1: ";
+    for(auto x: kin){
+        std::cout << x << " ";
+
+        t++;
+        n++;
+
+        if (t == 27)
+            break;
+
+        if (n == 12) {
+            m = 1;
+            s = 1;
+            t = 0;
+            std::cout << std::endl << std::endl << "Four-vectors:" << std::endl << "Particle 1: ";
+        }
+
+        if (m == 0) {
+            if (t == 3) {
+                t = 0;
+                s++;
+
+                std::cout << std::endl << "Particle " << s << ": ";
+            }
+        } else {
+            if (t == 4 && s < 4) {
+                t = 0;
+                s++;
+
+                std::cout << std::endl << "Particle " << s << ": ";
+            }
+        }
+    };
+
+    std::cout << std::endl << "----------------------------------------------------" << std::endl;
 }
 
 double calc_me::calc_me_single_full_kin(std::vector<double*> momenta) {
@@ -476,6 +571,21 @@ double* calc_me_multi(pStat self, double momenta[], int n_elements)
     return p->calc_me_multi(momenta, n_elements, buffer);
 }
 
+#ifndef NWA
+int calc_me_kinematics_from_int(pStat self, double mH2, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
+#else
+int calc_me_kinematics_from_int(pStat self, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
+#endif
+{
+    auto p = reinterpret_cast<calc_me*>(self);
+    
+    #ifndef NWA
+        return p->calc_kinematics_from_int(mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2);
+    #else
+        return p->calc_kinematics_from_int(Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2);
+    #endif
+}
+
 double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], int n_elements)
 {
     double *buffer;
@@ -485,6 +595,11 @@ double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], 
     p->mc_batch(reco_kin, int_variables, n_elements, buffer);
 
     return buffer;
+}
+
+void calc_me_mem_init(pStat self, double evt_constants[]){
+    auto p = reinterpret_cast<calc_me*>(self);
+    return p->mem_init(evt_constants);
 }
 
 double calc_me_rambo(pStat self)

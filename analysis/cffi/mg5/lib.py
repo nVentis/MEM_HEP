@@ -2,9 +2,10 @@ from analysis.cffi.mg5.CalcMEZHH import lib as zhh
 from analysis.cffi.mg5.CalcMEZZH import lib as zzh
 from typing import List
 
-def zhh_mc_batch(reco_kin,
-                 int_variables,
-                 helicities = [0,-1,1,1],
+def mc_batch(reco_kin:List[float],
+                 int_variables:List[float],
+                 mode:int,
+                 helicities:List[int] = [0,-1,1,1],
                  energy:float = 500.,
                  param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat",
                  tf_E_params=None,
@@ -15,26 +16,51 @@ def zhh_mc_batch(reco_kin,
     Args:
         reco_kin (_type_): expects kinematics in (E,px,py,pz) form for (mu-,mu+,b,b,b,b)
         int_variables (_type_): integration variables
+        mode (int): 1 for zhh 0 for zzh
+        helicities (list, optional): _description_. Defaults to [0,-1,1,1].
+        energy (float, optional): _description_. Defaults to 500..
+        param_card (str, optional): _description_. Defaults to "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat".
+        tf_E_params,tf_Th_params,tf_Ph_params: (x0,gamma) parameters for Lorentzian transfer functions. if None, defaults are used. Defaults to None.
+    """    
+    n_elements = int(len(int_variables)/8)
+    
+    lib = (zhh if mode else zzh)
+    result = lib.calc_mc_batch(str.encode(param_card), energy, helicities, int(len(helicities)/2), reco_kin, int_variables, n_elements)
+    
+    res_list = [result[i] for i in range(n_elements)]
+    
+    lib.free(result)
+    
+    return res_list
+    
+def calc_kinematics_from_int(
+                int_variables:List[float],
+                evt_constants:List[float],
+                helicities:List[int] = [0,-1,1,1],
+                energy:float = 500.,
+                param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat"):
+    """Monte Carlo integrand
+
+    Args:
+        int_variables (List[float]): integration variables (mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2)
+        evt_constants (List[float]): mb, epsilon, dEmax, dpmax, sqrt_s, system_E, system_px, system_py, system_pz
         helicities (list, optional): _description_. Defaults to [0,-1,1,1].
         energy (float, optional): _description_. Defaults to 500..
         param_card (str, optional): _description_. Defaults to "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat".
         tf_E_params,tf_Th_params,tf_Ph_params: (x0,gamma) parameters for Lorentzian transfer functions. if None, defaults are used. Defaults to None.
     """
     
-    n_elements = int(len(int_variables)/8)
+    mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
     
-    result = zhh.calc_mc_batch(str.encode(param_card), energy, helicities, int(len(helicities)/2), reco_kin, int_variables, n_elements)
-    res_list = [result[i] for i in range(n_elements)]
+    if len(evt_constants) != 9:
+        raise Exception("Invalid format of evt_constants")
     
-    zhh.free(result)
+    return zhh.calc_kinematics_from_int(str.encode(param_card), evt_constants, helicities, int(len(helicities)/2), mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2)
     
-    return res_list
-    
-
 def calc_zhh(momenta: List[float],
-                    helicities = [0,-1,1,1],
+                    helicities:List[int] = [0,-1,1,1],
                     energy:float = 500.,
-                    param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat") -> float:
+                    param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat") -> List[float]:
     """Calculates the e-e+ -> ZHH -> mu- mu+ b bbar b bbar squared matrix element using mg5 for m events given momenta and helicity states
 
     Args:
@@ -57,9 +83,9 @@ def calc_zhh(momenta: List[float],
     return res_list
 
 def calc_zzh(momenta: List[float],
-                    helicities = [0,-1,1,1],
+                    helicities:List[int] = [0,-1,1,1],
                     energy:float = 500.,
-                    param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat") -> float:
+                    param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat") -> List[float]:
     """Calculates the e-e+ -> ZZH -> mu- mu+ b bbar b bbar squared matrix element using mg5 for m events given momenta and helicity states
 
     Args:

@@ -62,7 +62,7 @@ const vec3 vec3_sph(double theta, double phi, double len) {
   return vec3 {
     len*std::sin(theta)*std::cos(phi),
     len*std::sin(theta)*std::sin(phi),
-    len*std::cos(phi)
+    len*std::cos(theta)
   };
 };
 
@@ -95,7 +95,6 @@ class calc_me {
                     double Rhb1b, double Thb1b, double Phb1b,
                     double Rhb2, double Thb2, double Phb2,
                     double Rhb2b, double Thb2b, double Phb2b);
-    int calc_kinematics_from_int(double mH2, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
     kinematics kin{};
 
     int err_map[11]{ -1, -2, -3, -4, -5, -6, -7, -8, -9, -10 , -11 };
@@ -103,6 +102,8 @@ class calc_me {
     double calc_tf_E(double a, double b);
     double calc_tf_Th(double a, double b);
     double calc_tf_Ph(double a, double b);
+
+    void kin_debug_print();
 
     // Other often needed stuff
     double mb_pow2 = std::pow(4.8, 2.);
@@ -117,13 +118,19 @@ class calc_me {
     double calc_me_single_full_kin(std::vector<double*> momenta);
     double* calc_me_multi(double momenta[], int n_elements, double buffer[]);
     double calc_me_rambo();
-    
-    void mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[]);
 
     // MEM related
     void mem_init(double evt_constants[]);
     kinematics get_kinematics() { return kin; };
 
+    void mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[]);
+
+    // Public mainly for testing; kin contains main information
+    #ifndef NWA
+    int calc_kinematics_from_int(double mH2, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
+    #else
+    int calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
+    #endif
 };
 
 #endif //-- End of __cplusplus definition //
@@ -133,11 +140,17 @@ class calc_me {
 // Opaque pointer type alias for C-lang
 typedef void* pStat;
 
-EXPORT_C pStat   calc_me_new          (const char param_card[], double energy);
-EXPORT_C void    calc_me_set_helicity (pStat self, int particle, int helicity);
-EXPORT_C void    calc_me_del          (pStat self);
-EXPORT_C double* calc_me_multi        (pStat self, double momenta[], int n_elements);
-EXPORT_C double* calc_me_mc_batch     (pStat self, double reco_kin[], double int_variables[], int n_elements);
-EXPORT_C double  calc_me_rambo        (pStat self);
+EXPORT_C pStat   calc_me_new                  (const char param_card[], double energy);
+EXPORT_C void    calc_me_set_helicity         (pStat self, int particle, int helicity);
+EXPORT_C void    calc_me_del                  (pStat self);
+EXPORT_C double* calc_me_multi                (pStat self, double momenta[], int n_elements);
+#ifndef NWA
+EXPORT_C int     calc_me_kinematics_from_int  (pStat self, double mH2, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
+#else
+EXPORT_C int     calc_me_kinematics_from_int  (pStat self, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
+#endif
+EXPORT_C double* calc_me_mc_batch             (pStat self, double reco_kin[], double int_variables[], int n_elements);
+EXPORT_C void    calc_me_mem_init             (pStat self, double evt_constants[]);
+EXPORT_C double  calc_me_rambo                (pStat self);
 
 #endif
