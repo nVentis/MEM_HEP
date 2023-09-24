@@ -6,9 +6,10 @@ from analysis.calc import get_kinematics
 from typing import Dict
 from math import sqrt,sin,cos,atan2,acos,pi
 from itertools import product
+from analysis.cffi.mg5.lib import lib_options
 
 constants = {
-    "m_b": 4.8, # truth MC: 4.8(?); wikipedia: 4.18
+    "m_b": 4.799957253499145, # truth MC: 4.8(?); wikipedia: 4.18
     "m_H": 125.,
     "m_Z": 91.19,
     "m_mu": 0.1056357046473643, # from average over all truth MC muon/anti-muons; wikipedia: 0.105658
@@ -207,8 +208,8 @@ def prepare_int(data, event_idx:int, constants:dict, is_reco=True):
         (mu2E, mu2p)
     )
     
-def get_evt_constants(data, event_idx, constants=constants):
-    muon_kin = prepare_int(data, event_idx, constants, True)
+def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
+    muon_kin = prepare_int(data, event_idx, constants, use_reco)
     ((mu1E, mu1p), (mu2E, mu2p)) = muon_kin
     
     evt_constants = constants | {
@@ -222,7 +223,7 @@ def get_evt_constants(data, event_idx, constants=constants):
 
 # INTEGRATION USING CFFI C++ BINDINGS
 
-def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000):
+def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"]):
     """MEM integration in C++ using MG5 matrix elements
 
     Args:
@@ -233,6 +234,7 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         nitn (int, optional): _description_. Defaults to 8.
         neval (int, optional): _description_. Defaults to 16000000.
         nhcube_batch (int, optional): _description_. Defaults to 100000.
+        nwa (bool): whether or not to use NWA
 
     Returns:
         _type_: _description_
@@ -246,7 +248,6 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     # theta: from 0 to pi
     
     bounds = [
-        [124.9**2, 125.1**2],
         [0, pi],
         
         [-pi, pi],
@@ -260,8 +261,7 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     ]
     
     map = vegas.AdaptiveMap(bounds)
-    x = np.stack([
-        np.ones(precond_size)*125**2, # mB1pow2
+    x_arr = [
         Thb_prior(precond_size), # Thb1
         
         Phb_prior(precond_size), # Phb1
@@ -272,7 +272,13 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         
         Rhb_prior(precond_size), # Rhb2
         Thb_prior(precond_size), # Thb2
-    ]).T
+    ]
+    
+    if not nwa:
+        bounds.insert(0, [124.9**2, 125.1**2])
+        x_arr.insert(0, np.ones(precond_size)*125**2) #mB1pow2
+    
+    x = np.stack(x_arr).T
     
     @vegas.batchintegrand
     def f(vars):
@@ -286,7 +292,7 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     map.adapt_to_samples(x, f(x), nitn=5)
     
     integ = vegas.Integrator(map, alpha=0.1, nhcube_batch=nhcube_batch)
-    result = integ(f, nitn=nitn, neval=neval, save=f'zhh_{event_idx}_v2.pkl')
+    result = integ(f, nitn=nitn, neval=neval, save=f"{'zhh' if mode else 'zzh'}_{event_idx}_v3.pkl")
     
     print(result.summary())
     print('result = %s    Q = %.2f' % (result, result.Q))
@@ -294,7 +300,7 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     return result
 
 
-def int_test_bf_v2(data, event_idx:int, samples_per_dim:int=4, evt_constants:dict=constants, use_reco:bool=True, mode:int=1):   
+def int_test_bf_v2(data, event_idx:int, samples_per_dim:int=4, evt_constants:dict=constants, use_reco:bool=True, mode:int=1, nwa:bool=lib_options["NWA"]):   
     """Tests the implementation using a uniform grid along the 8 axes of integration variables with samples_per_dim grid points per axis
 
     Args:
@@ -314,7 +320,6 @@ def int_test_bf_v2(data, event_idx:int, samples_per_dim:int=4, evt_constants:dic
     reco_kin = get_kinematics(data, not use_reco,event_idx)
     
     boundaries = [
-        (124.8**2, 125.2**2), # mH2
         (0., pi), # Thb1
         
         (-pi, pi), # Phb1
@@ -326,15 +331,20 @@ def int_test_bf_v2(data, event_idx:int, samples_per_dim:int=4, evt_constants:dic
         (0., 200.), # Rhb2
         (0., pi) # Thb2
     ]
-
+    
+    if not nwa:
+        boundaries.insert(0, (124.8**2, 125.2**2)) # mB1_pow2
+        
+    dims = 7 if nwa else 8
+    
     samples = []
     for boundary in boundaries:
         samples.append(np.linspace(boundary[0], boundary[1], samples_per_dim))
     
-    int_variables = np.zeros(8*samples_per_dim**8) # 8 points per iteration; samples_per_dim**8 iterations
-    for i, comb in enumerate(product(range(samples_per_dim), repeat=8)):
-        row = [samples[j][comb[j]] for j in range(8)]
-        int_variables[i*8:(i+1)*8] = row
+    int_variables = np.zeros(dims*samples_per_dim**dims) # 8 points per iteration; samples_per_dim**8 iterations
+    for i, comb in enumerate(product(range(samples_per_dim), repeat=dims)):
+        row = [samples[j][comb[j]] for j in range(dims)]
+        int_variables[i*dims:(i+1)*dims] = row
             
     int_variables = int_variables.flatten().tolist()
 

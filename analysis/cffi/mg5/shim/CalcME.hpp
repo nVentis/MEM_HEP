@@ -84,9 +84,22 @@ class calc_me {
 
     // Transfer function related
     // default values estimated from MC samples
-    double tf_E_args[2] { -1.12594285, 6.24937028};
-    double tf_Th_args[2] { -3.90908961e-05, 1.96662831e-02 };
-    double tf_Ph_args[2] { 0.0001748, 0.02819419 };
+    // BKGHYP and SIGHYP to allow separate transfer functions for both hypotheses (TESTING)
+    #ifdef BKGHYP
+    double tf_E_args[2] { -0.60700026, 5.89539517};
+    double tf_Th_args[2] { -6.19007451e-06, 1.97328833e-02 };
+    double tf_Ph_args[2] { 5.19239786e-05, 2.83442591e-02 };
+    #else
+      #ifdef SIGHYP
+        double tf_E_args[2] { -1.29695176,  6.34412724 };
+        double tf_Th_args[2] { -4.03399692e-05, 1.96212741e-02 };
+        double tf_Ph_args[2] { 0.00039051, 0.02811957 };
+      #else
+        double tf_E_args[2] { -1.12594285, 6.24937028};
+        double tf_Th_args[2] { -3.90908961e-05, 1.96662831e-02 };
+        double tf_Ph_args[2] { 0.0001748, 0.02819419 };
+      #endif
+    #endif
 
     phys_const constants{}; // TODO
 

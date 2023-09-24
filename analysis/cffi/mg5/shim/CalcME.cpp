@@ -72,12 +72,14 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     double d = (dmH2*Rhb1*dot)/(std::pow(Rhb1*dot, 2.) - std::pow(b1E, 2.) );
     
     double arg_Rhb1b_sqrt = (std::pow(b1E, 2.)*mb_pow2 - std::pow(dmH2, 2.))/(std::pow(Rhb1*dot, 2.) - std::pow(b1E, 2.)) + std::pow(d, 2.);
-    if (arg_Rhb1b_sqrt < 0)
+    if (arg_Rhb1b_sqrt < 0) {
         return err_map[1];
+    }
 
     double Rhb1b = -d + std::sqrt(arg_Rhb1b_sqrt);
-    if (Rhb1b < 0)
+    if (Rhb1b < 0) {
         return err_map[2];
+    }
     
     double b1bE = std::sqrt(mb_pow2 + std::pow(Rhb1b, 2.));
     
@@ -97,14 +99,16 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     }
     
     double arg_Rhb2b_sqrt = std::pow(b2bE, 2.) - mb_pow2;
-    if (arg_Rhb2b_sqrt < 0)
+    if (arg_Rhb2b_sqrt < 0) {
         return err_map[6];
+    }
     double Rhb2b = std::sqrt(arg_Rhb2b_sqrt);
     
     // Calculate remaining variables, i.e. Thb2b, Phb2b and Phb2
     double arg_Thb2b_acos = 1/Rhb2b*(pB2[3] - Rhb2*std::cos(Thb2));
-    if (std::abs(arg_Thb2b_acos) > 1)
+    if (std::abs(arg_Thb2b_acos) > 1) {
         return err_map[7];
+    }
     double Thb2b = std::acos(arg_Thb2b_acos);
     
     double a_pow2 = std::pow(pB2[1], 2.);
@@ -112,12 +116,13 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     double c = (-std::pow(Rhb2*sin(Thb2), 2.) + std::pow(Rhb2b*std::sin(Thb2b), 2.) + a_pow2 + b_pow2)/(2*Rhb2b*std::sin(Thb2b));
     
     double arg_Phb2b_atan_sqrt = a_pow2 + b_pow2 - std::pow(c, 2.);
-    if (arg_Phb2b_atan_sqrt < 0)
+    if (arg_Phb2b_atan_sqrt < 0) {
         if (-arg_Phb2b_atan_sqrt < constants.epsilon) {
             arg_Phb2b_atan_sqrt = 0;
         } else {
             return err_map[8];
         }
+    }
 
     // Two solutions to calculate Phb2b with atan; try out both, use the one that is closest to target   
     double Phb2b_1 = 2*std::atan((pB2[2] + std::sqrt(arg_Phb2b_atan_sqrt))/(pB2[1]+c));
@@ -126,8 +131,9 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     double arg_Phb2_1_acos = (pB2[1] - Rhb2b*std::sin(Thb2b)*std::cos(Phb2b_1))/(Rhb2*sin(Thb2));
     double arg_Phb2_2_acos = (pB2[1] - Rhb2b*std::sin(Thb2b)*std::cos(Phb2b_2))/(Rhb2*sin(Thb2));
     
-    if (std::abs(arg_Phb2_1_acos) && std::abs(arg_Phb2_2_acos) > 1)
+    if (std::abs(arg_Phb2_1_acos) && std::abs(arg_Phb2_2_acos) > 1) {
         return err_map[9];
+    }
     
     // Check which solution is better    
     double Phb2 = 0;
@@ -148,11 +154,13 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
         double Phb2_1 = std::acos(arg_Phb2_1_acos);
         double Phb2_2 = std::acos(arg_Phb2_2_acos);
         
-        if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b_1))/std::sin(Thb2) < 0)
+        if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b_1))/std::sin(Thb2) < 0) {
             Phb2_1 = -Phb2_1;
+        }
             
-        if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b_2))/std::sin(Thb2) < 0)
+        if ((pB2[2] - Rhb2b*std::sin(Thb2b)*std::sin(Phb2b_2))/std::sin(Thb2) < 0) {
             Phb2_2 = -Phb2_2;
+        }
         
         vec3 b2_1p = vec3_sph(Thb2, Phb2_1, Rhb2);
         vec3 b2_2p = vec3_sph(Thb2, Phb2_2, Rhb2);
@@ -268,11 +276,19 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     
     int kin_result = 0.;
     double me_element = 0.;
-    double transfer = 0.;
+    double transfer = 1.;
+    double tf_E = 1.;
+    double tf_Th = 1.;
+    double tf_Ph = 1.;
+
     double jacobian = 0.;
 
     int i,j,k;
     int kin_res = 0;
+
+    #ifdef DEBUG_V
+    std::vector<double> B2_masses;    
+    #endif
 
     std::array<std::array<double, 2>, 4> reco_angles = get_reco_angles(reco_kin);
 
@@ -329,18 +345,28 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             int_variables[i*7+3],
             int_variables[i*7+4],
             int_variables[i*7+5],
-            int_variables[i*7+6],
+            int_variables[i*7+6]
             #endif
         );
 
         if(kin_res < 0){
-            #ifdef DEBUG_V
+            #ifdef DEBUG_VVV
                 std::cout << "Failed with error " << kin_res << std::endl;
             #endif
             buffer[i] = 0.;
         } else {
-            #ifdef DEBUG_V
+            #ifdef DEBUG_VVV
                 std::cout << "Found PS-point at [" << i << "]" << std::endl;
+            #endif
+
+            #ifdef DEBUG_VV
+            B2_masses.push_back(std::sqrt(
+                std::pow(kin[20] + kin[24], 2.) - (
+                    std::pow(kin[21] + kin[25], 2.) +
+                    std::pow(kin[22] + kin[26], 2.) +
+                    std::pow(kin[23] + kin[27], 2.)
+                )
+            ));
             #endif
 
             // Adjust current parton four-momenta, evaluate matrix element
@@ -367,19 +393,29 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             #endif
 
             me_element = calc_me_single_full_kin(full_kin);
-            #ifdef DEBUG_V
-                std::cout << " ME:" << me_element;
-            #endif
             
             // Energy and angle transfer
             transfer = 1.;
+            tf_E = 1.;
+            tf_Th = 1.;
+            tf_Ph = 1.;
+
+            #ifdef DEBUG_VVV
+            std::cout << "----------------------------------------------------" << std::endl;
+            std::cout << "Transfer [i] -> [Energy:E_jet:E_part][Theta:Jet:Parton][Phi:Jet:Parton] -> [Transfer]" << std::endl;
+            #endif
             for (j = 0; j < 4; j++) {
-                transfer = transfer*calc_tf_E(reco_kin[8+j*4], kin[12 + j*4]);
-                transfer = transfer*calc_tf_Th(reco_angles[j][0], kin[1 + j*3]);
-                transfer = transfer*calc_tf_Ph(reco_angles[j][1], kin[2 + j*3]);
+                tf_E = calc_tf_E(reco_kin[8+j*4], kin[12 + j*4]);
+                tf_Th = calc_tf_Th(reco_angles[j][0], kin[1 + j*3]);
+                tf_Ph = calc_tf_Ph(reco_angles[j][1], kin[2 + j*3]);
+
+                transfer = transfer*tf_E*tf_Th*tf_Ph;
+                #ifdef DEBUG_VVV
+                std::cout << "[" << (j+1) <<  "] -> [" << tf_E << ":" << reco_kin[8+j*4] << ":" << kin[12 + j*4] << "][" << tf_Th << ":" << reco_angles[j][0] << ":" << kin[1 + j*3] << "][" << tf_Ph << ":" << reco_angles[j][1] << ":" << kin[2 + j*3] << "] -> [" << transfer << "]" << std::endl;
+                #endif
             }
-            #ifdef DEBUG_V
-                std::cout << " TF:" << transfer;
+            #ifdef DEBUG_VVV
+            std::cout << "----------------------------------------------------" << std::endl;
             #endif
 
             // Calculate jacobian
@@ -390,13 +426,27 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
                 kin[9], kin[10], kin[11]
             );
             
-            #ifdef DEBUG_V
+            #ifdef DEBUG_VV
+                std::cout << "----------------------------------------------------" << std::endl;
+                std::cout << " ME:" << me_element;
+                std::cout << " TF:" << transfer;
                 std::cout << " JAC:" << jacobian << std::endl;
+                std::cout << "----------------------------------------------------" << std::endl;
             #endif
 
             buffer[i] = me_element*transfer*jacobian;
         }
     }
+
+    #ifdef DEBUG_VV
+    std::cout << "----------------------------------------------------" << std::endl;
+    std::cout << "B2_masses = [" << std::endl;
+    for (auto x: B2_masses) {
+        std::cout << x << ", ";
+    }
+    std::cout << std::endl << "]" << std::endl;
+    std::cout << "----------------------------------------------------" << std::endl;
+    #endif
 
     // For every new, a delete...
     for (double* pointer : full_kin) {

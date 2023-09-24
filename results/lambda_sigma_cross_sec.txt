@@ -1,0 +1,130 @@
+=== Results Summary for run: run_01 tag: tag_1 ===
+
+     Cross-section :   8.308e-06 +- 2.795e-08 pb
+     Nb of events :  10000
+
+-------------------------------------------------------------
+CHANGING OF CROSS SECTION WITH VARYING LAMBDA
+-------------------------------------------------------------
+
+Set nevents=50000
+For all runs, set MDL_LAM = <<LAMBDA_MULT>>MDL_MH__EXP__2/(2.000000D+00*MDL_VEV__EXP__2)
+convert LAMBDA_MULT to Fortran format, i.e. 1_00->1.000000D+00
+where 
+=== Results Summary for run: <<LAMBDA_MULT>> tag: tag_? ===
+
+make clean && make all
+
+-------------------------------------------------------------
+START
+-------------------------------------------------------------
+
+=== Results Summary for run: LAM_MULT_1_00 tag: tag_2 ===
+
+     Cross-section :   8.35e-06 +- 1.275e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_01 tag: tag_1 ===
+
+     Cross-section :   4.448e-06 +- 6.879e-09 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_10 tag: tag_1 ===
+
+     Cross-section :   4.726e-06 +- 8.685e-09 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_50 tag: tag_1 ===
+
+     Cross-section :   6.17e-06 +- 9.738e-09 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_60 tag: tag_1 ===
+
+     Cross-section :   6.566e-06 +- 9.474e-09 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_70 tag: tag_1 ===
+
+     Cross-section :   7.005e-06 +- 1.121e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_80 tag: tag_1 ===
+
+     Cross-section :   7.433e-06 +- 1.278e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_0_90 tag: tag_1 ===
+
+     Cross-section :   7.872e-06 +- 1.318e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_10 tag: tag_1 ===
+
+     Cross-section :   8.829e-06 +- 1.326e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_20 tag: tag_1 ===
+
+     Cross-section :   9.345e-06 +- 1.559e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_30 tag: tag_1 ===
+
+     Cross-section :   9.857e-06 +- 1.579e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_40 tag: tag_1 ===
+
+     Cross-section :   1.039e-05 +- 1.621e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_50 tag: tag_1 ===
+
+     Cross-section :   1.093e-05 +- 2.019e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_60 tag: tag_1 ===
+
+     Cross-section :   1.151e-05 +- 1.643e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_1_80 tag: tag_1 ===
+
+     Cross-section :   1.27e-05 +- 2.238e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_2_00 tag: tag_1 ===
+
+     Cross-section :   1.389e-05 +- 2.152e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_4_00 tag: tag_1 ===
+
+     Cross-section :   2.993e-05 +- 5.591e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_6_00 tag: tag_1 ===
+
+     Cross-section :   5.25e-05 +- 8.761e-08 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_8_00 tag: tag_1 ===
+
+     Cross-section :   8.172e-05 +- 1.311e-07 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_10_00 tag: tag_1 ===
+
+     Cross-section :   1.175e-04 +- 1.906e-07 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_50_00 tag: tag_1 ===
+
+     Cross-section :   2.203e-03 +- 3.615e-06 pb
+     Nb of events :  50000
+
+=== Results Summary for run: LAM_MULT_100_00 tag: tag_1 ===
+
+     Cross-section :   8.502e-03 +- 1.464e-05 pb
+     Nb of events :  50000

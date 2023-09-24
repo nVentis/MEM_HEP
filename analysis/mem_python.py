@@ -16,7 +16,7 @@ from itertools import product
 
 err_map = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11]
 
-def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, return_spherical=False, epsilon:float=1e-3, err_map=err_map, do_check=True, dEmax:float=1., dpmax:float=1.):
+def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, return_spherical=False, epsilon:float=1e-3, err_map=err_map, do_check=True, dEmax:float=1., dpmax:float=1., nwa=True):
     """_summary_
 
     Args:
@@ -27,7 +27,12 @@ def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, re
         _type_: _description_
     """
     
-    mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
+    mH2 = Thb1 = Phb1 = Rhb1 = Thb1b = Phb1b = Rhb2 = Thb2 = 0
+    if nwa:
+        mH2 = 125.**2
+        Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
+    else:
+        mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
     
     b1E = sqrt(constants["m_b"]**2 + Rhb1**2)
     

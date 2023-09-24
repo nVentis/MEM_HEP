@@ -1,5 +1,6 @@
 from analysis.cffi.mg5.CalcMEZHH import lib as zhh
 from analysis.cffi.mg5.CalcMEZZH import lib as zzh
+from analysis.cffi.mg5.compiled_with import lib_options
 from typing import List
 
 def mc_batch(reco_kin:List[float],
@@ -10,7 +11,8 @@ def mc_batch(reco_kin:List[float],
                  param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat",
                  tf_E_params=None,
                  tf_Th_params=None,
-                 tf_Ph_params=None):
+                 tf_Ph_params=None,
+                 NWA:bool=lib_options["NWA"]):
     """Monte Carlo integrand
 
     Args:
@@ -21,8 +23,10 @@ def mc_batch(reco_kin:List[float],
         energy (float, optional): _description_. Defaults to 500..
         param_card (str, optional): _description_. Defaults to "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat".
         tf_E_params,tf_Th_params,tf_Ph_params: (x0,gamma) parameters for Lorentzian transfer functions. if None, defaults are used. Defaults to None.
-    """    
-    n_elements = int(len(int_variables)/8)
+        NWA (bool, optional):  
+    """
+    
+    n_elements = int(len(int_variables)/(7 if NWA else 8))
     
     lib = (zhh if mode else zzh)
     result = lib.calc_mc_batch(str.encode(param_card), energy, helicities, int(len(helicities)/2), reco_kin, int_variables, n_elements)
@@ -38,24 +42,27 @@ def calc_kinematics_from_int(
                 evt_constants:List[float],
                 helicities:List[int] = [0,-1,1,1],
                 energy:float = 500.,
-                param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat"):
+                param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat",
+                NWA:bool=lib_options["NWA"]):
     """Monte Carlo integrand
 
     Args:
-        int_variables (List[float]): integration variables (mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2)
+        int_variables (List[float]): integration variables (mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2); without mH2 if NWA is True
         evt_constants (List[float]): mb, epsilon, dEmax, dpmax, sqrt_s, system_E, system_px, system_py, system_pz
         helicities (list, optional): _description_. Defaults to [0,-1,1,1].
         energy (float, optional): _description_. Defaults to 500..
         param_card (str, optional): _description_. Defaults to "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat".
         tf_E_params,tf_Th_params,tf_Ph_params: (x0,gamma) parameters for Lorentzian transfer functions. if None, defaults are used. Defaults to None.
+        NWA (bool): Use Narrow Width approximation; mH2 implicitly set to 125.**2 in C++ code
     """
     
-    mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
+    if len(int_variables) != (7 if NWA else 8):
+        raise Exception("Invalid format of int_variables")
     
     if len(evt_constants) != 9:
         raise Exception("Invalid format of evt_constants")
     
-    return zhh.calc_kinematics_from_int(str.encode(param_card), evt_constants, helicities, int(len(helicities)/2), mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2)
+    return zhh.calc_kinematics_from_int(str.encode(param_card), evt_constants, helicities, int(len(helicities)/2), *int_variables)
     
 def calc_zhh(momenta: List[float],
                     helicities:List[int] = [0,-1,1,1],

@@ -73,7 +73,11 @@ double* calc_mc_batch(const char param_card[], double energy, int helicity_selec
     return some_me;
 }
 
+#ifndef NWA
 int calc_kinematics_from_int(const char param_card[], double evt_constants[], int helicity_selection[], int selected_helicities, double mH2, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
+#else
+int calc_kinematics_from_int(const char param_card[], double evt_constants[], int helicity_selection[], int selected_helicities, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
+#endif
 {
     // Internal
     pStat calc_me = calc_me_new(param_card, evt_constants[4]);
@@ -86,7 +90,11 @@ int calc_kinematics_from_int(const char param_card[], double evt_constants[], in
 
     calc_me_mem_init(calc_me, evt_constants);
 
+    #ifndef NWA
     int return_code = calc_me_kinematics_from_int(calc_me, mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2);
+    #else
+    int return_code = calc_me_kinematics_from_int(calc_me, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2);
+    #endif
     
     calc_me_del(calc_me);
 
