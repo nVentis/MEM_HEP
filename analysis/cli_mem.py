@@ -32,7 +32,7 @@ def integrate(event:int, dst:str, src:str):
     
     logger.info("Starting ZHH")
     
-    res_sig = int_bf_v2(reco, event, mode=1, neval=16000000, precond_size=4000000, nitn=8)
+    res_sig = int_bf_v2(reco, event, mode=1, neval=10000000, precond_size=4000000, nitn=4)
     
     f = open(dst, "a")
     f.write("ZHH: " + str(res_sig) + "\n")
@@ -43,7 +43,7 @@ def integrate(event:int, dst:str, src:str):
     
     logger.info("Starting ZZH")
     
-    res_bkg = int_bf_v2(reco, event, mode=0, neval=16000000, precond_size=4000000, nitn=8)
+    res_bkg = int_bf_v2(reco, event, mode=0, neval=10000000, precond_size=4000000, nitn=3)
     
     f = open(dst, "a")
     f.write("ZZH: " + str(res_bkg) + "\n")

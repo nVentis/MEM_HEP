@@ -211,6 +211,7 @@ def prepare_int(data, event_idx:int, constants:dict, is_reco=True):
 def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
     muon_kin = prepare_int(data, event_idx, constants, use_reco)
     ((mu1E, mu1p), (mu2E, mu2p)) = muon_kin
+    get_parton_energies
     
     evt_constants = constants | {
         "system_E": constants["sqrt_s"] -mu1E -mu2E,
@@ -223,7 +224,7 @@ def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
 
 # INTEGRATION USING CFFI C++ BINDINGS
 
-def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"]):
+def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"], use_tf:bool=True):
     """MEM integration in C++ using MG5 matrix elements
 
     Args:
@@ -235,12 +236,13 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         neval (int, optional): _description_. Defaults to 16000000.
         nhcube_batch (int, optional): _description_. Defaults to 100000.
         nwa (bool): whether or not to use NWA
+        use_tf (bool, optional): whether or not to use the detector transfer function; False for debugging
 
     Returns:
         _type_: _description_
     """
 
-    from analysis.cffi.mg5.lib import mc_batch
+    from analysis.cffi.mg5.lib import mc_batch, mc_batch_sigma
     
     reco_kin = get_kinematics(data, False, event_idx)
     
@@ -283,7 +285,11 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     @vegas.batchintegrand
     def f(vars):
         print(f"PS points given:found [{len(vars)}:", end="")
-        res = mc_batch(reco_kin, vars.flatten().tolist(), mode=mode)
+        res = []
+        if use_tf:
+            res = mc_batch(reco_kin, vars.flatten().tolist(), mode=mode)
+        else:
+            res = mc_batch_sigma(vars.flatten().tolist(), mode=mode)
         
         found = np.count_nonzero(res)
         print(f"{found}] ({(100*found/len(vars)):6.2f} %)")
@@ -351,3 +357,22 @@ def int_test_bf_v2(data, event_idx:int, samples_per_dim:int=4, evt_constants:dic
     result = mc_batch(reco_kin, int_variables, mode=mode)
     
     return result
+
+def get_true_int_args(data, event_idx:int, constants:dict, nwa=lib_options["NWA"]):
+    energies, momenta, angles = get_kinematics_tf(data, event_idx, 0)
+    
+    Thb1,Phb1 = angles[2]
+    Rhb1 = momenta[2]
+    
+    Thb1b, Phb1b = angles[3]
+    
+    Rhb2 = momenta[4]
+    Thb2 = angles[4][0]
+    
+    int_variables = Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2
+    evt_constants = get_evt_constants(data, event_idx, constants, False)
+    evt_constants["system_E"] = np.sum(energies[2:6])
+    
+    kin = get_kinematics(data, True, event_idx)
+    
+    return int_variables, evt_constants, kin

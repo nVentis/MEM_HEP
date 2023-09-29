@@ -29,7 +29,7 @@ def mc_batch(reco_kin:List[float],
     n_elements = int(len(int_variables)/(7 if NWA else 8))
     
     lib = (zhh if mode else zzh)
-    result = lib.calc_mc_batch(str.encode(param_card), energy, helicities, int(len(helicities)/2), reco_kin, int_variables, n_elements)
+    result = lib.calc_mc_batch(str.encode(param_card), energy, helicities, int(len(helicities)/2), reco_kin, int_variables, n_elements, 1)
     
     res_list = [result[i] for i in range(n_elements)]
     
@@ -37,6 +37,27 @@ def mc_batch(reco_kin:List[float],
     
     return res_list
     
+def mc_batch_sigma(int_variables:List[float],
+                 mode:int,
+                 helicities:List[int] = [0,-1,1,1],
+                 energy:float = 500.,
+                 param_card:str = "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat",
+                 NWA:bool=lib_options["NWA"],
+                 reco_kin:list[float] = 24*[0.]):
+    
+    n_elements = int(len(int_variables)/(7 if NWA else 8))
+    
+    lib = (zhh if mode else zzh)
+    
+    result = lib.calc_mc_batch(str.encode(param_card), energy, helicities, int(len(helicities)/2), reco_kin, int_variables, n_elements, 0)
+    
+    res_list = [result[i] for i in range(n_elements)]
+    
+    lib.free(result)
+    
+    return res_list
+        
+
 def calc_kinematics_from_int(
                 int_variables:List[float],
                 evt_constants:List[float],

@@ -56,7 +56,7 @@ if __name__ == '__main__':
     
     source = f'''double calc_rambo(const char param_card[], double energy, int helicity_selection[], int selected_helicities);
                 double* calc(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double momenta[], int n_elements);
-                double* calc_mc_batch(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements);
+                double* calc_mc_batch(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements, int calc_mc_batch);
                 int calc_kinematics_from_int(const char param_card[], double evt_constants[], int helicity_selection[], int selected_helicities, {'double mH2,' if not options["NWA"] else '' } double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);'''
     
     for process in processes:

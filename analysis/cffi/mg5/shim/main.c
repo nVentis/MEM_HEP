@@ -55,7 +55,7 @@ double* calc(const char param_card[], double energy, int helicity_selection[], i
  * momenta double[24*l]: flat final state momenta for l events; for each event order is mu-, mu+, b1, bbar1, b2, bbar2 with each E,Px,Py,Pz
  * n_elements: length of result, i.e. double[n_elements]; should be len(momenta)/24
 */
-double* calc_mc_batch(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements)
+double* calc_mc_batch(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs)
 {
     // Internal
     pStat calc_me = calc_me_new(param_card, energy);
@@ -66,7 +66,7 @@ double* calc_mc_batch(const char param_card[], double energy, int helicity_selec
         }
     }
 
-    double *some_me = calc_me_mc_batch(calc_me, reco_kin, int_variables, n_elements);
+    double *some_me = calc_me_mc_batch(calc_me, reco_kin, int_variables, n_elements, use_transer_funcs);
     
     calc_me_del(calc_me);
 

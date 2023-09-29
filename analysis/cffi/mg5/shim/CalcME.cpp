@@ -194,23 +194,62 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     vec3 b2bp = vec3_sph(Thb2b, Phb2b, Rhb2b);
     
     // First spherical coordinates
-    kin[0] = Rhb1;
-    kin[1] = Thb1;
-    kin[2] = Phb1;
+    kin[0] = Rhb2;
+    kin[1] = Thb2;
+    kin[2] = Phb2;
     
-    kin[3] = Rhb1b;
-    kin[4] = Thb1b;
-    kin[5] = Phb1b;
+    kin[3] = Rhb2b;
+    kin[4] = Thb2b;
+    kin[5] = Phb2b;
 
-    kin[6] = Rhb2;
-    kin[7] = Thb2;
-    kin[8] = Phb2;
+    kin[6] = Rhb1;
+    kin[7] = Thb1;
+    kin[8] = Phb1;
 
-    kin[9] = Rhb2b;
-    kin[10] = Thb2b;
-    kin[11] = Phb2b;
+    kin[9] = Rhb1b;
+    kin[10] = Thb1b;
+    kin[11] = Phb1b;
+
+    /*
+    kin[0] = Rhb2;
+    kin[1] = Thb2;
+    kin[2] = Phb2
+    
+    kin[3] = Rhb2b;
+    kin[4] = Thb2b;
+    kin[5] = Phb2b;
+
+    kin[6] = Rhb1;
+    kin[7] = Thb1;
+    kin[8] = Phb1;
+
+    kin[9] = Rhb1b;
+    kin[10] = Thb1b;
+    kin[11] = Phb1b;
+    */
 
     // Second, four vectors
+    kin[12] = b2E;
+    kin[13] = b2p[0];
+    kin[14] = b2p[1];
+    kin[15] = b2p[2];
+
+    kin[16] = b2bE;
+    kin[17] = b2bp[0];
+    kin[18] = b2bp[1];
+    kin[19] = b2bp[2];
+
+    kin[20] = b1E;
+    kin[21] = Rhb1*b1e[0];
+    kin[22] = Rhb1*b1e[1];
+    kin[23] = Rhb1*b1e[2];
+
+    kin[24] = b1bE;
+    kin[25] = Rhb1b*b1be[0];
+    kin[26] = Rhb1b*b1be[1];
+    kin[27] = Rhb1b*b1be[2];
+    
+    /*
     kin[12] = b1E;
     kin[13] = Rhb1*b1e[0];
     kin[14] = Rhb1*b1e[1];
@@ -230,6 +269,7 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     kin[25] = b2bp[0];
     kin[26] = b2bp[1];
     kin[27] = b2bp[2];
+    */
 
     // Check validity
     std::array<double, 4> check {
@@ -268,7 +308,7 @@ void calc_me::mem_init(double evt_constants[]) {
     constants.system_pz = evt_constants[8];
 }
 
-void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[]) {
+void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[], int use_transer_funcs) {
     // reco_kin: 24-element array (E,px,py,pz) for (mu-,mu+,b1,b1b,b2,b2b)
     // int_variables: array of length n_elements*8 
     // n_elements: must match to int_variables and buffer
@@ -286,16 +326,29 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     int i,j,k;
     int kin_res = 0;
 
-    #ifdef DEBUG_V
-    std::vector<double> B2_masses;    
+    int tf_E_order_kin[4] {20,24,12,16};
+    int tf_Th_order_kin[4] {7,10,1,4};
+    int tf_Ph_order_kin[4] {8,11,2,5};
+
+    #ifdef DEBUG_VV
+    std::vector<double> B1_masses;    
     #endif
 
     std::array<std::array<double, 2>, 4> reco_angles = get_reco_angles(reco_kin);
+    #ifdef DEBUG_VVV
+        std::cout << "----------------------------------------------------" << std::endl;
+        std::cout << "Reco angles: [" << std::endl;
+        for (i = 0; i < 4; i++) {
+            std::cout << "Particle " << (i+1) << ": Th=" << reco_angles[i][0] << " | Ph=" << reco_angles[i][1] << std::endl;
+        }
+        std::cout << "----------------------------------------------------" << std::endl;
+    #endif
+
 
     constants.system_E = constants.sqrt_s - reco_kin[0] - reco_kin[4];
-    constants.system_px =               0 - reco_kin[1] - reco_kin[5];
-    constants.system_py =               0 - reco_kin[2] - reco_kin[6];
-    constants.system_pz =               0 - reco_kin[3] - reco_kin[7];
+    constants.system_px =              0. - reco_kin[1] - reco_kin[5];
+    constants.system_py =              0. - reco_kin[2] - reco_kin[6];
+    constants.system_pz =              0. - reco_kin[3] - reco_kin[7];
 
     // Initialize full_kin compliant to MG5
     // Set initial e-e+ momenta
@@ -360,7 +413,7 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             #endif
 
             #ifdef DEBUG_VV
-            B2_masses.push_back(std::sqrt(
+            B1_masses.push_back(std::sqrt(
                 std::pow(kin[20] + kin[24], 2.) - (
                     std::pow(kin[21] + kin[25], 2.) +
                     std::pow(kin[22] + kin[26], 2.) +
@@ -395,28 +448,32 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             me_element = calc_me_single_full_kin(full_kin);
             
             // Energy and angle transfer
-            transfer = 1.;
-            tf_E = 1.;
-            tf_Th = 1.;
-            tf_Ph = 1.;
-
-            #ifdef DEBUG_VVV
-            std::cout << "----------------------------------------------------" << std::endl;
-            std::cout << "Transfer [i] -> [Energy:E_jet:E_part][Theta:Jet:Parton][Phi:Jet:Parton] -> [Transfer]" << std::endl;
-            #endif
-            for (j = 0; j < 4; j++) {
-                tf_E = calc_tf_E(reco_kin[8+j*4], kin[12 + j*4]);
-                tf_Th = calc_tf_Th(reco_angles[j][0], kin[1 + j*3]);
-                tf_Ph = calc_tf_Ph(reco_angles[j][1], kin[2 + j*3]);
-
-                transfer = transfer*tf_E*tf_Th*tf_Ph;
+            // use_transer_funcs=0 for debugging
+            if (use_transer_funcs > 0) {
+                transfer = 1.;
+                tf_Th = 1.;
+                tf_Ph = 1.;
+                
                 #ifdef DEBUG_VVV
-                std::cout << "[" << (j+1) <<  "] -> [" << tf_E << ":" << reco_kin[8+j*4] << ":" << kin[12 + j*4] << "][" << tf_Th << ":" << reco_angles[j][0] << ":" << kin[1 + j*3] << "][" << tf_Ph << ":" << reco_angles[j][1] << ":" << kin[2 + j*3] << "] -> [" << transfer << "]" << std::endl;
+                std::cout << "----------------------------------------------------" << std::endl;
+                std::cout << "Transfer [i] -> [Energy:E_jet:E_part][Theta:Jet:Parton][Phi:Jet:Parton] -> [Transfer]" << std::endl;
+                #endif
+
+                for (j = 0; j < 4; j++) {
+                    //tf_E = calc_tf_E(reco_kin[8+j*4], kin[12 + j*4]);
+                    tf_Th = calc_tf_Th(reco_angles[j][0], kin[tf_Th_order_kin[j]]);
+                    tf_Ph = calc_tf_Ph(reco_angles[j][1], kin[tf_Ph_order_kin[j]]);
+                    tf_E = calc_tf_E(reco_kin[8+j*4], kin[tf_E_order_kin[j]]);
+
+                    transfer = transfer*tf_Th*tf_Ph;
+                    #ifdef DEBUG_VVV
+                    std::cout << "[" << (j+1) <<  "] -> [" << tf_E << ":" << reco_kin[8+j*4] << ":" << kin[tf_E_order_kin[j]] << "][" << tf_Th << ":" << reco_angles[j][0] << ":" << kin[tf_Th_order_kin[j]] << "][" << tf_Ph << ":" << reco_angles[j][1] << ":" << kin[tf_Th_order_kin[j]] << "] -> [" << transfer << "]" << std::endl;
+                    #endif
+                }
+                #ifdef DEBUG_VVV
+                std::cout << "----------------------------------------------------" << std::endl;
                 #endif
             }
-            #ifdef DEBUG_VVV
-            std::cout << "----------------------------------------------------" << std::endl;
-            #endif
 
             // Calculate jacobian
             jacobian = calc_jac(
@@ -440,8 +497,8 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
 
     #ifdef DEBUG_VV
     std::cout << "----------------------------------------------------" << std::endl;
-    std::cout << "B2_masses = [" << std::endl;
-    for (auto x: B2_masses) {
+    std::cout << "B1_masses = [" << std::endl;
+    for (auto x: B1_masses) {
         std::cout << x << ", ";
     }
     std::cout << std::endl << "]" << std::endl;
@@ -636,13 +693,13 @@ int calc_me_kinematics_from_int(pStat self, double Thb1, double Phb1, double Rhb
     #endif
 }
 
-double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], int n_elements)
+double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs)
 {
     double *buffer;
     buffer = (double*)malloc(n_elements * sizeof(double));
 
     auto p = reinterpret_cast<calc_me*>(self);
-    p->mc_batch(reco_kin, int_variables, n_elements, buffer);
+    p->mc_batch(reco_kin, int_variables, n_elements, buffer, use_transer_funcs);
 
     return buffer;
 }

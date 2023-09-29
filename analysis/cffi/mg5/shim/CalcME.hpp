@@ -38,12 +38,18 @@ using vec3 = std::array<double,3>;
 using kinematics = std::array<double, 28>; // 4*3 spherical coordinates, then 4*4 four vectors
 
 std::array<double, 2> get_angles(double x, double y, double z){
-  std::array<double, 2> res {
-    std::acos(z/std::sqrt(std::pow(x, 2.) + std::pow(y, 2.) + std::pow(z, 2.))),
-    std::atan2(y, x)
-  };
-  
-  return res;
+  if (x == 0. && y == 0. && z == 0.) {
+    // to handle use_transer_funcs=false case
+    return std::array<double, 2> {
+      0,
+      0
+    };
+  } else {
+    return std::array<double, 2> {
+      std::acos(z/std::sqrt(std::pow(x, 2.) + std::pow(y, 2.) + std::pow(z, 2.))),
+      std::atan2(y, x)
+    };
+  }
 }
 
 std::array<std::array<double, 2>, 4> get_reco_angles(double reco_kin[]) {
@@ -53,7 +59,7 @@ std::array<std::array<double, 2>, 4> get_reco_angles(double reco_kin[]) {
 
   int i;
   for (i = 0; i < 4; i++)
-    res[i] = get_angles(reco_kin[8+(i*4)], reco_kin[9+(i*4)], reco_kin[10+(i*4)]);
+    res[i] = get_angles(reco_kin[9+(i*4)], reco_kin[10+(i*4)], reco_kin[11+(i*4)]);
 
   return res;
 }
@@ -136,7 +142,7 @@ class calc_me {
     void mem_init(double evt_constants[]);
     kinematics get_kinematics() { return kin; };
 
-    void mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[]);
+    void mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[], int use_transer_funcs);
 
     // Public mainly for testing; kin contains main information
     #ifndef NWA
@@ -162,7 +168,7 @@ EXPORT_C int     calc_me_kinematics_from_int  (pStat self, double mH2, double Th
 #else
 EXPORT_C int     calc_me_kinematics_from_int  (pStat self, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
 #endif
-EXPORT_C double* calc_me_mc_batch             (pStat self, double reco_kin[], double int_variables[], int n_elements);
+EXPORT_C double* calc_me_mc_batch             (pStat self, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs);
 EXPORT_C void    calc_me_mem_init             (pStat self, double evt_constants[]);
 EXPORT_C double  calc_me_rambo                (pStat self);
 

@@ -6,7 +6,7 @@ ee_zzh_cpp
 *.npy
 *.npz
 *.pyc
-*.png
+/*.png
 *.slcio
 .__afs*
 compile_all.sh
