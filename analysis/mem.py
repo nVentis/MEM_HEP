@@ -9,7 +9,7 @@ from itertools import product
 from analysis.cffi.mg5.lib import lib_options
 
 constants = {
-    "m_b": 4.799957253499145, # truth MC: 4.8(?); wikipedia: 4.18
+    "m_b": 4.8, # truth MC: 4.8(?); wikipedia: 4.18
     "m_H": 125.,
     "m_Z": 91.19,
     "m_mu": 0.1056357046473643, # from average over all truth MC muon/anti-muons; wikipedia: 0.105658
@@ -211,7 +211,6 @@ def prepare_int(data, event_idx:int, constants:dict, is_reco=True):
 def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
     muon_kin = prepare_int(data, event_idx, constants, use_reco)
     ((mu1E, mu1p), (mu2E, mu2p)) = muon_kin
-    get_parton_energies
     
     evt_constants = constants | {
         "system_E": constants["sqrt_s"] -mu1E -mu2E,
@@ -224,7 +223,7 @@ def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
 
 # INTEGRATION USING CFFI C++ BINDINGS
 
-def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"], use_tf:bool=True):
+def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"], use_tf:bool=True, me_type:int = 0):
     """MEM integration in C++ using MG5 matrix elements
 
     Args:
@@ -237,6 +236,7 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         nhcube_batch (int, optional): _description_. Defaults to 100000.
         nwa (bool): whether or not to use NWA
         use_tf (bool, optional): whether or not to use the detector transfer function; False for debugging
+        me_type (int, optional): 0: MG5; 1: Physsim
 
     Returns:
         _type_: _description_
@@ -287,9 +287,9 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         print(f"PS points given:found [{len(vars)}:", end="")
         res = []
         if use_tf:
-            res = mc_batch(reco_kin, vars.flatten().tolist(), mode=mode)
+            res = mc_batch(reco_kin, vars.flatten().tolist(), mode=mode, me_type=me_type)
         else:
-            res = mc_batch_sigma(vars.flatten().tolist(), mode=mode)
+            res = mc_batch_sigma(vars.flatten().tolist(), mode=mode, me_type=me_type)
         
         found = np.count_nonzero(res)
         print(f"{found}] ({(100*found/len(vars)):6.2f} %)")
@@ -298,7 +298,11 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     map.adapt_to_samples(x, f(x), nitn=5)
     
     integ = vegas.Integrator(map, alpha=0.1, nhcube_batch=nhcube_batch)
-    result = integ(f, nitn=nitn, neval=neval, save=f"{'zhh' if mode else 'zzh'}_{event_idx}_v3.pkl")
+    
+    # adapt, discard results
+    integ(f, nitn=nitn, neval=int(neval/2))
+    
+    result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}_v3.pkl")
     
     print(result.summary())
     print('result = %s    Q = %.2f' % (result, result.Q))
@@ -369,10 +373,17 @@ def get_true_int_args(data, event_idx:int, constants:dict, nwa=lib_options["NWA"
     Rhb2 = momenta[4]
     Thb2 = angles[4][0]
     
-    int_variables = Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2
-    evt_constants = get_evt_constants(data, event_idx, constants, False)
-    evt_constants["system_E"] = np.sum(energies[2:6])
-    
     kin = get_kinematics(data, True, event_idx)
+    
+    system = np.array(kin).reshape((6,4))[2:6].sum(axis=0)
+    
+    int_variables = Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2
+    evt_constants = constants | {
+        "sqrt_s": np.sum(energies),
+        "system_E": system[0],
+        "system_px": system[1],
+        "system_py": system[2],
+        "system_pz": system[3]
+    }
     
     return int_variables, evt_constants, kin

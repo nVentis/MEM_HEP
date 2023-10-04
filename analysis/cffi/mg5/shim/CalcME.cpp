@@ -3,6 +3,81 @@
 
 #include "CalcME.hpp"
 
+// MEElement
+MEElementPhyssimSig::MEElementPhyssimSig(PhysConstants *consts, double pol_e, double pol_p, int z_decay_mode) {
+    setConstants(consts);
+
+    _lcme = new lcme::LCMEZHH("LCMEZHH", "ZHH", constants->mH, pol_e, pol_p);
+    _lcme->SetZDecayMode(z_decay_mode); // to muon; see LCME code for internal mappings to PDG ids
+    _lcme->SetNoHDecay(2);
+    _lcme->SetPropagator(1);
+    _lcme->SetMEType(2); // 2: ME; 1: cross-sec
+};
+
+MEElementPhyssimBkg::MEElementPhyssimBkg(PhysConstants *consts, double pol_e, double pol_p, int z1_decay_mode, int z2_decay_mode) {
+    setConstants(consts);
+
+    _lcme = new lcme::LCMEZZH("LCMEZZH", "ZZH", consts->mH, pol_e, pol_p);
+    _lcme->SetZDecayMode(z1_decay_mode, z2_decay_mode);
+    _lcme->SetNoZDecay(0);
+    _lcme->SetNoHDecay(1);
+    _lcme->SetPropagator(1);
+    _lcme->SetMEType(2);
+};
+
+double MEElementPhyssimSig::single(std::vector<double*> momenta) {
+    /* 
+    momenta[0-1]: e- e+
+    momenta[2-3]: mu- mu+
+    momenta[4-5]: b bbar
+    momenta[6-7]: b bbar
+    */
+   
+    TLorentzVector _lortz[4] = {
+        TLorentzVector(momenta[2][1], momenta[2][2], momenta[2][3], momenta[2][0]),
+        TLorentzVector(momenta[3][1], momenta[3][2], momenta[3][3], momenta[3][0]),
+        TLorentzVector(momenta[4][1] + momenta[5][1],
+                       momenta[4][2] + momenta[5][2],
+                       momenta[4][3] + momenta[5][3],
+                       momenta[4][0] + momenta[5][0]),
+        TLorentzVector(momenta[6][1] + momenta[7][1],
+                       momenta[6][2] + momenta[7][2],
+                       momenta[6][3] + momenta[7][3],
+                       momenta[6][0] + momenta[7][0])
+    };
+
+    _lcme->SetMomentumFinal(_lortz);
+
+    return _lcme->GetMatrixElement2();
+}
+
+double MEElementPhyssimBkg::single(std::vector<double*> momenta) {
+    /* 
+    momenta[0-1]: e- e+
+    momenta[2-3]: mu- mu+
+    momenta[4-5]: b bbar
+    momenta[6-7]: b bbar
+    */
+   
+    TLorentzVector _lortz[5] = {
+        TLorentzVector(momenta[2][1], momenta[2][2], momenta[2][3], momenta[2][0]),
+        TLorentzVector(momenta[3][1], momenta[3][2], momenta[3][3], momenta[3][0]),
+        TLorentzVector(momenta[4][1], momenta[4][2], momenta[4][3], momenta[4][0]),
+        TLorentzVector(momenta[5][1], momenta[5][2], momenta[5][3], momenta[5][0]),
+        TLorentzVector(momenta[6][1] + momenta[7][1],
+                       momenta[6][2] + momenta[7][2],
+                       momenta[6][3] + momenta[7][3],
+                       momenta[6][0] + momenta[7][0])
+    };
+
+    _lcme->SetMomentumFinal(_lortz);
+
+    return _lcme->GetMatrixElement2();
+}
+
+
+
+
 //----------- Implementation of class calc_me -----------//
 
 calc_me::calc_me(std::string param_card, double energy)
@@ -15,11 +90,6 @@ calc_me::calc_me(std::string param_card, double energy)
     _cppp->initProc(param_card);
 
     //std::cout << " [TRACE] CPPP created Ok." << std::endl;
-}
-
-calc_me::~calc_me()
-{
-    //std::cout << " [TRACE] CPPP deleted OK" << std::endl;
 }
 
 void calc_me::set_helicity(int particle, int helicity)
@@ -54,6 +124,10 @@ int calc_me::calc_kinematics_from_int(double mH2, double Thb1, double Phb1, doub
 int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2)
 #endif
 {  
+    /**
+     * Logic: Particles b1 and b1b from H decay with Hmass^2 
+     * 
+    */
     double b1E = std::sqrt(mb_pow2 + std::pow(Rhb1, 2.));
     
     vec3 b1e = vec3_sph(Thb1, Phb1, 1);
@@ -66,7 +140,7 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
         #ifndef NWA
             mH2
         #else
-            std::pow(125., 2.)
+            std::pow(constants.mH, 2.)
         #endif
          - 2*mb_pow2)/2;
     double d = (dmH2*Rhb1*dot)/(std::pow(Rhb1*dot, 2.) - std::pow(b1E, 2.) );
@@ -210,24 +284,6 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     kin[10] = Thb1b;
     kin[11] = Phb1b;
 
-    /*
-    kin[0] = Rhb2;
-    kin[1] = Thb2;
-    kin[2] = Phb2
-    
-    kin[3] = Rhb2b;
-    kin[4] = Thb2b;
-    kin[5] = Phb2b;
-
-    kin[6] = Rhb1;
-    kin[7] = Thb1;
-    kin[8] = Phb1;
-
-    kin[9] = Rhb1b;
-    kin[10] = Thb1b;
-    kin[11] = Phb1b;
-    */
-
     // Second, four vectors
     kin[12] = b2E;
     kin[13] = b2p[0];
@@ -239,6 +295,7 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
     kin[18] = b2bp[1];
     kin[19] = b2bp[2];
 
+    // For both ZHH and ZZH: H -> b bbar
     kin[20] = b1E;
     kin[21] = Rhb1*b1e[0];
     kin[22] = Rhb1*b1e[1];
@@ -296,6 +353,21 @@ int calc_me::calc_kinematics_from_int(double Thb1, double Phb1, double Rhb1, dou
 }
 
 void calc_me::mem_init(double evt_constants[]) {
+    #ifdef DEBUG_VVV
+    std::cout << "----------------------------------------------------" << std::endl;
+    std::cout << "mem_init: [" << std::endl;
+    std::cout << "mb        [" << evt_constants[0] << "]" << std::endl;
+    std::cout << "eps       [" << evt_constants[1] << "]" << std::endl;
+    std::cout << "dEmax     [" << evt_constants[2] << "]" << std::endl;
+    std::cout << "dpmax     [" << evt_constants[3] << "]" << std::endl;
+    std::cout << "sqrt_s    [" << evt_constants[4] << "]" << std::endl;
+    std::cout << "system_E  [" << evt_constants[5] << "]" << std::endl;
+    std::cout << "system_px [" << evt_constants[6] << "]" << std::endl;
+    std::cout << "system_py [" << evt_constants[7] << "]" << std::endl;
+    std::cout << "system_pz [" << evt_constants[8] << "]" << std::endl;
+    std::cout << "----------------------------------------------------" << std::endl;
+    #endif
+
     constants.mb = evt_constants[0];
     constants.epsilon = evt_constants[1];
     constants.dEmax = evt_constants[2];
@@ -306,6 +378,21 @@ void calc_me::mem_init(double evt_constants[]) {
     constants.system_px = evt_constants[6]; // same for momenta
     constants.system_py = evt_constants[7];
     constants.system_pz = evt_constants[8];
+
+    mb_pow2 = std::pow(constants.mb, 2.);
+    mem_init_run = true;
+}
+
+void calc_me::me_set(int me_type, bool is_signal) {
+    if (me_type == 0) {
+        me_element = nullptr;
+    } else if (me_type == 1) {
+        #ifdef ZHH
+        me_element = new MEElementPhyssimSig(&constants, -1., 1., 5); // 5,11 = mu-,b
+        #else
+        me_element = new MEElementPhyssimBkg(&constants, -1., 1., 5, 11);
+        #endif
+    }
 }
 
 void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[], int use_transer_funcs) {
@@ -315,7 +402,7 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     // buffer: array of length n_elements
     
     int kin_result = 0.;
-    double me_element = 0.;
+    double me_element_val = 0.;
     double transfer = 1.;
     double tf_E = 1.;
     double tf_Th = 1.;
@@ -344,11 +431,13 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
         std::cout << "----------------------------------------------------" << std::endl;
     #endif
 
-
-    constants.system_E = constants.sqrt_s - reco_kin[0] - reco_kin[4];
-    constants.system_px =              0. - reco_kin[1] - reco_kin[5];
-    constants.system_py =              0. - reco_kin[2] - reco_kin[6];
-    constants.system_pz =              0. - reco_kin[3] - reco_kin[7];
+    // No need to set, if already set by mem_init
+    if (!mem_init_run) {
+        constants.system_E = constants.sqrt_s - reco_kin[0] - reco_kin[4];
+        constants.system_px =              0. - reco_kin[1] - reco_kin[5];
+        constants.system_py =              0. - reco_kin[2] - reco_kin[6];
+        constants.system_pz =              0. - reco_kin[3] - reco_kin[7];
+    }
 
     // Initialize full_kin compliant to MG5
     // Set initial e-e+ momenta
@@ -445,14 +534,17 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
                 std::cout << std::endl << "----------------------------------------------------" << std::endl;
             #endif
 
-            me_element = calc_me_single_full_kin(full_kin);
+            if (me_element == nullptr) {
+                me_element_val = calc_me_single_full_kin(full_kin);
+            } else {
+                // For now, only support for Physsim
+                me_element_val = me_element->single(full_kin);
+            }
             
             // Energy and angle transfer
             // use_transer_funcs=0 for debugging
             if (use_transer_funcs > 0) {
                 transfer = 1.;
-                tf_Th = 1.;
-                tf_Ph = 1.;
                 
                 #ifdef DEBUG_VVV
                 std::cout << "----------------------------------------------------" << std::endl;
@@ -461,11 +553,11 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
 
                 for (j = 0; j < 4; j++) {
                     //tf_E = calc_tf_E(reco_kin[8+j*4], kin[12 + j*4]);
-                    tf_Th = calc_tf_Th(reco_angles[j][0], kin[tf_Th_order_kin[j]]);
-                    tf_Ph = calc_tf_Ph(reco_angles[j][1], kin[tf_Ph_order_kin[j]]);
-                    tf_E = calc_tf_E(reco_kin[8+j*4], kin[tf_E_order_kin[j]]);
+                    tf_Th = calc_tf_Th(j, reco_angles[j][0], kin[tf_Th_order_kin[j]]);
+                    tf_Ph = calc_tf_Ph(j, reco_angles[j][1], kin[tf_Ph_order_kin[j]]);
+                    tf_E = calc_tf_E(j, reco_kin[8+j*4], kin[tf_E_order_kin[j]]);
 
-                    transfer = transfer*tf_Th*tf_Ph;
+                    transfer = transfer*tf_Th*tf_Ph*tf_E;
                     #ifdef DEBUG_VVV
                     std::cout << "[" << (j+1) <<  "] -> [" << tf_E << ":" << reco_kin[8+j*4] << ":" << kin[tf_E_order_kin[j]] << "][" << tf_Th << ":" << reco_angles[j][0] << ":" << kin[tf_Th_order_kin[j]] << "][" << tf_Ph << ":" << reco_angles[j][1] << ":" << kin[tf_Th_order_kin[j]] << "] -> [" << transfer << "]" << std::endl;
                     #endif
@@ -485,13 +577,13 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             
             #ifdef DEBUG_VV
                 std::cout << "----------------------------------------------------" << std::endl;
-                std::cout << " ME:" << me_element;
+                std::cout << " ME:" << me_element_val;
                 std::cout << " TF:" << transfer;
                 std::cout << " JAC:" << jacobian << std::endl;
                 std::cout << "----------------------------------------------------" << std::endl;
             #endif
 
-            buffer[i] = me_element*transfer*jacobian;
+            buffer[i] = me_element_val*transfer*jacobian;
         }
     }
 
@@ -512,19 +604,31 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     full_kin.clear();
 }
 
-double calc_me::calc_tf_E(double a, double b) {
+double calc_me::calc_tf_E(int jet_idx, double a, double b) {
     // a: Measured, b:True
-    return 1/(M_PI*tf_E_args[1]*(1 + std::pow( ((a-b)-tf_E_args[0])/tf_E_args[1], 2.) ));
+    if (jet_idx < 2) {
+        return 1/(M_PI*tf_E1_args[1]*(1 + std::pow( ((a-b)-tf_E1_args[0])/tf_E1_args[1], 2.) ));
+    } else {
+        return 1/(M_PI*tf_E2_args[1]*(1 + std::pow( ((a-b)-tf_E2_args[0])/tf_E2_args[1], 2.) ));
+    }
 }
 
-double calc_me::calc_tf_Th(double a, double b) {
+double calc_me::calc_tf_Th(int jet_idx, double a, double b) {
     // a:Measured, b:True
-    return 1/(M_PI*tf_Th_args[1]*(1 + std::pow( ((a-b)-tf_Th_args[0])/tf_Th_args[1], 2.) ));
+    if (jet_idx < 2) {
+        return 1/(M_PI*tf_Th1_args[1]*(1 + std::pow( ((a-b)-tf_Th1_args[0])/tf_Th1_args[1], 2.) ));
+    } else {
+        return 1/(M_PI*tf_Th2_args[1]*(1 + std::pow( ((a-b)-tf_Th2_args[0])/tf_Th2_args[1], 2.) ));
+    }
 }
 
-double calc_me::calc_tf_Ph(double a, double b) {
+double calc_me::calc_tf_Ph(int jet_idx, double a, double b) {
     // a:Measured, b:True
-    return 1/(M_PI*tf_Ph_args[1]*(1 + std::pow( ((a-b)-tf_Ph_args[0])/tf_Ph_args[1], 2.) ));
+    if (jet_idx < 2) {
+        return 1/(M_PI*tf_Ph1_args[1]*(1 + std::pow( ((a-b)-tf_Ph1_args[0])/tf_Ph1_args[1], 2.) ));
+    } else {
+        return 1/(M_PI*tf_Ph2_args[1]*(1 + std::pow( ((a-b)-tf_Ph2_args[0])/tf_Ph2_args[1], 2.) ));
+    }
 }
 
 void calc_me::kin_debug_print(){
@@ -693,12 +797,25 @@ int calc_me_kinematics_from_int(pStat self, double Thb1, double Phb1, double Rhb
     #endif
 }
 
-double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs)
+/**
+ * matrix_element: [0] -> MG5; [1] -> Physsim
+ * 
+ * 
+*/
+double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs, int me_type)
 {
     double *buffer;
     buffer = (double*)malloc(n_elements * sizeof(double));
 
     auto p = reinterpret_cast<calc_me*>(self);
+    
+    #ifdef ZHH
+    bool is_signal = true;
+    #else
+    bool is_signal = false;
+    #endif
+
+    p->me_set(me_type, is_signal);
     p->mc_batch(reco_kin, int_variables, n_elements, buffer, use_transer_funcs);
 
     return buffer;
@@ -707,6 +824,11 @@ double* calc_me_mc_batch(pStat self, double reco_kin[], double int_variables[], 
 void calc_me_mem_init(pStat self, double evt_constants[]){
     auto p = reinterpret_cast<calc_me*>(self);
     return p->mem_init(evt_constants);
+}
+
+void calc_me_me_set(pStat self, int me_type, bool is_signal){
+    auto p = reinterpret_cast<calc_me*>(self);
+    return p->me_set(me_type, is_signal);
 }
 
 double calc_me_rambo(pStat self)

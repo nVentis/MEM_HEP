@@ -568,14 +568,15 @@ static void (*_cffi_call_python_org)(struct _cffi_externpy_s *, char *);
 
 double calc_rambo(const char param_card[], double energy, int helicity_selection[], int selected_helicities);
                 double* calc(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double momenta[], int n_elements);
-                double* calc_mc_batch(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements, int calc_mc_batch);
+                double* calc_mc_batch(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs, int me_type);
+                double* calc_mc_batch_with_evt_consts(const char param_card[], double energy, int helicity_selection[], int selected_helicities, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs, int me_type, double evt_constants[]);
                 int calc_kinematics_from_int(const char param_card[], double evt_constants[], int helicity_selection[], int selected_helicities,  double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
 
 /************************************************************/
 
 static void *_cffi_types[] = {
-/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // double *()(char const *, double, int *, int, double *, double *, int, int)
-/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 40), // char const *
+/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // double *()(char const *, double, int *, int, double *, double *, int, int, int)
+/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 53), // char const *
 /*  2 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
 /*  3 */ _CFFI_OP(_CFFI_OP_POINTER, 4), // int *
 /*  4 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7), // int
@@ -583,39 +584,52 @@ static void *_cffi_types[] = {
 /*  6 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
 /*  7 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
 /*  8 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
-/*  9 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 10 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // double *()(char const *, double, int *, int, double *, int)
-/* 11 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
-/* 12 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 13 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
-/* 14 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
-/* 15 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
-/* 16 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
-/* 17 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 18 */ _CFFI_OP(_CFFI_OP_FUNCTION, 2), // double()(char const *, double, int *, int)
-/* 19 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
-/* 20 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 21 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
-/* 22 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
-/* 23 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 24 */ _CFFI_OP(_CFFI_OP_FUNCTION, 4), // int()(char const *, double *, int *, int, double, double, double, double, double, double, double)
-/* 25 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
-/* 26 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
-/* 27 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
-/* 28 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
-/* 29 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 30 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 31 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 32 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/*  9 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 10 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 11 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // double *()(char const *, double, int *, int, double *, double *, int, int, int, double *)
+/* 12 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
+/* 13 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 14 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
+/* 15 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 16 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
+/* 17 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
+/* 18 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 19 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 20 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 21 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
+/* 22 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 23 */ _CFFI_OP(_CFFI_OP_FUNCTION, 5), // double *()(char const *, double, int *, int, double *, int)
+/* 24 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
+/* 25 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 26 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
+/* 27 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 28 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
+/* 29 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 30 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 31 */ _CFFI_OP(_CFFI_OP_FUNCTION, 2), // double()(char const *, double, int *, int)
+/* 32 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
 /* 33 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 34 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
-/* 35 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 34 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
+/* 35 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
 /* 36 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 37 */ _CFFI_OP(_CFFI_OP_FUNCTION, 41), // void()(void *)
-/* 38 */ _CFFI_OP(_CFFI_OP_POINTER, 41), // void *
-/* 39 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 40 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 2), // char
-/* 41 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
+/* 37 */ _CFFI_OP(_CFFI_OP_FUNCTION, 4), // int()(char const *, double *, int *, int, double, double, double, double, double, double, double)
+/* 38 */ _CFFI_OP(_CFFI_OP_NOOP, 1),
+/* 39 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
+/* 40 */ _CFFI_OP(_CFFI_OP_NOOP, 3),
+/* 41 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7),
+/* 42 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 43 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 44 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 45 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 46 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 47 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 48 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14),
+/* 49 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 50 */ _CFFI_OP(_CFFI_OP_FUNCTION, 54), // void()(void *)
+/* 51 */ _CFFI_OP(_CFFI_OP_POINTER, 54), // void *
+/* 52 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/* 53 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 2), // char
+/* 54 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
 static double * _cffi_d_calc(char const * x0, double x1, int * x2, int x3, double * x4, int x5)
@@ -812,9 +826,9 @@ _cffi_f_calc_kinematics_from_int(PyObject *self, PyObject *args)
 #  define _cffi_f_calc_kinematics_from_int _cffi_d_calc_kinematics_from_int
 #endif
 
-static double * _cffi_d_calc_mc_batch(char const * x0, double x1, int * x2, int x3, double * x4, double * x5, int x6, int x7)
+static double * _cffi_d_calc_mc_batch(char const * x0, double x1, int * x2, int x3, double * x4, double * x5, int x6, int x7, int x8)
 {
-  return calc_mc_batch(x0, x1, x2, x3, x4, x5, x6, x7);
+  return calc_mc_batch(x0, x1, x2, x3, x4, x5, x6, x7, x8);
 }
 #ifndef PYPY_VERSION
 static PyObject *
@@ -828,6 +842,7 @@ _cffi_f_calc_mc_batch(PyObject *self, PyObject *args)
   double * x5;
   int x6;
   int x7;
+  int x8;
   Py_ssize_t datasize;
   struct _cffi_freeme_s *large_args_free = NULL;
   double * result;
@@ -840,8 +855,9 @@ _cffi_f_calc_mc_batch(PyObject *self, PyObject *args)
   PyObject *arg5;
   PyObject *arg6;
   PyObject *arg7;
+  PyObject *arg8;
 
-  if (!PyArg_UnpackTuple(args, "calc_mc_batch", 8, 8, &arg0, &arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7))
+  if (!PyArg_UnpackTuple(args, "calc_mc_batch", 9, 9, &arg0, &arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8))
     return NULL;
 
   datasize = _cffi_prepare_pointer_call_argument(
@@ -896,9 +912,13 @@ _cffi_f_calc_mc_batch(PyObject *self, PyObject *args)
   if (x7 == (int)-1 && PyErr_Occurred())
     return NULL;
 
+  x8 = _cffi_to_c_int(arg8, int);
+  if (x8 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
   Py_BEGIN_ALLOW_THREADS
   _cffi_restore_errno();
-  { result = calc_mc_batch(x0, x1, x2, x3, x4, x5, x6, x7); }
+  { result = calc_mc_batch(x0, x1, x2, x3, x4, x5, x6, x7, x8); }
   _cffi_save_errno();
   Py_END_ALLOW_THREADS
 
@@ -909,6 +929,122 @@ _cffi_f_calc_mc_batch(PyObject *self, PyObject *args)
 }
 #else
 #  define _cffi_f_calc_mc_batch _cffi_d_calc_mc_batch
+#endif
+
+static double * _cffi_d_calc_mc_batch_with_evt_consts(char const * x0, double x1, int * x2, int x3, double * x4, double * x5, int x6, int x7, int x8, double * x9)
+{
+  return calc_mc_batch_with_evt_consts(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_calc_mc_batch_with_evt_consts(PyObject *self, PyObject *args)
+{
+  char const * x0;
+  double x1;
+  int * x2;
+  int x3;
+  double * x4;
+  double * x5;
+  int x6;
+  int x7;
+  int x8;
+  double * x9;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+  double * result;
+  PyObject *pyresult;
+  PyObject *arg0;
+  PyObject *arg1;
+  PyObject *arg2;
+  PyObject *arg3;
+  PyObject *arg4;
+  PyObject *arg5;
+  PyObject *arg6;
+  PyObject *arg7;
+  PyObject *arg8;
+  PyObject *arg9;
+
+  if (!PyArg_UnpackTuple(args, "calc_mc_batch_with_evt_consts", 10, 10, &arg0, &arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9))
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(1), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (char const *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(1), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x1 = (double)_cffi_to_c_double(arg1);
+  if (x1 == (double)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(3), arg2, (char **)&x2);
+  if (datasize != 0) {
+    x2 = ((size_t)datasize) <= 640 ? (int *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(3), arg2, (char **)&x2,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x3 = _cffi_to_c_int(arg3, int);
+  if (x3 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(5), arg4, (char **)&x4);
+  if (datasize != 0) {
+    x4 = ((size_t)datasize) <= 640 ? (double *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(5), arg4, (char **)&x4,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(5), arg5, (char **)&x5);
+  if (datasize != 0) {
+    x5 = ((size_t)datasize) <= 640 ? (double *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(5), arg5, (char **)&x5,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  x6 = _cffi_to_c_int(arg6, int);
+  if (x6 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  x7 = _cffi_to_c_int(arg7, int);
+  if (x7 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  x8 = _cffi_to_c_int(arg8, int);
+  if (x8 == (int)-1 && PyErr_Occurred())
+    return NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(5), arg9, (char **)&x9);
+  if (datasize != 0) {
+    x9 = ((size_t)datasize) <= 640 ? (double *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(5), arg9, (char **)&x9,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { result = calc_mc_batch_with_evt_consts(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  pyresult = _cffi_from_c_pointer((char *)result, _cffi_type(5));
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
+  return pyresult;
+}
+#else
+#  define _cffi_f_calc_mc_batch_with_evt_consts _cffi_d_calc_mc_batch_with_evt_consts
 #endif
 
 static double _cffi_d_calc_rambo(char const * x0, double x1, int * x2, int x3)
@@ -989,10 +1125,10 @@ _cffi_f_free(PyObject *self, PyObject *arg0)
   struct _cffi_freeme_s *large_args_free = NULL;
 
   datasize = _cffi_prepare_pointer_call_argument(
-      _cffi_type(38), arg0, (char **)&x0);
+      _cffi_type(51), arg0, (char **)&x0);
   if (datasize != 0) {
     x0 = ((size_t)datasize) <= 640 ? (void *)alloca((size_t)datasize) : NULL;
-    if (_cffi_convert_array_argument(_cffi_type(38), arg0, (char **)&x0,
+    if (_cffi_convert_array_argument(_cffi_type(51), arg0, (char **)&x0,
             datasize, &large_args_free) < 0)
       return NULL;
   }
@@ -1013,11 +1149,12 @@ _cffi_f_free(PyObject *self, PyObject *arg0)
 #endif
 
 static const struct _cffi_global_s _cffi_globals[] = {
-  { "calc", (void *)_cffi_f_calc, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 10), (void *)_cffi_d_calc },
-  { "calc_kinematics_from_int", (void *)_cffi_f_calc_kinematics_from_int, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 24), (void *)_cffi_d_calc_kinematics_from_int },
+  { "calc", (void *)_cffi_f_calc, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 23), (void *)_cffi_d_calc },
+  { "calc_kinematics_from_int", (void *)_cffi_f_calc_kinematics_from_int, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 37), (void *)_cffi_d_calc_kinematics_from_int },
   { "calc_mc_batch", (void *)_cffi_f_calc_mc_batch, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 0), (void *)_cffi_d_calc_mc_batch },
-  { "calc_rambo", (void *)_cffi_f_calc_rambo, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 18), (void *)_cffi_d_calc_rambo },
-  { "free", (void *)_cffi_f_free, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 37), (void *)_cffi_d_free },
+  { "calc_mc_batch_with_evt_consts", (void *)_cffi_f_calc_mc_batch_with_evt_consts, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 11), (void *)_cffi_d_calc_mc_batch_with_evt_consts },
+  { "calc_rambo", (void *)_cffi_f_calc_rambo, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 31), (void *)_cffi_d_calc_rambo },
+  { "free", (void *)_cffi_f_free, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 50), (void *)_cffi_d_free },
 };
 
 static const struct _cffi_type_context_s _cffi_type_context = {
@@ -1027,12 +1164,12 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   NULL,  /* no struct_unions */
   NULL,  /* no enums */
   NULL,  /* no typenames */
-  5,  /* num_globals */
+  6,  /* num_globals */
   0,  /* num_struct_unions */
   0,  /* num_enums */
   0,  /* num_typenames */
   NULL,  /* no includes */
-  42,  /* num_types */
+  55,  /* num_types */
   0,  /* flags */
 };
 

@@ -46,6 +46,7 @@ export LD_LIBRARY=$LCIO/lib64:$LD_LIBRARY_PATH
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/releases/089d775cf2/marlin/1.19/x86_64-centos7-gcc12.3.0-opt/d6jkp/include
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/ilcutil/1.7/x86_64-centos7-gcc12.3.0-opt/b3vqf/include
 export CPATH=$CPATH:/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/root/6.28.04/x86_64-centos7-gcc12.3.0-opt/owni5/include
+export CPATH=$CPATH:/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/include
 
 # MadGraph and madjax
 export PATH=/nfs/dust/ilc/user/bliewert/MG5_aMC_v3_5_1/bin:$PATH

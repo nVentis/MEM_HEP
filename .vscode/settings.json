@@ -105,6 +105,7 @@
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/SaveFinalKinematics",
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/Use_TrueJet",
-        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/ZHHPostRecoMEProcessor"
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/ZHHPostRecoMEProcessor",
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi"
     ]
 }

@@ -11,6 +11,8 @@ import numpy as np
 def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss", true_label = "parton", reco_label = "jet", quantity="E", xlabel=r"$ΔE$ [GeV]", xlim=(-100,100), ylim=(0, 0.18), n_bins=128, binrange=None, fit_init=None, suptitle=None, fit_skip=False, yscale="linear", single_title=None):
     from scipy.optimize import curve_fit,minimize
     
+    popts = []
+    
     fig, axes = plt.subplots(1, len(data), figsize=(6*len(data),8))
     fig.suptitle((name + r": $" + quantity + r"_{" + reco_label + r"}-" + quantity +  r"_{" + true_label + r"}$") if suptitle is None else suptitle, fontsize=18)
     
@@ -69,8 +71,25 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss",
         
             print(popt)
         
+        popts.append(popt)
+        
         plot_hist(df, f"{reco_label.title()} {i}", fit_func=lambda x: fit_func(x, *popt), fit_opts=popt, bins=n_bins, xlim=xlim, ylim=ylim, ax=axes[i-1], xlabel=xlabel, title=(f"{reco_label.title()} {i}") if single_title is None else single_title, normalize=True, yscale=yscale, text_spacing_y=0.15)
         #sns.histplot(data["jet{}_e".format(i)] - data["parton{}_e".format(i)], bins=128, ax=axes[i-1]).set_title("Jet {}".format(i))
+        
+    if len(popts) == 4:
+        print("SEPTF: A(1+2) : B(3+4)")
+        A = np.array([
+            popts[0],
+            popts[1]
+        ])
+
+        B = np.array([
+            popts[2],
+            popts[3]
+        ])
+
+        print(A.mean(axis=0))
+        print(B.mean(axis=0))
 
 def plot_transfer_from_df(data, name = "", plot_save_dir:Optional[str] = None, fit = "gauss", yscale="linear"):
     df = []

@@ -15,14 +15,21 @@
 
 #include "CPPProcess.h"
 #include "rambo.h"
+
 #include <ios>
 #include <iomanip>
 #include <vector>
 #include <array>
 #include <string>
 #include <cmath>
+#include <memory>
 
-struct phys_const {
+// MEElement
+#include "physsim/LCMEZHH.h"
+#include "physsim/LCMEZZH.h"
+#include "TLorentzVector.h"
+
+struct PhysConstants {
   double mb = 4.8;
   double epsilon = 1e-3;
   double dEmax = .1;
@@ -32,7 +39,65 @@ struct phys_const {
   double system_px = 0.;
   double system_py = 0.;
   double system_pz = 0.;
+  double mH = 125.;
 };
+
+/*
+class MEElement
+{
+    protected:
+        PhysConstants *constants;
+        
+    public:
+        virtual ~MEElement() {};
+        virtual double single(std::vector<double*> momenta);
+
+        void setConstants(PhysConstants *consts) { constants = consts; };
+};
+*/
+
+class MEElementPhyssimSig
+{
+    protected:
+        PhysConstants *constants;
+
+    private:
+        lcme::LCMEZHH *_lcme = nullptr;
+
+    public:
+        MEElementPhyssimSig(PhysConstants *consts, double pol_e, double pol_p, int z_decay_mode);
+        ~MEElementPhyssimSig() { delete _lcme; };
+
+        double single(std::vector<double*> momenta);
+        void setConstants(PhysConstants *consts) { constants = consts; };
+};
+
+class MEElementPhyssimBkg
+{
+    protected:
+        PhysConstants *constants;
+
+    private:
+        lcme::LCMEZZH *_lcme = nullptr;
+
+    public:
+        MEElementPhyssimBkg(PhysConstants *consts, double pol_e, double pol_p, int z1_decay_mode, int z2_decay_mode);
+        ~MEElementPhyssimBkg() { delete _lcme; };
+
+        double single(std::vector<double*> momenta);
+        void setConstants(PhysConstants *consts) { constants = consts; };
+};
+
+
+
+
+
+
+
+
+
+
+
 
 using vec3 = std::array<double,3>;
 using kinematics = std::array<double, 28>; // 4*3 spherical coordinates, then 4*4 four vectors
@@ -92,22 +157,49 @@ class calc_me {
     // default values estimated from MC samples
     // BKGHYP and SIGHYP to allow separate transfer functions for both hypotheses (TESTING)
     #ifdef BKGHYP
-    double tf_E_args[2] { -0.60700026, 5.89539517};
-    double tf_Th_args[2] { -6.19007451e-06, 1.97328833e-02 };
-    double tf_Ph_args[2] { 5.19239786e-05, 2.83442591e-02 };
+    double tf_E1_args[2] { -1.27071409, 6.54144637 }; // H
+    double tf_E2_args[2] { -0.14618351, 5.41285247 }; // Z
+
+    double tf_Th1_args[2] { -5.76347284e-05,  2.02238842e-02 };
+    double tf_Th2_args[2] { 6.79667849e-06, 1.91973789e-02 };
+    
+    double tf_Ph1_args[2] { -0.00030157,  0.02824722 };
+    double tf_Ph2_args[2] { 0.00090488, 0.02750561 };
+
+    //double tf_E_args[2] { -0.60700026, 5.89539517};
+    //double tf_Th_args[2] { -6.19007451e-06, 1.97328833e-02 };
+    //double tf_Ph_args[2] { 5.19239786e-05, 2.83442591e-02 };
     #else
       #ifdef SIGHYP
-        double tf_E_args[2] { -1.29695176,  6.34412724 };
-        double tf_Th_args[2] { -4.03399692e-05, 1.96212741e-02 };
-        double tf_Ph_args[2] { 0.00039051, 0.02811957 };
+        double tf_E1_args[2] { -1.31771938, 6.44408755 }; // H
+        double tf_E2_args[2] { -1.35264493, 6.41472459 }; // H
+
+        double tf_Th1_args[2] { 3.14744981e-06, 1.95730114e-02 };
+        double tf_Th2_args[2] { -7.81672016e-05,  1.95288882e-02 };
+
+        double tf_Ph1_args[2] { 0.00024616, 0.02817029 };
+        double tf_Ph2_args[2] { 0.00082556, 0.02781802 };
+
+        //double tf_E_args[2] { -1.29695176,  6.34412724 };
+        //double tf_Th_args[2] { -4.03399692e-05, 1.96212741e-02 };
+        //double tf_Ph_args[2] { 0.00039051, 0.02811957 };
       #else
-        double tf_E_args[2] { -1.12594285, 6.24937028};
-        double tf_Th_args[2] { -3.90908961e-05, 1.96662831e-02 };
-        double tf_Ph_args[2] { 0.0001748, 0.02819419 };
+        double tf_E1_args[2] { -1.12594285, 6.24937028};
+        double tf_E2_args[2] { -1.12594285, 6.24937028};
+
+        double tf_Th1_args[2] { -3.90908961e-05, 1.96662831e-02 };
+        double tf_Th2_args[2] { -3.90908961e-05, 1.96662831e-02 };
+
+        double tf_Ph1_args[2] { 0.0001748, 0.02819419 };
+        double tf_Ph2_args[2] { 0.0001748, 0.02819419 };
+
+        //double tf_E_args[2] { -1.12594285, 6.24937028};
+        //double tf_Th_args[2] { -3.90908961e-05, 1.96662831e-02 };
+        //double tf_Ph_args[2] { 0.0001748, 0.02819419 };
       #endif
     #endif
 
-    phys_const constants{}; // TODO
+    PhysConstants constants; // TODO
 
     // MEM related
     double calc_jac(double Rhb1, double Thb1, double Phb1,
@@ -118,20 +210,31 @@ class calc_me {
 
     int err_map[11]{ -1, -2, -3, -4, -5, -6, -7, -8, -9, -10 , -11 };
 
-    double calc_tf_E(double a, double b);
-    double calc_tf_Th(double a, double b);
-    double calc_tf_Ph(double a, double b);
+    double calc_tf_E(int jet_idx, double a, double b);
+    double calc_tf_Th(int jet_idx, double a, double b);
+    double calc_tf_Ph(int jet_idx, double a, double b);
 
     void kin_debug_print();
 
     // Other often needed stuff
     double mb_pow2 = std::pow(4.8, 2.);
+    bool mem_init_run{false};
+
+  protected:
+    #ifdef ZHH
+    MEElementPhyssimSig *me_element = nullptr;
+    #else
+    MEElementPhyssimBkg *me_element = nullptr;
+    #endif
 
   public:
     calc_me(std::string param_card, double energy);
     calc_me(calc_me const&)            = delete;
     calc_me& operator=(calc_me const&) = delete;
-    ~calc_me();
+    ~calc_me() {
+      //delete me_element; // some errors; TODO
+      delete _cppp;
+    };
 
     void set_helicity(int particle, int helicity);
     double calc_me_single_full_kin(std::vector<double*> momenta);
@@ -140,6 +243,7 @@ class calc_me {
 
     // MEM related
     void mem_init(double evt_constants[]);
+    void me_set(int me_type, bool is_signal); // 0: MG5; 1: Physsim
     kinematics get_kinematics() { return kin; };
 
     void mc_batch(double reco_kin[], double int_variables[], int n_elements, double buffer[], int use_transer_funcs);
@@ -168,8 +272,9 @@ EXPORT_C int     calc_me_kinematics_from_int  (pStat self, double mH2, double Th
 #else
 EXPORT_C int     calc_me_kinematics_from_int  (pStat self, double Thb1, double Phb1, double Rhb1, double Thb1b, double Phb1b, double Rhb2, double Thb2);
 #endif
-EXPORT_C double* calc_me_mc_batch             (pStat self, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs);
+EXPORT_C double* calc_me_mc_batch             (pStat self, double reco_kin[], double int_variables[], int n_elements, int use_transer_funcs, int me_type);
 EXPORT_C void    calc_me_mem_init             (pStat self, double evt_constants[]);
+EXPORT_C void    calc_me_me_set               (pStat self, int me_type);
 EXPORT_C double  calc_me_rambo                (pStat self);
 
 #endif

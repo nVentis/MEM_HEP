@@ -7,7 +7,14 @@
             "cStandard": "gnu17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "includePath": [
+                "${workspaceFolder}/analysis/cffi/include",
+                "${workspaceFolder}/analysis/cffi/mg5/mg5/SubProcesses/P1_Sigma_sm_emep_mummupbbxbbx",
+                "${workspaceFolder}/analysis/cffi/mg5/mg5/src",
+                "/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim/include",
+                "${workspaceFolder}/analysis/cffi/Physsim/CalculateME"
+            ]
         },
         {
             "name": "Windows",

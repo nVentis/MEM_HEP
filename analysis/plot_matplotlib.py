@@ -16,14 +16,14 @@ def format_st(f, t = 0.01):
     return f"{f:.2f}" if f >= t else f"<{t}"
 
 def fontsize(fs):
-    pylab.rcParams.update(params = {
+    pylab.rcParams.update({
         'legend.fontsize': fs,
         'axes.labelsize': fs,
         'axes.titlesize': fs,
         'xtick.labelsize': fs,
         'ytick.labelsize': fs})
 
-def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_func = None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale = "linear", yscale = "linear", fontsize:Optional[str] = None):
+def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_func = None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale = "linear", yscale = "linear", fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15, ticksize_minor:int=10, ticksize_major=None):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -53,6 +53,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         xscale (str, optional): _description_. Defaults to "linear".
         yscale (str, optional): _description_. Defaults to "linear".
         fontsize (Optional[str], optional): _description_. Defaults to None.
+        ticksize_major (int, optional): ticksize_minor+2 if None. Defaults to None
     """
     
     if ax == None:
@@ -63,16 +64,6 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         fig.set_figheight(6)
     else:
         fig = plt.gcf()
-        
-    # Set font size
-    if fontsize is not None:
-        pylab.rcParams.update(params = {
-            'legend.fontsize': fontsize,
-            'figure.figsize': (15, 5),
-            'axes.labelsize': fontsize,
-            'axes.titlesize': fontsize,
-            'xtick.labelsize': fontsize,
-            'ytick.labelsize': fontsize})
     
     if colorpalette is None:
         #colorpalette = ["tab:blue", "tab:red", "y", "tab:pink", "tab:cyan", "tab:olive"]
@@ -152,7 +143,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
                  f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {format_st(MSE)}\nRMSE: {format_st(RMSE)}\nR^2: {COE:.2f}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
                  #color=colorpalette[i],
                  bbox=dict(edgecolor="red", facecolor="w"),
-                 fontsize='medium' if fontsize is None else fontsize,
+                 fontsize='medium' if legendsize is None else legendsize,
                  horizontalalignment='right',
                  verticalalignment='top',
                  transform=ax.transAxes)
@@ -161,7 +152,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
                 f"{h_name}\nEntries: {len(values)}\nMean: {np.average(values):.2f}\nStd Dev: {np.std(values):.2f}",
                 #color=colorpalette[i],
                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
-                fontsize='medium' if fontsize is None else fontsize,
+                fontsize='medium' if legendsize is None else legendsize,
                 horizontalalignment='right',
                 verticalalignment='top',
                 transform=ax.transAxes)
@@ -170,13 +161,13 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
     
     if ax == None: 
         if title is not None:
-            plt.title(title)
+            plt.title(title, fontdict = {'fontsize' : titlesize})
             
         if xlabel is not None:
-            plt.xlabel(xlabel)#, fontsize=fontsize)
+            plt.xlabel(xlabel, fontsize=fontsize)
             
         if ylabel is not None:
-            plt.ylabel(ylabel)#, fontsize=fontsize)
+            plt.ylabel(ylabel, fontsize=fontsize)
             
         plt.xscale(xscale)
         plt.yscale(yscale)
@@ -187,18 +178,66 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         if ylim is not None:
             ax.ylim(ylim)
     else:
+        ax.tick_params(axis='both', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
+        ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
+        
         if title is not None:
-            ax.set_title(title)
+            ax.set_title(title, fontdict = {'fontsize' : titlesize})
             
         ax.set_xlim(xlim_view)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         
         if xlabel is not None:
-            ax.set_xlabel(xlabel)#, fontsize=fontsize)
+            ax.set_xlabel(xlabel, fontsize=fontsize)
             
         if ylabel is not None:
-            ax.set_ylabel(ylabel)#, fontsize=fontsize)
+            ax.set_ylabel(ylabel, fontsize=fontsize)
         
         if ylim is not None:
             ax.set_ylim(ylim)
+
+
+def plot_confusion(conf_mat, normalize=False, fontsize=12, ticksize_minor:int=10, ticksize_major=None):
+    import seaborn as sns
+    
+    if ticksize_major is None:
+        ticksize_major = ticksize_minor + 2
+    
+    TP = conf_mat[0][0]
+    TN = conf_mat[1][1]
+
+    FN = conf_mat[1][0]
+    FP = conf_mat[0][1]
+    
+    tot = TP+TN+FN+FP
+    
+    annot = np.array([
+        [f"{TP} ({TP/tot*100:.2f}%)", f"{FP} ({FP/tot*100:.2f}%)"],
+        [f"{FN} ({FN/tot*100:.2f}%)", f"{TN} ({TN/tot*100:.2f}%)"],
+    ])
+    
+    if normalize is True:
+        annot = np.array([
+            [f"{TP/tot*100:.2f}% ({TP})", f"{FP/tot*100:.2f}% ({FP})"],
+            [f"{FN/tot*100:.2f}% ({FN})", f"{TN/tot*100:.2f}% ({TN})"],
+        ])
+         
+        TP = TP/tot
+        TN = TN/tot
+        
+        FN = FN/tot
+        FP = FP/tot
+
+    conf_mat = pd.DataFrame([
+        [TP, FP],
+        [FN, TN]
+    ], index=["Sig", "Bkg"], columns=["Sig", "Bkg"])
+
+    ax = sns.heatmap(conf_mat, annot=annot, fmt = '')
+    
+    ax.set_xlabel("True label", fontsize=fontsize)
+    ax.set_ylabel("Predicted label", fontsize=fontsize)
+    
+    ax.tick_params(axis='both', which='major', labelsize=ticksize_major)
+    ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
