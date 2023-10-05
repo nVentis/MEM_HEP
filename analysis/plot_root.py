@@ -6,11 +6,11 @@ if platform == "linux" or platform == "linux2":
     import ROOT
     # %jsroot off
     
-def plot_hist(data:pd.DataFrame, x, labels:Optional[dict]=None, colorpalette=None, bins=128, xlabel:str="", ylabel:str="", xunits:str="", yunits:str="", normalize=False, title="Some Plot"):
+def plot_hist(data, x, labels:Optional[dict]=None, colorpalette=None, bins=128, xlabel:str="", ylabel:str="", xunits:str="", yunits:str="", normalize=False, title="Some Plot"):
     """Plots one ore multiple histograms using ROOT
 
     Args:
-        data (pd.DataFrame): dataframe, i.e. dict with of structure: keys als column names and lists as values
+        data (dict-like objects): dataframe, i.e. dict with of structure: keys als column names and lists as values
         x (_type_): columns
         labels (_type_, optional): _description_. Defaults to None.
         colorpalette (_type_, optional): If None, defaults to a predefined array of colors. See https://root.cern.ch/doc/master/classTColor.html#C01. Defaults to None.
