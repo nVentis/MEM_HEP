@@ -7,10 +7,10 @@ Requirements = (OpSysAndVer == "CentOS7")
 request_cpus = 1
 request_memory = 2000 Mb
 
-log = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/$(ProcId).log
-output = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/$(ProcId).out
-error = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/$(ProcId).err
+log = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/log/$(ProcId).log
+output = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/log/$(ProcId).out
+error = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/log/$(ProcId).err
 
 transfer_output_files = ""
 
-queue
+queue file from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/input_files/comparison_prod_full.txt

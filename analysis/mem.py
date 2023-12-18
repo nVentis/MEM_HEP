@@ -2,7 +2,7 @@ import vegas, pickle, re
 import numpy as np
 import pandas as pd
 
-from math import pi,sqrt
+from math import pi,sqrt,atan,floor
 from analysis.calc import get_kinematics
 
 from typing import Dict
@@ -10,18 +10,7 @@ from math import sqrt,sin,cos,atan2,acos,pi
 from itertools import product
 from analysis.cffi.mg5.lib import lib_options
 
-constants = {
-    "m_b": 4.8, # truth MC: 4.8(?); wikipedia: 4.18
-    "m_H": 125.,
-    "m_Z": 91.19,
-    "m_mu": 0.1056357046473643, # from average over all truth MC muon/anti-muons; wikipedia: 0.105658
-    "sqrt_s": 500.,
-    "sigma_sig_tot": 1., # calculated with MadGraph5 for ZHH
-    "sigma_bkg_tot": 1., # calculated with MadGraph5 for ZZH
-    "system_px": 0,
-    "system_py": 0,
-    "system_pz": 0
-}
+from analysis.mem_ana import constants
 
 # Priors on Rhb and Thb
 prior_args = (
@@ -304,7 +293,9 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
     # adapt, discard results
     integ(f, nitn=nitn, neval=int(neval/2))
     
-    result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}_v3.pkl")
+    print('Adaptation finished. Evaluating integral')
+    
+    result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}.pkl")
     
     print(result.summary())
     print('result = %s    Q = %.2f' % (result, result.Q))
@@ -389,97 +380,3 @@ def get_true_int_args(data, event_idx:int, constants:dict, nwa=lib_options["NWA"
     }
     
     return int_variables, evt_constants, kin
-
-def parse_line_to_float(line:str) -> float:   
-    a = re.sub('\(\S+\)', '', line)
-    a = re.sub('\S+: ', '', a)
-    return float(a)
-
-def get_result(event_dir:str, event_idx:int):
-    #print(f"{event_dir}/event_{str(event_idx)}/result.txt")
-    f = open(f"{event_dir}/event_{str(event_idx)}/result.txt", "r")
-    lines = f.readlines()
-    line_res_start = 0
-    for line in lines:
-        if line.startswith("Event"):
-            line_res_start += 1
-    
-    result = [0., 0.]
-    if len(lines) > line_res_start and lines[line_res_start].startswith("ZHH"):
-        result[0] = parse_line_to_float(lines[line_res_start])
-        
-    if len(lines) > line_res_start+1 and lines[line_res_start+1].startswith("ZZH"):
-        result[1] = parse_line_to_float(lines[line_res_start+1])
-    
-    return result
-
-def load_results(event_dir, reco, zhh_cross_sec:float = 8.308e-06, zzh_cross_sec:float = 1.309e-05, pb_to_1oGeV2:float = 2.56819e-9):
-    from os import listdir
-    
-    prefac = 1/((2**24)*(pi**18))
-    
-    events = np.array([int(name.replace("event_", "")) for name in listdir(event_dir)])
-    results = np.array([get_result(event_dir, event_idx) for event_idx in events]).T
-    results = {
-        "event": events,
-        "zhh_mem": results[0]*prefac/(zhh_cross_sec*pb_to_1oGeV2),
-        "zzh_mem": results[1]*prefac/(zzh_cross_sec*pb_to_1oGeV2),
-        "zhh_true": reco["zhh_mg5"][events],
-        "zzh_true": reco["zzh_mg5"][events],
-        "is_zhh": reco["is_zhh"][events],
-        "is_zzh": reco["is_zzh"][events]
-    }
-
-    results = pd.DataFrame(results)
-    results = results[((results["zhh_mem"] > 0) & (results["zzh_mem"] > 0))]
-
-    results["r"] = results["zhh_mem"]/(results["zhh_mem"] + results["zzh_mem"])
-    
-    return results
-
-def conf_mat(results, threshold:float):
-    TP = np.count_nonzero((results["is_zhh"]) & (results["r"] > threshold))
-    TN = np.count_nonzero((results["is_zzh"]) & (results["r"] < threshold))
-
-    FN = np.count_nonzero((results["is_zhh"]) & (results["r"] < threshold))
-    FP = np.count_nonzero((results["is_zzh"]) & (results["r"] > threshold))
-    
-    return [
-        [TP, FP],
-        [FN, TN]
-    ]
-    
-def best_threshold(results, vals=None, r_column="r"):
-    if vals is None:
-        vals = np.linspace(np.min(results[r_column]), np.max(results[r_column]), 1000)
-    
-    best = 9999
-    best_t = np.max(results[r_column])
-    for thresh in vals:
-        TP = np.count_nonzero((results["is_zhh"]) & (results[r_column] > thresh))
-        TN = np.count_nonzero((results["is_zzh"]) & (results[r_column] < thresh))
-
-        FN = np.count_nonzero((results["is_zhh"]) & (results[r_column] < thresh))
-        FP = np.count_nonzero((results["is_zzh"]) & (results[r_column] > thresh))
-        
-        cur = sqrt((TP-TN)**2) + FN + FP #+ sqrt((FN-FP)**2)
-        if cur < best:
-            best = cur
-            best_t = thresh
-            
-    return best_t
-
-def plot_r(data, name, yscale="log", text_start_y:float=0.95, text_start_x:float=0.93, normalize=True, bins=64):
-    from analysis.plot_matplotlib import plot_hist
-    from analysis.import_data import split_true_zhh_zzh
-    from matplotlib import pyplot as plt
-    
-    true_zhh, true_zzh = split_true_zhh_zzh(data)
-
-    llr = {
-        "zhh_r": true_zhh["r"],
-        "zzh_r": true_zzh["r"]
-    }
-
-    fig, ax = plt.subplots()
-    plot_hist(llr, x = ["zhh_r", "zzh_r"], labels=["ZHH event data", "ZZH event data"], title=r"$D_{bkg}$ " + f"({name})", text_start_y=text_start_y, text_start_x=text_start_x, normalize=normalize, xlim=(-0.02,1.02), xlim_binning=(0,1.), xlabel=r"$D_{bkg}$", ax=ax, bins=bins, yscale=yscale)

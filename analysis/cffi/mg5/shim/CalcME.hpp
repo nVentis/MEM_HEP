@@ -155,40 +155,40 @@ class calc_me {
 
     // Transfer function related
     // default values estimated from MC samples
-    // BKGHYP and SIGHYP to allow separate transfer functions for both hypotheses (TESTING)
+    // BKGHYP and SIGHYP to allow separate transfer functions for both hypotheses
     #ifdef BKGHYP
-    double tf_E1_args[2] { -1.27071409, 6.54144637 }; // H
-    double tf_E2_args[2] { -0.14618351, 5.41285247 }; // Z
+    double tf_E2_args[2] { -0.15201673,  5.43850952 }; // H
+    double tf_E1_args[2] { -1.32148925,  6.52821611 }; // Z
 
-    double tf_Th1_args[2] { -5.76347284e-05,  2.02238842e-02 };
-    double tf_Th2_args[2] { 6.79667849e-06, 1.91973789e-02 };
+    double tf_Th2_args[2] { -0.0002253,  0.0195975 };
+    double tf_Th1_args[2] { -0.00011196,  0.01992507 };
     
-    double tf_Ph1_args[2] { -0.00030157,  0.02824722 };
-    double tf_Ph2_args[2] { 0.00090488, 0.02750561 };
+    double tf_Ph2_args[2] { 0.00048159, 0.0279859  };
+    double tf_Ph1_args[2] { -8.80663759e-05,  2.81663837e-02 };
 
     //double tf_E_args[2] { -0.60700026, 5.89539517};
     //double tf_Th_args[2] { -6.19007451e-06, 1.97328833e-02 };
     //double tf_Ph_args[2] { 5.19239786e-05, 2.83442591e-02 };
     #else
       #ifdef SIGHYP
-        double tf_E1_args[2] { -1.31771938, 6.44408755 }; // H
-        double tf_E2_args[2] { -1.35264493, 6.41472459 }; // H
+        double tf_E2_args[2] { -1.37151633,  6.40037088 }; // H
+        double tf_E1_args[2] { -1.32286509,  6.388968 }; // H
 
-        double tf_Th1_args[2] { 3.14744981e-06, 1.95730114e-02 };
-        double tf_Th2_args[2] { -7.81672016e-05,  1.95288882e-02 };
+        double tf_Th2_args[2] { -8.45809592e-05,  1.95384646e-02 };
+        double tf_Th1_args[2] { 5.85886212e-05, 1.97327164e-02 };
 
-        double tf_Ph1_args[2] { 0.00024616, 0.02817029 };
-        double tf_Ph2_args[2] { 0.00082556, 0.02781802 };
+        double tf_Ph2_args[2] { 0.00042618, 0.0279236  };
+        double tf_Ph1_args[2] { 0.00037335, 0.02808675 };
 
         //double tf_E_args[2] { -1.29695176,  6.34412724 };
         //double tf_Th_args[2] { -4.03399692e-05, 1.96212741e-02 };
         //double tf_Ph_args[2] { 0.00039051, 0.02811957 };
       #else
-        double tf_E1_args[2] { -1.12594285, 6.24937028};
-        double tf_E2_args[2] { -1.12594285, 6.24937028};
+        double tf_E1_args[2] { -1.18889276,  6.23005996 };
+        double tf_E2_args[2] { -1.18889276,  6.23005996 };
 
-        double tf_Th1_args[2] { -3.90908961e-05, 1.96662831e-02 };
-        double tf_Th2_args[2] { -3.90908961e-05, 1.96662831e-02 };
+        double tf_Th1_args[2] { -3.90805346e-05,  1.96662844e-02 };
+        double tf_Th2_args[2] { -3.90805346e-05,  1.96662844e-02 };
 
         double tf_Ph1_args[2] { 0.0001748, 0.02819419 };
         double tf_Ph2_args[2] { 0.0001748, 0.02819419 };

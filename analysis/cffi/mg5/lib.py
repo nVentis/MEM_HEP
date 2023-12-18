@@ -1,5 +1,10 @@
+from os import environ
+if not ("LD_LIBRARY_PATH" in environ):
+    print("Warning: MEM calculation module could not be loaded. Check that libPhyssim.so is available in LD_LIBRARY_PATH")
+
 from analysis.cffi.mg5.CalcMEZHH import lib as zhh
 from analysis.cffi.mg5.CalcMEZZH import lib as zzh
+
 from analysis.cffi.mg5.compiled_with import lib_options
 from typing import List, Optional, Union, Dict
 

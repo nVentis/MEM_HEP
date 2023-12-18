@@ -94,18 +94,22 @@
         "calculateme.hpp": "c"
     },
     "cmake.cmakePath": "/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/cmake/3.26.3/x86_64-centos7-gcc12.3.0-opt/3ao37/bin/cmake",
+    "cmake.configureSettings": { "CFLAGS": "some/path", "QT_ROOT": "another/path" },
     "cmake.preferredGenerators": [
         "Unix Makefiles"
     ],
     "python.analysis.typeCheckingMode": "basic",
     "C_Cpp.errorSquiggles": "enabled",
-    "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode/vc.db",
+    "C_Cpp.default.browse.databaseFilename": "/nfs/dust/ilc/user/bliewert/.cache/MEM_HEP/vc.db",
     "cmake.buildDirectory": "${sourceDirectory}/build",
     "cmake.sourceDirectory": [
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/JetConvProcessor",
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/SaveFinalKinematics",
+        "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/TestReadoutProcessor",
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/Use_TrueJet",
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/ZHHPostRecoMEProcessor",
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi"
-    ]
+    ],
+    "C_Cpp.intelliSenseEngineFallback": "enabled"
 }

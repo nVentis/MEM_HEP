@@ -11,6 +11,7 @@ processes = {
     'zzh': 'P2_Sigma_sm_emep_mummupbbxbbx'
 }
 
+# default: python me.cffi-builder.py -nwa -septf
 # Call python me.cffi-builder.py, optionally with -vvv, -vv or -v
 if __name__ == '__main__':    
     options = {

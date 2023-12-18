@@ -8,7 +8,7 @@
     <constant name="OutputDirectory" value="zzh" />
     <constant name="OutputBaseName" value="e2e2zh" />
     <constant name="OutputRootFile" value="${OutputBaseName}.root" />
-    <constant name="NumberOfHiggs" value="2" />
+    <constant name="NumberOfHiggs" value="1" />
     <constant name="NumberOfJets" value="4" />
     <constant name="NumberOfIsoLeps" value="2" />
     <constant name="WhichPreselection" value="llbbbb"/>

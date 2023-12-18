@@ -1,0 +1,16 @@
+executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/scripts/comparison_prod.sh
+arguments = $(file) $(ProcId)
+should_transfer_files = True
+transfer_executable = True
+
+Requirements = (OpSysAndVer == "CentOS7")
+request_cpus = 1
+request_memory = 2000 Mb
+
+log = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/$(ProcId).log
+output = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/$(ProcId).out
+error = /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/$(ProcId).err
+
+transfer_output_files = ""
+
+queue

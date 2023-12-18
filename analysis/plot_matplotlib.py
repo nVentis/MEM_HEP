@@ -5,7 +5,7 @@ import matplotlib.cm as cm
 import matplotlib.pylab as pylab
 import pandas as pd
 from matplotlib import rcParams as rcp
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 from math import sqrt
 #from scipy.stats import chisquare
 
@@ -23,7 +23,7 @@ def fontsize(fs):
         'xtick.labelsize': fs,
         'ytick.labelsize': fs})
 
-def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_func = None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale = "linear", yscale = "linear", fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15, ticksize_minor:int=10, ticksize_major=None):
+def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_func:Optional[Callable]=None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale:str="linear", yscale:str="linear", fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15, ticksize_minor:int=10, ticksize_major=None):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -73,6 +73,9 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
     # If data is one-dimensional, only plot this
     xlim_view = xlim
     
+    if isinstance(data, pd.DataFrame) and x is None:
+        x = list(data.keys())
+    
     if isinstance(data, dict):
         if len(data.keys()) == 1:
             columns = [None]
@@ -109,11 +112,16 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         
         bin_edges = np.linspace(min_val, max_val, bins + 1)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-            
+        
+        # Filter for x_lim_binning
+        stat_values = values
+        if xlim_binning:
+            stat_values = stat_values[(stat_values >= xlim_binning[0]) & (stat_values <= xlim_binning[1])]
+        
         # Additional behavior if only one column is to be plotted
         h_name  = (x if isinstance(x, str) else "Some Plot") if column is None else (column if labels is None else labels[i])
         
-        bin_counts, _, patches = (plt if ax == None else ax).hist(values, bin_edges,
+        bin_counts, _, patches = (plt if ax == None else ax).hist(stat_values, bin_edges,
                  alpha=0.7,
                  label=h_name,
                  linestyle="solid",
@@ -122,7 +130,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
                  color="w",
                  histtype="step",
                  ec=colorpalette[i],
-                 weights=np.ones_like(values)/(len(values) if normalize else 1))
+                 weights=np.ones_like(stat_values)/(len(stat_values) if normalize else 1))
         
         if isinstance(x, str):
             if callable(fit_func):
@@ -147,9 +155,12 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
                  horizontalalignment='right',
                  verticalalignment='top',
                  transform=ax.transAxes)
+            
+        mean = np.average(stat_values)
+        std_dev = np.std(stat_values)
         
         fig.text(text_start_x, text_start_y - text_spacing_y*((2*i+1) if callable(fit_func) else i),
-                f"{h_name}\nEntries: {len(values)}\nMean: {np.average(values):.2f}\nStd Dev: {np.std(values):.2f}",
+                f"{h_name}\nEntries: {len(values)}\nMean: {mean:.2f}\nStd Dev: {std_dev:.2f}",
                 #color=colorpalette[i],
                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
                 fontsize='medium' if legendsize is None else legendsize,
@@ -178,27 +189,33 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         if ylim is not None:
             ax.ylim(ylim)
     else:
-        ax.tick_params(axis='both', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
-        ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
-        
-        if title is not None:
-            ax.set_title(title, fontdict = {'fontsize' : titlesize})
-            
+        plot_styling(ax, ticksize_minor, ticksize_major, xscale, yscale, ylim, xlabel, ylabel, title, fontsize, titlesize)
         ax.set_xlim(xlim_view)
-        ax.set_xscale(xscale)
-        ax.set_yscale(yscale)
-        
-        if xlabel is not None:
-            ax.set_xlabel(xlabel, fontsize=fontsize)
-            
-        if ylabel is not None:
-            ax.set_ylabel(ylabel, fontsize=fontsize)
-        
-        if ylim is not None:
-            ax.set_ylim(ylim)
 
-
-def plot_confusion(conf_mat, normalize=False, fontsize=12, ticksize_minor:int=10, ticksize_major=None):
+def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
+                 xscale:str="linear", yscale:str="linear",
+                 ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, title:Optional[str] = "Some Plot",
+                 fontsize:Optional[Union[str, int]]=14, titlesize:Union[int, str]=15):
+    
+    ax.tick_params(axis='both', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
+    ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
+    
+    if title is not None:
+        ax.set_title(title, fontdict = {'fontsize' : titlesize})
+        
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
+    
+    if xlabel is not None:
+        ax.set_xlabel(xlabel, fontsize=fontsize)
+        
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, fontsize=fontsize)
+    
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    
+def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:Optional[int]=None, title:Optional[str]=None, titlesize:Union[int, str]=15):
     import seaborn as sns
     
     if ticksize_major is None:
@@ -207,37 +224,37 @@ def plot_confusion(conf_mat, normalize=False, fontsize=12, ticksize_minor:int=10
     TP = conf_mat[0][0]
     TN = conf_mat[1][1]
 
-    FN = conf_mat[1][0]
-    FP = conf_mat[0][1]
+    FN = conf_mat[0][1]
+    FP = conf_mat[1][0]
     
-    tot = TP+TN+FN+FP
+    # Predicted
+    PP = TP+FP
+    PN = TN+FN
+    
+    # Actual
+    P = TP + FN
+    N = TN + FP
     
     annot = np.array([
-        [f"{TP} ({TP/tot*100:.2f}%)", f"{FP} ({FP/tot*100:.2f}%)"],
-        [f"{FN} ({FN/tot*100:.2f}%)", f"{TN} ({TN/tot*100:.2f}%)"],
+        [f"{TP}\n(TPR: {TP/P*100:.2f}%)", f"{FN}\n(FNR: {FN/P*100:.2f}%)"],
+        [f"{FP}\n(FPR: {FP/N*100:.2f}%)", f"{TN}\n(TNR: {TN/N*100:.2f}%)"],
     ])
-    
-    if normalize is True:
-        annot = np.array([
-            [f"{TP/tot*100:.2f}% ({TP})", f"{FP/tot*100:.2f}% ({FP})"],
-            [f"{FN/tot*100:.2f}% ({FN})", f"{TN/tot*100:.2f}% ({TN})"],
-        ])
-         
-        TP = TP/tot
-        TN = TN/tot
-        
-        FN = FN/tot
-        FP = FP/tot
 
     conf_mat = pd.DataFrame([
-        [TP, FP],
-        [FN, TN]
+        [TP, FN],
+        [FP, TN]
     ], index=["Sig", "Bkg"], columns=["Sig", "Bkg"])
 
     ax = sns.heatmap(conf_mat, annot=annot, fmt = '')
     
-    ax.set_xlabel("True label", fontsize=fontsize)
-    ax.set_ylabel("Predicted label", fontsize=fontsize)
+    #ax.set_xlabel("Predicted label", fontsize=fontsize)
+    #ax.set_ylabel("Actual label", fontsize=fontsize)
     
     ax.tick_params(axis='both', which='major', labelsize=ticksize_major)
     ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
+    
+    plot_styling(ax, ticksize_minor=ticksize_minor, ticksize_major=ticksize_major,
+                 xscale="linear", yscale="linear", ylim=None,
+                 xlabel="Predicted label", ylabel="Actual label",
+                 title=title, fontsize=fontsize, titlesize=titlesize)
+    

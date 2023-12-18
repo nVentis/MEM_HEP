@@ -17,11 +17,21 @@ from itertools import product
 err_map = [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11]
 
 def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, return_spherical=False, epsilon:float=1e-3, err_map=err_map, do_check=True, dEmax:float=1., dpmax:float=1., nwa=True):
-    """_summary_
+    """Reference implementation of kinematics solver
+    Available in C++ and callable from Python in lib.py
+    as calc_kinematics_from_int
 
     Args:
         int_variables (_type_): _description_
-        constants (_type_): _description_
+        constants (dict): _description_
+        return_p_in (bool, optional): _description_. Defaults to False.
+        return_spherical (bool, optional): _description_. Defaults to False.
+        epsilon (float, optional): _description_. Defaults to 1e-3.
+        err_map (_type_, optional): _description_. Defaults to err_map.
+        do_check (bool, optional): _description_. Defaults to True.
+        dEmax (float, optional): _description_. Defaults to 1..
+        dpmax (float, optional): _description_. Defaults to 1..
+        nwa (bool, optional): _description_. Defaults to True.
 
     Returns:
         _type_: _description_
@@ -33,6 +43,9 @@ def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, re
         Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
     else:
         mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
+    
+    #print("Thb2:", Thb2)
+    #print("Rhb2:", Rhb2)
     
     b1E = sqrt(constants["m_b"]**2 + Rhb1**2)
     
@@ -59,26 +72,33 @@ def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, re
     #b1bp2 = Rhb1b2*b1be
     
     b1bE1 = sqrt(constants["m_b"]**2 + Rhb1b**2)
+    #print("b1E", b1E)
+    #print("b1bE", b1bE1)
     
-    # Calculate pH and from that pB2    
+    # Calculate pH and from that pB2
     pB2 = np.array([
         constants["system_E"] -(b1E+b1bE1),
         constants["system_px"] -b1p[0] -b1bp1[0],
         constants["system_py"] -b1p[1] -b1bp1[1],
         constants["system_pz"] -b1p[2] -b1bp1[2],
     ])
+    #print("pB2", pB2)
     
     # Calculate Rhb2b
     b2E = sqrt(constants["m_b"]**2 + Rhb2**2)
+    #print("b2E", b2E)
+    #print("b2bE: pB2[0]-b2E", pB2[0], "-", b2E, "=", pB2[0]-b2E)
     
     b2bE = pB2[0] - b2E
     if b2bE < 0:
         return err_map[5]
+    #print("b2bE", b2bE)
     
     arg_Rhb2b_sqrt = b2bE**2 - constants["m_b"]**2
     if arg_Rhb2b_sqrt < 0:
         return err_map[6]
     Rhb2b = sqrt(arg_Rhb2b_sqrt)
+    #print("Rhb2b", Rhb2b)
     
     # Calculate remaining variables, i.e. Thb2b, Phb2b and Phb2
     arg_Thb2b_acos = 1/Rhb2b*(pB2[3] - Rhb2*cos(Thb2))
