@@ -21,3 +21,6 @@ Same for the build dependencies
 For clustering based on the affinity matrix calculated with the GNN, sklearn wrapped via pybind11 is used. To build
 
     git clone https://github.com/pybind/pybind11.git && cd pybind11 && mkdir build && cd build && cmake -D CMAKE_INSTALL_PREFIX:PATH=/afs/desy.de/user/b/bliewert/public/DevLocal/pybind11 -DCMAKE_PREFIX_PATH="..." .. && make && make install
+
+TODO: Use pybind from key4hep stack
+

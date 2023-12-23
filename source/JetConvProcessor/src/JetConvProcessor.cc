@@ -59,68 +59,6 @@ JetConvProcessor::JetConvProcessor() :
 				 m_outputJetCollection,
 				 std::string("GraphJets")
 				 );
-
-  // TrueJet_Parser parameters
-  registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
-                           "TrueJets" ,
-                           "Name of the TrueJetCollection input collection"  ,
-                           _trueJetCollectionName ,
-                           std::string("TrueJets") ) ;
-
-  registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
-                           "FinalColourNeutrals" ,
-                           "Name of the FinalColourNeutralCollection input collection"  ,
-                           _finalColourNeutralCollectionName ,
-                           std::string("FinalColourNeutrals") ) ;
-
-  registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
-                           "InitialColourNeutrals" ,
-                           "Name of the InitialColourNeutralCollection input collection"  ,
-                           _initialColourNeutralCollectionName ,
-                           std::string("InitialColourNeutrals") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "TrueJetPFOLink" ,
-                            "Name of the TrueJetPFOLink input collection"  ,
-                            _trueJetPFOLink,
-                            std::string("TrueJetPFOLink") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "TrueJetMCParticleLink" ,
-                            "Name of the TrueJetMCParticleLink input collection"  ,
-                            _trueJetMCParticleLink,
-                            std::string("TrueJetMCParticleLink") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "FinalElementonLink" ,
-                            "Name of the  FinalElementonLink input collection"  ,
-                            _finalElementonLink,
-                            std::string("FinalElementonLink") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "InitialElementonLink" ,
-                            "Name of the  InitialElementonLink input collection"  ,
-                            _initialElementonLink,
-                            std::string("InitialElementonLink") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "FinalColourNeutralLink" ,
-                            "Name of the  FinalColourNeutralLink input collection"  ,
-                            _finalColourNeutralLink,
-                            std::string("FinalColourNeutralLink") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "InitialColourNeutralLink" ,
-                            "Name of the  InitialColourNeutralLink input collection"  ,
-                            _initialColourNeutralLink,
-                            std::string("InitialColourNeutralLink") ) ;
-
-  registerInputCollection( LCIO::LCRELATION,
-                            "RecoMCTruthLink",
-                            "Name of the RecoMCTruthLink input collection"  ,
-                            _recoMCTruthLink,
-                            std::string("RecoMCTruthLink")
-                            );
 }
 
 void JetConvProcessor::init()
@@ -146,6 +84,8 @@ void JetConvProcessor::init()
     throw EVENT::Exception(message.str());
   }
 
+  streamlog_out(MESSAGE) << "Loading python and sklearn" << std::endl;
+
   try {
     py::initialize_interpreter();
     py::module_ sklearn_cluster = py::module_::import("sklearn.cluster");
@@ -162,10 +102,6 @@ void JetConvProcessor::init()
 void JetConvProcessor::clear() 
 {
   streamlog_out(DEBUG) << "clear called  " << std::endl;
-
-  // Only delete LCRelationNavigator onstances in TrueJet_Parser if these objects have been instantiated before with "new" 
-  if (m_error_code != 0)
-    this->delall();
 }
 
 void JetConvProcessor::processRunHeader( LCRunHeader*  /*run*/) { 
@@ -184,7 +120,7 @@ void JetConvProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     // Fetching collections
     LCCollection *inputMCTrueCollection;
     LCCollection *inputPFOCollection;
-    LCCollectionVec* outputJetCollection = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
+    LCCollectionVec *outputJetCollection = new LCCollectionVec(LCIO::RECONSTRUCTEDPARTICLE);
 
     streamlog_out(DEBUG) << "  getting true MC collection: " << m_inputMCTrueCollection << std::endl ;
     inputMCTrueCollection = pLCEvent->getCollection( m_inputMCTrueCollection );
@@ -258,18 +194,41 @@ void JetConvProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     // Save to LCIO
     for (int j = 0; j < m_nJets; j++) {
       ReconstructedParticleImpl* graphjet = new ReconstructedParticleImpl;
+
       for (int i = 0; i < n_pfos; i++) {
         if (cluster_id_vec[i] == j) {
-          graphjet->addParticle(dynamic_cast<EVENT::ReconstructedParticle*>(inputPFOCollection->getElementAt(i)));
-        }
+          EVENT::ReconstructedParticle* pfo = dynamic_cast<EVENT::ReconstructedParticle*>(inputPFOCollection->getElementAt(i));
+          graphjet->addParticle(pfo);
+
+          const double* jet_mom = graphjet->getMomentum();
+          const double* pfo_mom = pfo->getMomentum();
+          float new_mom[3];
+          new_mom[0] = jet_mom[0] + pfo_mom[0];
+          new_mom[1] = jet_mom[1] + pfo_mom[1];
+          new_mom[2] = jet_mom[2] + pfo_mom[2];
+
+          graphjet->setCharge(graphjet->getCharge() + pfo->getCharge());
+          graphjet->setMomentum(new_mom);
+          graphjet->setEnergy(graphjet->getEnergy() + pfo->getEnergy());
+        }        
       }
+
+      graphjet->setMass(std::sqrt(
+        std::pow(graphjet->getEnergy(), 2) - (
+          std::pow(graphjet->getMomentum()[0], 2) +
+          std::pow(graphjet->getMomentum()[1], 2) +
+          std::pow(graphjet->getMomentum()[2], 2)
+        )
+      ));
+      graphjet->setType(4); // 0: unknown 1: single 2:v0 3: compound 4:jet
+      //graphjet->setReferencePoint(vpos);
 
       outputJetCollection->addElement(graphjet);
 
       streamlog_out(DEBUG) << "Jet " << j << " -> " << (graphjet->getParticles()).size() << " PFOs" << std::endl;
     }
 
-    pLCEvent->addCollection(outputJetCollection);
+    pLCEvent->addCollection(outputJetCollection, m_outputJetCollection.c_str());
 
   } catch(DataNotAvailableException &e) {
     streamlog_out(MESSAGE) << "processEvent : Input collections not found in event " << m_nEvt << std::endl;

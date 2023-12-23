@@ -100,7 +100,7 @@
     ],
     "python.analysis.typeCheckingMode": "basic",
     "C_Cpp.errorSquiggles": "enabled",
-    "C_Cpp.default.browse.databaseFilename": "/nfs/dust/ilc/user/bliewert/.cache/MEM_HEP/vc.db",
+    "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode/vc.db",
     "cmake.buildDirectory": "${sourceDirectory}/build",
     "cmake.sourceDirectory": [
         "/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/source/CompareMEProcessor",

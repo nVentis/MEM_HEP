@@ -16,3 +16,4 @@ Ranlux.coonf
 Use_TrueJet
 *.pkl
 .ipynb_checkpoints
+*.db

@@ -1,7 +1,6 @@
 /**
  * @author Bryan Bliewert (TUM/DESY) <bryan.bliewert@nventis.eu>
  * @date 13.12.2023
- *
  */
 
 #ifndef JetConvProcessor_h
@@ -19,18 +18,17 @@
 
 #include "marlin/Processor.h"
 #include <EVENT/LCCollection.h>
+#include "IMPL/LCCollectionVec.h"
 #include "lcio.h"
 #include <string>
 #include <vector>
-#include "TLorentzVector.h"
-#include "TrueJet_Parser.h"
 
 using namespace lcio;
 using namespace marlin;
 using namespace pybind11::literals;
 namespace py = pybind11;
 
-class JetConvProcessor : public Processor, public TrueJet_Parser
+class JetConvProcessor : public Processor
 {
 public:
 	virtual Processor *newProcessor()

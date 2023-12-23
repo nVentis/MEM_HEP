@@ -71,4 +71,8 @@ export CMAKE_PREFIX_PATH=/afs/desy.de/user/b/bliewert/public/DevLocal/pytorch_sp
 export CMAKE_PREFIX_PATH=/afs/desy.de/user/b/bliewert/public/DevLocal/pybind11/share/cmake:$CMAKE_PREFIX_PATH
 export CPATH=/afs/desy.de/user/b/bliewert/public/DevLocal/pybind11/include:$CPATH
 
+# lcfiplus
+#export LD_LIBRARY_PATH=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/lcfiplus/0.10.1/x86_64-centos7-gcc12.3.0-opt/7tnbl/lib:$LD_LIBRARY_PATH
+#export CPATH=/cvmfs/ilc.desy.de/key4hep/releases/2023-05-23/lcfiplus/0.10.1/x86_64-centos7-gcc12.3.0-opt/7tnbl/include:$CPATH
+
 
