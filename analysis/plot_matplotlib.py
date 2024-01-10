@@ -5,7 +5,7 @@ import matplotlib.cm as cm
 import matplotlib.pylab as pylab
 import pandas as pd
 from matplotlib import rcParams as rcp
-from typing import Optional, Union, Callable
+from typing import Optional, Union, Callable, Dict, List, Literal
 from math import sqrt
 #from scipy.stats import chisquare
 
@@ -23,7 +23,17 @@ def fontsize(fs):
         'xtick.labelsize': fs,
         'ytick.labelsize': fs})
 
-def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_func:Optional[Callable]=None, fit_opts:Optional[dict] = None, labels=None, colorpalette=None, bins=128, xlim_binning=False, xlim:Optional[list] = None, ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, units="", normalize=False, title:Optional[str] = "Likelihood-Analysis", ax=None, filter_nan:bool=False, text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23, xscale:str="linear", yscale:str="linear", fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15, ticksize_minor:int=10, ticksize_major=None):
+def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
+              fit_func:Optional[Callable]=None, fit_opts:Optional[Dict] = None,
+              labels:Optional[List[str]]=None, colorpalette=None, bins=128,
+              same_bins:bool=True, xlim_binning:Optional[list]=None, xlim:Optional[list]=None, ylim=None,
+              xlabel:Optional[str] = None, ylabel:Optional[str]=None,
+              normalize=False, filter_nan:bool=False,
+              title:Optional[str]=None, ax=None, units:str="",
+              text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23,
+              xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
+              fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
+              ticksize_minor:int=10, ticksize_major=None):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -37,21 +47,22 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         labels (_type_, optional): _description_. Defaults to None.
         colorpalette (_type_, optional): _description_. Defaults to None.
         bins (int, optional): _description_. Defaults to 128.
-        xlim_binning (bool, optional): _description_. Defaults to False.
+        same_bins (bool): if True, the same bin ranges are forced for all plotted histograms. Defaults to True.
+        xlim_binning (list, optional): _description_. Defaults to False.
         xlim (Optional[list], optional): _description_. Defaults to None.
         ylim (_type_, optional): _description_. Defaults to None.
         xlabel (Optional[str], optional): _description_. Defaults to None.
         ylabel (Optional[str], optional): _description_. Defaults to None.
         units (str, optional): _description_. Defaults to "".
         normalize (bool, optional): _description_. Defaults to False.
-        title (Optional[str], optional): _description_. Defaults to "Likelihood-Analysis".
+        title (Optional[str], optional): _description_. Defaults to None.
         ax (_type_, optional): _description_. Defaults to None.
         filter_nan (): Whether or not to filter out nan data; useful for DataFrames of unequal sizes. Defaults to False.
         text_start_x (float, optional): _description_. Defaults to 1.02.
         text_start_y (float, optional): _description_. Defaults to 1.05.
         text_spacing_y (float, optional): Height of each textbox . Defaults to 0.11.
-        xscale (str, optional): _description_. Defaults to "linear".
-        yscale (str, optional): _description_. Defaults to "linear".
+        xscale (literal, optional): _description_. Defaults to "linear".
+        yscale (literal, optional): _description_. Defaults to "linear".
         fontsize (Optional[str], optional): _description_. Defaults to None.
         ticksize_major (int, optional): ticksize_minor+2 if None. Defaults to None
     """
@@ -70,12 +81,14 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         prop_cycle = plt.rcParams['axes.prop_cycle']
         colorpalette = prop_cycle.by_key()['color']
     
-    # If data is one-dimensional, only plot this
-    xlim_view = xlim
+    # Force conversion of dict to DataFrame
+    if isinstance(data, dict):
+        data = pd.DataFrame(data)
     
-    if isinstance(data, pd.DataFrame) and x is None:
+    if x is None:
         x = list(data.keys())
     
+    """
     if isinstance(data, dict):
         if len(data.keys()) == 1:
             columns = [None]
@@ -90,14 +103,22 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
                     xlim_view[1] = max(xlim_view[1], 1.02*data[x].max())
                 
     else: # DataFrame
-        if len(list(data.shape)) == 1:
-            columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
-            if xlim_view is None:
-                xlim_view = [0.98*data.min(), 1.02*data.max()]
-        else:
-            columns = x
-            if xlim_view is None:
-                xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
+    """
+    
+    xlim_view = xlim if xlim is not None else None
+    
+    if len(list(data.shape)) == 1:
+        columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
+        if xlim_view is None:
+            xlim_view = [0.98*data.min(), 1.02*data.max()]
+    else:
+        columns = x
+        if xlim_view is None:
+            xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
+                
+    # If same_bins=True, infer limits and impose xlim_binning
+    if same_bins:
+        xlim_binning = [data.min(numeric_only=True).min(), data.max(numeric_only=True).max()]
 
     for i in range(len(columns)):
         column = columns[i]
@@ -107,8 +128,8 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
             values = values[~np.isnan(values)]
             
         # Limits
-        min_val = xlim[0] if (xlim is not None and xlim_binning) else np.min(values)
-        max_val = xlim[1] if (xlim is not None and xlim_binning) else np.max(values)
+        min_val = xlim_binning[0] if (xlim_binning is not None) else np.min(values)
+        max_val = xlim_binning[1] if (xlim_binning is not None) else np.max(values)
         
         bin_edges = np.linspace(min_val, max_val, bins + 1)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
@@ -170,6 +191,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
     
     #plt_obj.legend(loc='upper right', bbox_to_anchor=(1.1, 1.05))
     
+    """
     if ax == None: 
         if title is not None:
             plt.title(title, fontdict = {'fontsize' : titlesize})
@@ -189,12 +211,15 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]], fit_fu
         if ylim is not None:
             ax.ylim(ylim)
     else:
-        plot_styling(ax, ticksize_minor, ticksize_major, xscale, yscale, ylim, xlabel, ylabel, title, fontsize, titlesize)
-        ax.set_xlim(xlim_view)
+    """
+    
+    plot_styling(ax, ticksize_minor, ticksize_major, xscale, yscale, ylim, xlabel, ylabel, title, fontsize, titlesize)
+    ax.set_xlim(left=xlim_view[0], right=xlim_view[1])
+
 
 def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
                  xscale:str="linear", yscale:str="linear",
-                 ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, title:Optional[str] = "Some Plot",
+                 ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, title:Optional[str]=None,
                  fontsize:Optional[Union[str, int]]=14, titlesize:Union[int, str]=15):
     
     ax.tick_params(axis='both', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
