@@ -14,6 +14,8 @@ conv_dict = {
         'sum': np.sum,
         'exp': np.exp,
         'stack': np.stack,
+        'ones': np.ones,
+        'zeros': np.zeros,
         'random': {
             'choice': np.random.choice,
             'uniform': np.random.uniform,
@@ -30,6 +32,8 @@ conv_dict = {
         'sum': torch.sum,
         'exp': torch.exp,
         'stack': torch.stack,
+        'ones': torch.ones,
+        'zeros': torch.zeros,
         'random': {
             'choice': lambda vals, size: torch.multinomial(torch.ones(len(vals))*1/len(vals), num_samples=size, replacement=True),
             'uniform': lambda low, high: (high-low)*torch.rand(len(low)) + low,

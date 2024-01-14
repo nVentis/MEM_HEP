@@ -18,9 +18,12 @@ class BinnedImportanceSamplingIntegrator(ImportanceSamplingIntegrator):
                 c_cur += c_step
             
             bin_bounds.append(boundary_arr)
+            
+        #print("boundaries", self.boundaries.shape, self.boundaries)
     
         self.bin_indices = tnp.arange(bins_per_dim)
-        self.bin_bounds = tnp.array(bin_bounds)
+        self.bin_bounds = tnp.array(tnp.array(bin_bounds))
+        
         
     # Generate
     def importance_per_dim(self, dim:int):
@@ -87,28 +90,3 @@ class BinnedImportanceSamplingIntegrator(ImportanceSamplingIntegrator):
                 #print(f"{k0}-{k} : {bin_vals[-1][0]}-{bin_vals[-1][1]}")
                 
             self.bin_bounds[j] = tnp.stack(bin_vals)
-    
-    # Integrate
-    def integrate(self, n_samples:int=10000):
-        samples, importance = self.sample(n_samples, with_importance=True)
-        results = self.integrand(samples)
-        
-        V = 1
-        for j in range(self.dims):
-            V = V*(self.boundaries[j][1] - self.boundaries[j][0])
-                
-        if False:#not self.adapted:
-            res = results.sum()/n_samples
-                
-            return res*V
-        else:
-            f = results
-            p = 1/V
-            q = importance/V
-            
-            #print("p", p)
-            #print("p/q", p/q)
-            #print("f", f)
-            #print("q", q)
-            
-            return tnp.sum(f*p/q).sum()/n_samples

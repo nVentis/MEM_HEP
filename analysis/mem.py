@@ -214,7 +214,7 @@ def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
 
 # INTEGRATION USING CFFI C++ BINDINGS
 
-def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"], use_tf:bool=True, me_type:int = 0):
+def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"], use_tf:bool=True, me_type:int=1):
     """MEM integration in C++ using MG5 matrix elements
 
     Args:
@@ -227,7 +227,7 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         nhcube_batch (int, optional): _description_. Defaults to 100000.
         nwa (bool): whether or not to use NWA
         use_tf (bool, optional): whether or not to use the detector transfer function; False for debugging
-        me_type (int, optional): 0: MG5; 1: Physsim
+        me_type (int, optional): 0: MG5; 1: Physsim. Defaults to 1.
 
     Returns:
         _type_: _description_
