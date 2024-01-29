@@ -47,6 +47,12 @@ JetConvProcessor::JetConvProcessor() :
         int(4)
         );
 
+  registerProcessorParameter("spectralClusteringLabelling",
+        "kmeans, discretize or cluster_qr. default to kmeans",
+        m_spectralClusteringLabelling,
+        std::string("kmeans")
+        );
+
   registerProcessorParameter("torchScriptPath",
         "name of output root file",
         m_torchScriptPath,
@@ -172,7 +178,8 @@ void JetConvProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     // Construct clusters
     py::dict kwargs = py::dict(
       "n_clusters"_a = m_nJets,
-      "affinity"_a = "precomputed"
+      "affinity"_a = "precomputed",
+      "assign_labels"_a = m_spectralClusteringLabelling
     );
     py::object SpectralClustering = m_spectral_clustering(**kwargs);
 

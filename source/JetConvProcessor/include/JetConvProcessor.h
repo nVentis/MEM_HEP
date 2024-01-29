@@ -53,6 +53,7 @@ protected:
 	std::string m_inputMCTrueCollection{};
 	std::string m_inputPfoCollection{};
 	int m_nJets{};
+	std::string m_spectralClusteringLabelling{};
 	std::string m_torchScriptPath{};
 	std::string m_outputJetCollection{};
 

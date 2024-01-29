@@ -22,5 +22,16 @@ For clustering based on the affinity matrix calculated with the GNN, sklearn wra
 
     git clone https://github.com/pybind/pybind11.git && cd pybind11 && mkdir build && cd build && cmake -D CMAKE_INSTALL_PREFIX:PATH=/afs/desy.de/user/b/bliewert/public/DevLocal/pybind11 -DCMAKE_PREFIX_PATH="..." .. && make && make install
 
+# Usage
+
+After building the processor, simply include it in `MARLIN_DLL` and you're good to go. 
+
+| Parameter name                |       | Defaults |
+|-------------------------------|-------|----------|
+| `nJets`                       | Number of jets to cluster to   | 4 |
+| `spectralClusteringLabelling` | see `assign_labels` [here](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.SpectralClustering.html) | `kmeans` |
+| `torchScriptPath`             | full path to model weights |  |
+| `outputJetCollection`         | | `GraphJets` |
+
 TODO: Use pybind from key4hep stack
 
