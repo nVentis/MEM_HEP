@@ -215,7 +215,8 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     
     plot_styling(ax, ticksize_minor, ticksize_major, xscale, yscale, ylim, xlabel, ylabel, title, fontsize, titlesize)
     ax.set_xlim(left=xlim_view[0], right=xlim_view[1])
-
+    
+    return fig
 
 def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
                  xscale:str="linear", yscale:str="linear",
