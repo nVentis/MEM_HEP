@@ -5,6 +5,7 @@ import matplotlib.cm as cm
 import matplotlib.pylab as pylab
 import pandas as pd
 from matplotlib import rcParams as rcp
+from matplotlib.backends.backend_pdf import PdfPages
 from typing import Optional, Union, Callable, Dict, List, Literal
 from math import sqrt
 #from scipy.stats import chisquare
@@ -22,6 +23,16 @@ def fontsize(fs):
         'axes.titlesize': fs,
         'xtick.labelsize': fs,
         'ytick.labelsize': fs})
+
+def export_figures(filename, figs=None, dpi=200):
+    pp = PdfPages(filename)
+    if figs is None:
+        figs = [plt.figure(n) for n in plt.get_fignums()]
+        print(len(figs))
+        
+    for fig in figs:
+        fig.savefig(pp, format='pdf')
+    pp.close()
 
 def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
               fit_func:Optional[Callable]=None, fit_opts:Optional[Dict] = None,
@@ -117,7 +128,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
             xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
                 
     # If same_bins=True, infer limits and impose xlim_binning
-    if same_bins:
+    if same_bins and xlim_binning is None:
         xlim_binning = [data.min(numeric_only=True).min(), data.max(numeric_only=True).max()]
 
     for i in range(len(columns)):
@@ -136,7 +147,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         
         # Filter for x_lim_binning
         stat_values = values
-        if xlim_binning:
+        if xlim_binning is not None:
             stat_values = stat_values[(stat_values >= xlim_binning[0]) & (stat_values <= xlim_binning[1])]
         
         # Additional behavior if only one column is to be plotted
