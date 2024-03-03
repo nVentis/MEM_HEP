@@ -5,7 +5,7 @@
     <constant name="lcgeo_DIR" value="/cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/lcgeo/v00-16-06" />
     <constant name="DetectorModel" value="ILD_l5_o1_v02" />
     <constant name="CompactFile" value="${lcgeo_DIR}/ILD/compact/${DetectorModel}/${DetectorModel}.xml" />
-    <constant name="OutputDirectory" value="jetcon" />
+    <constant name="OutputDirectory" value="dev" />
     <constant name="OutputBaseName" value="e2e2hh" />
     <constant name="OutputRootFile" value="${OutputBaseName}.root" />
     <constant name="NumberOfHiggs" value="2" />
@@ -31,7 +31,7 @@
     <processor name="MyLeptonPairing"/>
     <processor name="MyFastJetProcessor" condition="" />
     <processor name="JC4FT"/>
-    <processor name="MyJetConvProcessor"/>
+    <!-- processor name="MyJetConvProcessor"/> -->
     <processor name="MyPreSelection"/>
     <if condition="MyPreSelection.GoodEvent">
       <processor name="MySLDCorrection" condition="" />
