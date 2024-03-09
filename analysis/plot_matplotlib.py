@@ -16,6 +16,23 @@ rcp['font.family'] = 'monospace' # per default use monospace fonts
 def format_st(f, t = 0.01):
     return f"{f:.2f}" if f >= t else f"<{t}"
 
+settings = {
+    'colorpalette': None
+}
+
+def get_colorpalette():
+    if settings['colorpalette'] is None:
+        #colorpalette = ["tab:blue", "tab:red", "y", "tab:pink", "tab:cyan", "tab:olive"]
+        prop_cycle = plt.rcParams['axes.prop_cycle']
+        colorpalette = prop_cycle.by_key()['color']
+        settings['colorpalette'] = colorpalette
+    else:
+        return settings['colorpalette']
+    
+def set_colorpalette(colorpalette):
+    settings['colorpalette'] = colorpalette
+
+
 def fontsize(fs):
     pylab.rcParams.update({
         'legend.fontsize': fs,
@@ -41,7 +58,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
               xlabel:Optional[str] = None, ylabel:Optional[str]=None,
               normalize=False, filter_nan:bool=False,
               title:Optional[str]=None, ax=None, units:str="",
-              text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.23,
+              text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.22,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
               fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
               ticksize_minor:int=10, ticksize_major=None):
@@ -88,9 +105,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         fig = plt.gcf()
     
     if colorpalette is None:
-        #colorpalette = ["tab:blue", "tab:red", "y", "tab:pink", "tab:cyan", "tab:olive"]
-        prop_cycle = plt.rcParams['axes.prop_cycle']
-        colorpalette = prop_cycle.by_key()['color']
+        colorpalette = get_colorpalette()
     
     # Force conversion of dict to DataFrame
     if isinstance(data, dict):
