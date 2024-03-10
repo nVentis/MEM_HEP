@@ -1,7 +1,8 @@
 #!/bin/bash
 # source /cvmfs/ilc.desy.de/sw/x86_64_gcc82_centos7/v02-02-02/init_ilcsoft.sh &&
 source /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/setup.sh
-mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh
+mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/log
+mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh/slcio
 cd /nfs/dust/ilc/user/bliewert/fullflow_v3/zhh
 
 rm -rf job${2}

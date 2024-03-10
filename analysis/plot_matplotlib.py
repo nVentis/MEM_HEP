@@ -45,7 +45,7 @@ def export_figures(filename, figs=None, dpi=200):
     pp = PdfPages(filename)
     if figs is None:
         figs = [plt.figure(n) for n in plt.get_fignums()]
-        print(len(figs))
+        #print(len(figs))
         
     for fig in figs:
         fig.savefig(pp, format='pdf')
