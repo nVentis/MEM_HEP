@@ -26,8 +26,8 @@ def get_colorpalette():
         prop_cycle = plt.rcParams['axes.prop_cycle']
         colorpalette = prop_cycle.by_key()['color']
         settings['colorpalette'] = colorpalette
-    else:
-        return settings['colorpalette']
+
+    return settings['colorpalette']
     
 def set_colorpalette(colorpalette):
     settings['colorpalette'] = colorpalette
