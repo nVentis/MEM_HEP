@@ -49,12 +49,7 @@ def integrate(event:int, dst:str, me_type:int, src:str):
     #    nitn = 4
     
     res_sig = int_bf_v2(reco, event_idx, mode=1, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
-    
-    f = open(dst, "a")
-    f.write("ZHH: " + str(res_sig) + "\n")
-    f.close()
-    
-    logger.info("Finished ZHH")
+    logger.info(f"Finished ZHH: [{str(res_sig)}]")
     
     
     logger.info("Starting ZZH")
@@ -64,11 +59,15 @@ def integrate(event:int, dst:str, me_type:int, src:str):
     
     res_bkg = int_bf_v2(reco, event_idx, mode=0, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
     
+    report = f"""
+ZHH: {str(res_sig)}
+ZZH: {str(res_bkg)}             """
+
     f = open(dst, "a")
-    f.write("ZZH: " + str(res_bkg) + "\n")
+    f.write(report)
     f.close()
     
-    logger.info("Finished ZZH")
+    logger.info(f"Finished ZZH: [{str(res_bkg)}]")
 
 
 if __name__ == '__main__':

@@ -34,52 +34,62 @@ def root_to_numpy(source_path: str,
                   in_file_location: str,
                   merge_with_np_array: Optional[np.ndarray] = None,
                   join_by: Optional[list]=None,
-                  merge_columns: Optional[list]=None) -> np.ndarray:
+                  merge_columns: Optional[list]=None,
+                  null_on_not_found:bool=False) -> Union[np.ndarray, None]:
+    
+    out = None
     
     with ur.open(source_path) as file:
         # Find data in file
-        data = file[in_file_location]
-        keys = data.keys()
+        if in_file_location in file:
+            data = file[in_file_location]
+            keys = data.keys()
 
-        # Get correct column names and types for conversion
-        dtype_arr = []
-        dtype_names = data.typenames()
-        
-        dtype_names_accepted = []
-
-        for key in dtype_names:
-            conv_type = convert_type(dtype_names[key])
-            if conv_type is not None:
-                dtype_names_accepted.append(key)
-                dtype_arr.append((key, conv_type))
-
-        dtype_list2 = []
-        if merge_with_np_array is not None and join_by is not None:
-            dtype_list = list(dtype_names_accepted)
-            # Get keys only in merge_with_np_array
-            dtype_list2 = list(set((merge_columns if merge_columns is not None else list(merge_with_np_array.dtype.fields.keys()))) - set(dtype_list))
+            # Get correct column names and types for conversion
+            dtype_arr = []
+            dtype_names = data.typenames()
             
-            for field_name in dtype_list2:
-                dtype_arr.append((field_name, merge_with_np_array.dtype[field_name].name))
+            dtype_names_accepted = []
 
-        # Convert data to (column-wise) arrays using numpy
-        out = np.zeros(data.num_entries, dtype=dtype_arr)
+            for key in dtype_names:
+                conv_type = convert_type(dtype_names[key])
+                if conv_type is not None:
+                    dtype_names_accepted.append(key)
+                    dtype_arr.append((key, conv_type))
 
-        for i in range(0, len(keys)):
-            key = keys[i]
-            out[key] = data[key].array()
-        
-        if merge_with_np_array is not None and join_by is not None:
-            join_by_a = out[join_by]
-            join_by_b = merge_with_np_array[join_by]
+            dtype_list2 = []
+            if merge_with_np_array is not None and join_by is not None:
+                dtype_list = list(dtype_names_accepted)
+                # Get keys only in merge_with_np_array
+                dtype_list2 = list(set((merge_columns if merge_columns is not None else list(merge_with_np_array.dtype.fields.keys()))) - set(dtype_list))
+                
+                for field_name in dtype_list2:
+                    dtype_arr.append((field_name, merge_with_np_array.dtype[field_name].name))
+
+            # Convert data to (column-wise) arrays using numpy
+            out = np.zeros(data.num_entries, dtype=dtype_arr)
+
+            for i in range(0, len(keys)):
+                key = keys[i]
+                out[key] = data[key].array()
             
-            join_by_a_view = join_by_a.view([('',join_by_a.dtype)]*len(join_by_a.dtype.names))
-            join_by_b_view = join_by_b.view([('',join_by_b.dtype)]*len(join_by_b.dtype.names))
-            
-            intersection, a_idx, b_idx = np.intersect1d(join_by_a_view, join_by_b_view, return_indices=True)
-            
-            for i in range(0, len(a_idx)):
-                out[dtype_list2][a_idx[i]] = tuple(merge_with_np_array[dtype_list2][b_idx[i]])
+            if merge_with_np_array is not None and join_by is not None:
+                join_by_a = out[join_by]
+                join_by_b = merge_with_np_array[join_by]
+                
+                join_by_a_view = join_by_a.view([('',join_by_a.dtype)]*len(join_by_a.dtype.names))
+                join_by_b_view = join_by_b.view([('',join_by_b.dtype)]*len(join_by_b.dtype.names))
+                
+                intersection, a_idx, b_idx = np.intersect1d(join_by_a_view, join_by_b_view, return_indices=True)
+                
+                for i in range(0, len(a_idx)):
+                    out[dtype_list2][a_idx[i]] = tuple(merge_with_np_array[dtype_list2][b_idx[i]])
+    
+    if out is None:
+        if null_on_not_found:
+            return out
+        else:
+            raise Exception(f'{in_file_location} does not exist in file')
 
     return out
 

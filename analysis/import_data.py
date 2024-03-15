@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
+import os.path as osp
+import os
+from pathlib import Path
 from analysis.split_event_tree import ttype_column
 from analysis.mem_ana import constants
 from analysis.convert import root_to_numpy
+from tqdm.auto import tqdm
 from typing import Optional
 
 cache_dir = "/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache"
@@ -87,8 +91,8 @@ def import_true_reco(
     constants:dict=constants,
     b1_decay_pdg:Optional[int]=5,
     b2_decay_pdg:Optional[int]=5,
-    use_cache:bool=True) -> pd.DataFrame:
-    import os.path as osp
+    use_cache:bool=True,
+    recalc:bool=False) -> pd.DataFrame:
     
     """Combines the raw ROOT data to a pandas dataframe. Optionally, ensures normalization according to cross-section
     Uses caching, i.e. saves the full sample as numpy array/pandas DataFrame when it's accessed the first time 
@@ -114,6 +118,7 @@ def import_true_reco(
     
     from os import listdir
     import os.path as osp
+    Path(f'{src_dir}/cache').mkdir(parents=True, exist_ok=True)
     
     results = listdir(src_dir)
     results.sort()
@@ -124,25 +129,35 @@ def import_true_reco(
     serialized_name = f'comparison_reco_{comparison[0]}_{comparison[1]}.npy'
     cache_path = osp.join(cache_dir, serialized_name)
     
-    if not (src_file is None):
+    if use_cache and recalc and osp.isfile(cache_path):
+        os.remove(cache_path)
+    
+    if src_file is not None:
         df = np.load(src_file, allow_pickle=True)
     elif use_cache == False or not osp.isfile(cache_path):
-        df = root_to_numpy(osp.join(src_dir, results[0], "root/prod", file_name), tree_name)
-        for i in range(1, len(results)):
-            df = np.concatenate((df, root_to_numpy(osp.join(src_dir, results[i], "root/prod", file_name), tree_name)))
+        df = root_to_numpy(osp.join(src_dir, results[0], "root/prod", file_name), tree_name, null_on_not_found=True)
+        for i in (pbar := tqdm(range(1, len(results)))):
+            pbar.set_description(f'Current length: {len(df)}')
+            part_path = osp.join(src_dir, results[i], "root/prod", file_name)
+            if osp.isfile(part_path):
+                res = root_to_numpy(part_path, tree_name, null_on_not_found=True)
+                if res is not None:
+                    df = np.concatenate((df, res))
         
         if use_cache:
             np.save(cache_path, df, allow_pickle=True)
+            print(f'Saved cache file to {cache_path}')
     else:
+        print(f'Using cached file from {cache_path}')
         df = np.load(cache_path, allow_pickle=True)
         
     df = pd.DataFrame(df)
     
     if b1_decay_pdg is not None:
-        df = df[(df["h1_decay_pdg"] == b1_decay_pdg)]
+        df = df[(df["true_h1_decay_pdg"] == b1_decay_pdg)]
         
     if b2_decay_pdg is not None:
-        df = df[((df["h2_decay_pdg"] == b2_decay_pdg) | (df["z2_decay_pdg"] == b2_decay_pdg))]
+        df = df[((df["true_h2_decay_pdg"] == b2_decay_pdg) | (df["true_z2_decay_pdg"] == b2_decay_pdg))]
        
     if equal_size:
         df = samples_set_ratio(df, 1, f"is_{comparison[0]}")
@@ -156,7 +171,7 @@ def import_true_reco(
 def reco_and_target(df_in:pd.DataFrame, target_col:str = "is_zhh") -> pd.DataFrame:
     """Extracts a subset with reco kinematics and target for classification tasks
 
-    Args:
+    Args:import_true_reco
         df_in (pd.DataFrame): _description_
         target_col (str, optional): _description_. Defaults to "is_zhh".
 

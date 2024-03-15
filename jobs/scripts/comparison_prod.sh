@@ -6,6 +6,7 @@ filename=${1}
 bname=`basename -s .slcio $filename`
 
 rm -rf /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/${bname}
+mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/log
 mkdir -p /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/${bname}/root/prod
 cd /nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/${bname}
 

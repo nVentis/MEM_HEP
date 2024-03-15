@@ -34,6 +34,7 @@ using namespace lcme;
 enum ERRORS : unsigned int
 {
 	PRESELECTION_FAILED_BUT_REQUIRED = 1,
+	NTOX_FAILED_BUT_REQUIRED = 2,
 	UNHANDLED_PROCESS = 5,
 	TRUEJET_NULL = 7,
 	TRUEJET_NO_JETS = 8,
@@ -50,7 +51,6 @@ enum ERRORS : unsigned int
 
 	NEITHER_BBBB_NOR_CCCC = 1200,
 	NO_JET_MATCHING_SIG_COLLECTION = 1203,
-	NO_JET_MATCHING_BKG_COLLECTION = 1204
 };
 
 class CompareMEProcessor : public Processor, public TrueJet_Parser
@@ -89,8 +89,7 @@ protected:
 	std::string m_inputHdecayModeCollection{};
 	std::string m_inputHiggsPairCollection{};
 
-	std::string m_inputJetMatchingSigCollection{};
-	std::string m_inputJetMatchingBkgCollection{};
+	std::string m_inputJetMatchingCollection{};
 
 	std::string m_outputFile{};
 	std::string m_outputTree{};
@@ -106,6 +105,8 @@ protected:
 	int m_saveTransferEnergies{};
 	int m_saveTransferKinematics{};
 	int m_require_presel_pass{};
+	int m_require_ntox_pass{}; // 2
+	int m_require_ntox{}; // 5
 	float m_Hmass{};
 
 	TFile *m_pTFile{};

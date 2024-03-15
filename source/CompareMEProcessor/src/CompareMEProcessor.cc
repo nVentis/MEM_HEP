@@ -130,21 +130,26 @@ CompareMEProcessor::CompareMEProcessor() :
   registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
 				 "JetMatchingSigCollection",
 				 "Name of collection c parameters about jet matching for the signal hypothesis",
-				 m_inputJetMatchingSigCollection,
-				 std::string("JetMatchingSig")
-				 );
-
-  registerInputCollection(LCIO::RECONSTRUCTEDPARTICLE,
-				 "JetMatchingBkgCollection",
-				 "Name of collection holding parameters about reco/true jet matching for the background hypothesis",
-				 m_inputJetMatchingBkgCollection,
-				 std::string("JetMatchingBkg")
+				 m_inputJetMatchingCollection,
+				 std::string("JetMatchingSigDurham")
 				 );
 
   registerProcessorParameter("RequirePreselectionPass",
         "whether (1) or not to skip (1) events that did not pass preselection",
         m_require_presel_pass,
         int(0)
+        );
+
+  registerProcessorParameter("RequireNToXPass",
+        "how many ICNs are required to decay to ",
+        m_require_ntox_pass,
+        int(2)
+        );
+
+  registerProcessorParameter("RequireNToX",
+        "which PDG ICNs are required to decay to; defaults to 5/bottom",
+        m_require_ntox,
+        int(5)
         );
   /*
   registerProcessorParameter("RequireMCEnergyConservation",
@@ -486,7 +491,10 @@ void CompareMEProcessor::Clear()
   streamlog_out(DEBUG) << "clear called  " << std::endl;
 
   // Only delete LCRelationNavigator onstances in TrueJet_Parser if these objects have been instantiated before with "new" 
-  if (m_error_code != ERRORS::PRESELECTION_FAILED_BUT_REQUIRED && m_error_code != ERRORS::TRUEJET_NO_JETS && m_error_code != ERRORS::TRUEJET_NULL)
+  if (m_error_code != ERRORS::PRESELECTION_FAILED_BUT_REQUIRED &&
+      m_error_code != ERRORS::NTOX_FAILED_BUT_REQUIRED &&
+      m_error_code != ERRORS::TRUEJET_NO_JETS &&
+      m_error_code != ERRORS::TRUEJET_NULL)
     this->delall();
 
   // Flags to decide whether to save entries for ZHH or ZZH (otherwise they'll all be empty)
@@ -745,17 +753,6 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     MCParticle *mcp_zhh_h1_decay1{}, *mcp_zhh_h1_decay2{}, *mcp_zhh_h2_decay1{}, *mcp_zhh_h2_decay2{};
     MCParticle *mcp_zzh_z2_decay1{}, *mcp_zzh_z2_decay2{}, *mcp_zzh_h1_decay1{}, *mcp_zzh_h1_decay2{};
 
-    // Prepare TrueJet
-    TrueJet_Parser * tj = this;
-    tj->getall( pLCEvent );
-
-    if (tj->tjcol == NULL)
-      return save_evt_with_error_code(ERRORS::TRUEJET_NULL);
-
-    streamlog_out(DEBUG) << " Number of TrueJets is " << tj->njets() << std::endl;
-    if ( tj->njets() == 0 )
-      return save_evt_with_error_code(ERRORS::TRUEJET_NO_JETS);
-
     // Assign truth-PDGs
     if (m_is_zhh) {
       mcp_zhh_h1_decay1 = (MCParticle*) inputMCTrueCollection->getElementAt(12);
@@ -810,6 +807,29 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
     streamlog_out(DEBUG) << "  isZHH " << m_is_zhh << "|" << m_parton1_pdg << ":" << m_parton2_pdg << ":" << m_parton3_pdg << ":" << m_parton4_pdg  << std::endl;
 
     m_lepton_mode = (m_lepton_mode == -1) ? m_mode : m_lepton_mode;
+
+    // Check ntox pass
+    if (m_require_ntox_pass > 0) {
+      if (m_require_ntox_pass == 2) {
+        if (m_parton1_pdg != m_parton3_pdg || m_parton1_pdg != m_require_ntox) {
+          return save_evt_with_error_code(ERRORS::NTOX_FAILED_BUT_REQUIRED);
+        }
+      }
+    }
+
+    // Check TrueJet collection indeed exists (otherwise weird crashs)
+    const std::vector<std::string> * colnames = pLCEvent->getCollectionNames();
+
+    // Prepare TrueJet
+    TrueJet_Parser * tj = this;
+    tj->getall( pLCEvent );
+
+    if (tj->tjcol == NULL)
+      return save_evt_with_error_code(ERRORS::TRUEJET_NULL);
+
+    streamlog_out(DEBUG) << " Number of TrueJets is " << tj->njets() << std::endl;
+    if ( tj->njets() == 0 )
+      return save_evt_with_error_code(ERRORS::TRUEJET_NO_JETS);
 
     // Save parton-to-true-jet and lepton-to-true-jet-matching, especially for relation between partons and reco jets
     int parton1_jet_i = m_parton1_pdg ? tj->mcpjet(m_is_zhh ? mcp_zhh_h1_decay1 : mcp_zzh_z2_decay1) : -1;
@@ -934,27 +954,18 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       vector<int> perm_bkg; // ZZH
 
       vector<ReconstructedParticle*> sig_jets;
-      vector<ReconstructedParticle*> bkg_jets;
 
       // Check if JetMatching collection exists
       const vector<std::string> *reco_colls = pLCEvent->getCollectionNames();
-      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingSigCollection) == reco_colls->end())
+      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingCollection) == reco_colls->end())
         return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_SIG_COLLECTION);
 
-      if (std::find(reco_colls->begin(), reco_colls->end(), m_inputJetMatchingBkgCollection) == reco_colls->end())
-        return save_evt_with_error_code(ERRORS::NO_JET_MATCHING_BKG_COLLECTION);
-
       // Fetching collections
-      streamlog_out(DEBUG) << "  getting JetMatchingSig collection: " << m_inputJetMatchingSigCollection << std::endl ;
-      streamlog_out(DEBUG) << "  getting JetMatchingBkg collection: " << m_inputJetMatchingBkgCollection << std::endl ;
+      streamlog_out(DEBUG) << "  getting JetMatching collection: " << m_inputJetMatchingCollection << std::endl ;
 
-      const EVENT::LCParameters& jm_sig_params = pLCEvent->getCollection( m_inputJetMatchingSigCollection )->getParameters();
-      const EVENT::LCParameters& jm_bkg_params = pLCEvent->getCollection( m_inputJetMatchingBkgCollection )->getParameters();
+      const EVENT::LCParameters& jm_sig_params = pLCEvent->getCollection( m_inputJetMatchingCollection )->getParameters();
 
       if (jm_sig_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
-        return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
-
-      if (jm_bkg_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
         return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
 
       if (m_mode == 2) {
@@ -967,14 +978,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         perm_sig.push_back(jm_sig_params.getIntVal("b2tjet1id"));
         perm_sig.push_back(jm_sig_params.getIntVal("b2tjet2id"));
 
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet1id"));
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b1tjet2id"));
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet1id"));
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b2tjet2id"));
-
         for (int j = 0; j < 4; j++) {
           sig_jets.push_back((ReconstructedParticle*) tj->jet(perm_sig[j]));
-          bkg_jets.push_back((ReconstructedParticle*) tj->jet(perm_bkg[j]));
         }
 
       } else if (m_mode == 1) {
@@ -997,14 +1002,8 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         perm_sig.push_back(jm_sig_params.getIntVal("b2jet1id"));
         perm_sig.push_back(jm_sig_params.getIntVal("b2jet2id"));
 
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b1jet1id"));
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b1jet2id"));
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b2jet1id"));
-        perm_bkg.push_back(jm_bkg_params.getIntVal("b2jet2id"));
-
         for (int j = 0; j < 4; j++) {
           sig_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_sig[j]));
-          bkg_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_bkg[j]));
         }
 
         TString debug_msg;
@@ -1067,9 +1066,9 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       // Assuming ZZH
       // b1 = Z
       // b2 = H
-      zzh_z2f1_lortz = v4(bkg_jets[0]);
-      zzh_z2f2_lortz = v4(bkg_jets[1]);
-      zzh_h_lortz    = v4(bkg_jets[2]) + v4(bkg_jets[3]);
+      zzh_z2f1_lortz = v4(sig_jets[0]);
+      zzh_z2f2_lortz = v4(sig_jets[1]);
+      zzh_h_lortz    = v4(sig_jets[2]) + v4(sig_jets[3]);
 
       m_z2_decay_pdg  = both_to_b ? 5 : 4; // PDGs: bottom->5, charm->4
       m_h1_decay_pdg  = both_to_b ? 5 : 4;

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from math import sqrt,pi
+from math import sqrt,pi,floor,log10
 
 import re
 
@@ -18,10 +18,18 @@ constants = {
     "system_pz": 0
 }
 
-def parse_line_to_float(line:str) -> float:   
-    a = re.sub('\(\S+\)', '', line)
-    a = re.sub('\S+: ', '', a)
-    return float(a)
+def parse_line_to_float(line:str, with_uncert:bool=False) -> float:   
+    main = re.sub('\(\S+\)', '', line)    
+    main = float(re.sub('\S+: ', '', main))
+    
+    #print(line)
+    if with_uncert:
+        uncert = float(re.findall(r'\((\d+)\)', line)[0])
+        uncert = uncert*10**(floor(log10(main)) -2)
+        
+        return main, uncert
+    else:
+        return main
 
 def get_result(event_dir:str, event_idx:int):
     #print(f"{event_dir}/event_{str(event_idx)}/result.txt")
