@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from typing import Optional
 from normflows.distributions import BaseDistribution
 
 class HyperUniform(BaseDistribution):
@@ -7,7 +8,7 @@ class HyperUniform(BaseDistribution):
     Multivariate uniform distribution
     """
 
-    def __init__(self, low, high, dtype=torch.float):
+    def __init__(self, low, high, dtype=torch.float, device:Optional[str]=None):
         """Constructor
 
         Args:
@@ -17,6 +18,10 @@ class HyperUniform(BaseDistribution):
         
         low = torch.tensor(low).to(dtype)
         high = torch.tensor(high).to(dtype)
+        
+        if device is not None:
+            low = low.to(device)
+            high = high.to(device)
         
         assert(low.shape == high.shape)
         
@@ -43,6 +48,7 @@ class HyperUniform(BaseDistribution):
         return z, log_p
 
     def log_prob(self, z, context=None):
+        return torch.ones(z.shape[0], device=z.device)
         log_p = self.log_prob_val * torch.ones(z.shape[0], device=z.device)
         out_range = torch.logical_or(z < self.low, z > self.high)
         ind_inf = torch.any(torch.reshape(out_range, (z.shape[0], -1)), dim=-1)
