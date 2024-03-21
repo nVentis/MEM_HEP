@@ -54,14 +54,15 @@ def export_figures(filename, figs=None, dpi=200):
 def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
               fit_func:Optional[Callable]=None, fit_opts:Optional[Dict] = None,
               labels:Optional[List[str]]=None, colorpalette=None, bins=128,
-              same_bins:bool=True, xlim_binning:Optional[list]=None, xlim:Optional[list]=None, ylim=None,
+              same_bins:bool=True, xlim_binning:Optional[Union[list,tuple]]=None, xlim:Optional[Union[list,tuple]]=None, ylim=None,
               xlabel:Optional[str] = None, ylabel:Optional[str]=None,
               normalize=False, filter_nan:bool=False,
               title:Optional[str]=None, ax=None, units:str="",
               text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.22,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
               fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
-              ticksize_minor:int=10, ticksize_major=None):
+              ticksize_minor:int=10, ticksize_major=None,
+              figsize:tuple=(8,6), figdpi:int=100):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -97,10 +98,9 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     
     if ax == None:
         fig, ax = plt.subplots()
-        fig.set_dpi(100)
-        fig.set_figwidth(8)
-        
-        fig.set_figheight(6)
+        fig.set_dpi(figdpi)
+        fig.set_figwidth(figsize[0])
+        fig.set_figheight(figsize[1])
     else:
         fig = plt.gcf()
     
