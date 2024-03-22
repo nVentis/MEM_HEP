@@ -10,8 +10,9 @@ def cli_mem():
 @click.argument("event")
 @click.argument("dst")
 @click.option("--me_type", default="1", help="0 for MG5; 1 for Physsim", type=int)
+@click.option("--sampling", type=click.Choice(['vegas', 'nis'], case_sensitive=False))
 @click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/comparison_reco_zhh_zzh.npy", help="Numpy file with reco kinematics")
-def integrate(event:int, dst:str, me_type:int, src:str):
+def integrate(event:int, dst:str, me_type:int, sampling_strategy:str, src:str):
     """Does the MEM integration for the given event for signal and background hypothesis and saves the results in dst
 
     Args:
@@ -20,7 +21,7 @@ def integrate(event:int, dst:str, me_type:int, src:str):
         me_type (int): 
         src (str): _description_
     """
-    from analysis.mem import int_bf_v2
+    from analysis.mem import mem_integrate
     from analysis.import_data import import_true_reco
     import numpy as np
     import pandas as pd
@@ -48,7 +49,7 @@ def integrate(event:int, dst:str, me_type:int, src:str):
     #    neval = 10*neval
     #    nitn = 4
     
-    res_sig = int_bf_v2(reco, event_idx, mode=1, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
+    res_sig = mem_integrate(reco, event_idx, mode=1, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
     logger.info(f"Finished ZHH: [{str(res_sig)}]")
     
     
@@ -57,7 +58,7 @@ def integrate(event:int, dst:str, me_type:int, src:str):
     neval = 500000
     nitn = 10
     
-    res_bkg = int_bf_v2(reco, event_idx, mode=0, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
+    res_bkg = mem_integrate(reco, event_idx, mode=0, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
     
     report = f"""
 ZHH: {str(res_sig)}

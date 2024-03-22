@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from typing import Optional
+from typing import Optional,Union
 from normflows.distributions import BaseDistribution
 
 class HyperUniform(BaseDistribution):
@@ -8,7 +8,7 @@ class HyperUniform(BaseDistribution):
     Multivariate uniform distribution
     """
 
-    def __init__(self, low, high, dtype=torch.float, device:Optional[str]=None):
+    def __init__(self, low, high, dtype=torch.float, device:Optional[Union[str,torch.device]]=None):
         """Constructor
 
         Args:

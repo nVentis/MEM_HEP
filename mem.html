@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module mem</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">mem</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/mem.py">/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/mem.py</a></td></tr></table>
+    <p></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="numpy.html">numpy</a><br>
+<a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"><a href="pickle.html">pickle</a><br>
+<a href="re.html">re</a><br>
+</td><td class="multicolumn"><a href="vegas.html">vegas</a><br>
+</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor functions-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Functions</strong></td></tr>
+    
+<tr><td class="decor functions-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt><strong>Phb_prior</strong> <em>lambda</em> size</dt></dl>
+ <dl><dt><strong>Rhb_prior</strong> <em>lambda</em> size</dt><dd><span class="code">#&nbsp;When&nbsp;using&nbsp;abs(),&nbsp;strictly&nbsp;speaking,&nbsp;its&nbsp;not&nbsp;a&nbsp;normal&nbsp;dist.&nbsp;anymore</span></dd></dl>
+ <dl><dt><strong>Thb_prior</strong> <em>lambda</em> size</dt></dl>
+ <dl><dt><a name="-acos"><strong>acos</strong></a>(x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;arc&nbsp;cosine&nbsp;(measured&nbsp;in&nbsp;radians)&nbsp;of&nbsp;x.<br>
+&nbsp;<br>
+The&nbsp;result&nbsp;is&nbsp;between&nbsp;0&nbsp;and&nbsp;pi.</span></dd></dl>
+ <dl><dt><a name="-atan"><strong>atan</strong></a>(x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;arc&nbsp;tangent&nbsp;(measured&nbsp;in&nbsp;radians)&nbsp;of&nbsp;x.<br>
+&nbsp;<br>
+The&nbsp;result&nbsp;is&nbsp;between&nbsp;-pi/2&nbsp;and&nbsp;pi/2.</span></dd></dl>
+ <dl><dt><a name="-atan2"><strong>atan2</strong></a>(y, x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;arc&nbsp;tangent&nbsp;(measured&nbsp;in&nbsp;radians)&nbsp;of&nbsp;y/x.<br>
+&nbsp;<br>
+Unlike&nbsp;<a href="#-atan">atan</a>(y/x),&nbsp;the&nbsp;signs&nbsp;of&nbsp;both&nbsp;x&nbsp;and&nbsp;y&nbsp;are&nbsp;considered.</span></dd></dl>
+ <dl><dt><a name="-axis_vec"><strong>axis_vec</strong></a>(axis=0) -&gt; numpy.ndarray</dt></dl>
+ <dl><dt><a name="-cos"><strong>cos</strong></a>(x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;cosine&nbsp;of&nbsp;x&nbsp;(measured&nbsp;in&nbsp;radians).</span></dd></dl>
+ <dl><dt><a name="-floor"><strong>floor</strong></a>(x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;floor&nbsp;of&nbsp;x&nbsp;as&nbsp;an&nbsp;Integral.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;the&nbsp;largest&nbsp;integer&nbsp;&lt;=&nbsp;x.</span></dd></dl>
+ <dl><dt><a name="-get_all_momenta"><strong>get_all_momenta</strong></a>(data, event_idx: int, as_4_vectors=False, is_reco=False)</dt></dl>
+ <dl><dt><a name="-get_angles"><strong>get_angles</strong></a>(x, y, z)</dt></dl>
+ <dl><dt><a name="-get_corrections"><strong>get_corrections</strong></a>(data, event_idx: int, is_reco: int = 1)</dt></dl>
+ <dl><dt><a name="-get_evt_constants"><strong>get_evt_constants</strong></a>(data, event_idx, constants={'m_b': 4.8, 'm_H': 125.0, 'm_Z': 91.19, 'm_mu': 0.1056357046473643, 'sqrt_s': 500.0, 'sigma_zhh': 0.0111658, 'sigma_zzh': 0.0822856, 'system_px': 0, 'system_py': 0, 'system_pz': 0}, use_reco=True)</dt></dl>
+ <dl><dt><a name="-get_kinematics_tf"><strong>get_kinematics_tf</strong></a>(data, idx: int, mode: int = 1, order=['1', '2', '1', '2', '3', '4'])</dt><dd><span class="code">_summary_<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;(_type_):&nbsp;event&nbsp;data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;idx&nbsp;(int):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mode&nbsp;(int,&nbsp;optional):&nbsp;1&nbsp;=&nbsp;Reco&nbsp;(default);&nbsp;0&nbsp;=&nbsp;MC&nbsp;Truth<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_type_:&nbsp;_description_</span></dd></dl>
+ <dl><dt><a name="-get_lepton_momenta"><strong>get_lepton_momenta</strong></a>(data, event_idx: int, as_4_vectors=False, is_reco=False)</dt><dd><span class="code">_summary_<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;(_type_):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_idx&nbsp;(int):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;as_4_vectors&nbsp;(bool,&nbsp;optional):&nbsp;If&nbsp;True,&nbsp;returns&nbsp;4&nbsp;vectors&nbsp;of&nbsp;partons,&nbsp;otherwise&nbsp;only&nbsp;momenta&nbsp;of&nbsp;3&nbsp;vectors.&nbsp;Defaults&nbsp;to&nbsp;False.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_type_:&nbsp;_description_</span></dd></dl>
+ <dl><dt><a name="-get_parton_energies"><strong>get_parton_energies</strong></a>(data, event_idx)</dt></dl>
+ <dl><dt><a name="-get_parton_momenta"><strong>get_parton_momenta</strong></a>(data, event_idx: int, as_4_vectors=False, is_reco=False)</dt><dd><span class="code">_summary_<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;(_type_):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_idx&nbsp;(int):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;as_4_vectors&nbsp;(bool,&nbsp;optional):&nbsp;If&nbsp;True,&nbsp;returns&nbsp;4&nbsp;vectors&nbsp;of&nbsp;partons,&nbsp;otherwise&nbsp;only&nbsp;momenta&nbsp;of&nbsp;3&nbsp;vectors.&nbsp;Defaults&nbsp;to&nbsp;False.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_type_:&nbsp;_description_</span></dd></dl>
+ <dl><dt><a name="-get_true_int_args"><strong>get_true_int_args</strong></a>(data, event_idx: int, constants: dict, nwa=True)</dt></dl>
+ <dl><dt><a name="-int_test"><strong>int_test</strong></a>(data, event_idx: int, samples_per_dim: int = 4, evt_constants: dict = {'m_b': 4.8, 'm_H': 125.0, 'm_Z': 91.19, 'm_mu': 0.1056357046473643, 'sqrt_s': 500.0, 'sigma_zhh': 0.0111658, 'sigma_zzh': 0.0822856, 'system_px': 0, 'system_py': 0, 'system_pz': 0}, use_reco: bool = True, mode: int = 1, nwa: bool = True)</dt><dd><span class="code">Tests&nbsp;the&nbsp;implementation&nbsp;using&nbsp;a&nbsp;uniform&nbsp;grid&nbsp;along&nbsp;the&nbsp;8&nbsp;axes&nbsp;of&nbsp;integration&nbsp;variables&nbsp;with&nbsp;samples_per_dim&nbsp;grid&nbsp;points&nbsp;per&nbsp;axis<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;(_type_):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_idx&nbsp;(int):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;samples_per_dim&nbsp;(int,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;4.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;evt_constants&nbsp;(dict,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;constants.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;use_reco&nbsp;(bool,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;True.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mode&nbsp;(int,&nbsp;optional):&nbsp;1&nbsp;for&nbsp;signal&nbsp;(ZHH),&nbsp;0&nbsp;for&nbsp;background&nbsp;(ZZH)<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_type_:&nbsp;_description_</span></dd></dl>
+ <dl><dt><a name="-mem_integrate"><strong>mem_integrate</strong></a>(data, reco_kin: Optional[numpy.ndarray] = None, event_idx: Optional[int] = None, precond_size: int = 4000000, mode: int = 1, nitn: int = 8, neval: int = 16000000, nhcube_batch: int = 100000, nwa: bool = True, use_tf: bool = True, me_type: int = 1)</dt><dd><span class="code">MEM&nbsp;integration&nbsp;in&nbsp;C++&nbsp;using&nbsp;MG5&nbsp;matrix&nbsp;elements<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;(_type_):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_idx&nbsp;(int):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;precond_size&nbsp;(int,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;4000000.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mode&nbsp;(int,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;1.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nitn&nbsp;(int,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;8.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;neval&nbsp;(int,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;16000000.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nhcube_batch&nbsp;(int,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;100000.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nwa&nbsp;(bool):&nbsp;whether&nbsp;or&nbsp;not&nbsp;to&nbsp;use&nbsp;NWA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;use_tf&nbsp;(bool,&nbsp;optional):&nbsp;whether&nbsp;or&nbsp;not&nbsp;to&nbsp;use&nbsp;the&nbsp;detector&nbsp;transfer&nbsp;function;&nbsp;False&nbsp;for&nbsp;debugging<br>
+&nbsp;&nbsp;&nbsp;&nbsp;me_type&nbsp;(int,&nbsp;optional):&nbsp;0:&nbsp;MG5;&nbsp;1:&nbsp;Physsim.&nbsp;Defaults&nbsp;to&nbsp;1.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_type_:&nbsp;_description_</span></dd></dl>
+ <dl><dt><a name="-prepare_int"><strong>prepare_int</strong></a>(data, event_idx: int, constants: dict, is_reco=True)</dt><dd><span class="code">_summary_<br>
+&nbsp;<br>
+Args:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;(_type_):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;event_idx&nbsp;(int):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;constants&nbsp;(dict):&nbsp;_description_<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is_reco&nbsp;(bool,&nbsp;optional):&nbsp;_description_.&nbsp;Defaults&nbsp;to&nbsp;True.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_type_:&nbsp;_description_</span></dd></dl>
+ <dl><dt><a name="-sin"><strong>sin</strong></a>(x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;sine&nbsp;of&nbsp;x&nbsp;(measured&nbsp;in&nbsp;radians).</span></dd></dl>
+ <dl><dt><a name="-sqrt"><strong>sqrt</strong></a>(x, /)</dt><dd><span class="code">Return&nbsp;the&nbsp;square&nbsp;root&nbsp;of&nbsp;x.</span></dd></dl>
+ <dl><dt><a name="-unit_vec"><strong>unit_vec</strong></a>(theta, phi)</dt></dl>
+</td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>Dict</strong> = typing.Dict<br>
+<strong>Optional</strong> = typing.Optional<br>
+<strong>constants</strong> = {'m_H': 125.0, 'm_Z': 91.19, 'm_b': 4.8, 'm_mu': 0.1056357046473643, 'sigma_zhh': 0.0111658, 'sigma_zzh': 0.0822856, 'sqrt_s': 500.0, 'system_px': 0, 'system_py': 0, 'system_pz': 0}<br>
+<strong>lib_options</strong> = {'DEBUG_V': False, 'DEBUG_VV': False, 'DEBUG_VVV': False, 'NWA': True, 'SEPTF': True}<br>
+<strong>pi</strong> = 3.141592653589793<br>
+<strong>prior_args</strong> = ([77.17406236, 38.99397172], [1.57131127, 0.78054955])</td></tr></table>
+</body></html>

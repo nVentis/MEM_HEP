@@ -8,6 +8,7 @@ from analysis.calc import get_kinematics
 from typing import Dict
 from math import sqrt,sin,cos,atan2,acos,pi
 from itertools import product
+from typing import Optional
 from analysis.cffi.mg5.lib import lib_options
 
 from analysis.mem_ana import constants
@@ -214,7 +215,9 @@ def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
 
 # INTEGRATION USING CFFI C++ BINDINGS
 
-def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"], use_tf:bool=True, me_type:int=1):
+def mem_integrate(data, reco_kin:Optional[list[float]]=None, event_idx:Optional[int]=None, 
+              precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"],
+              use_tf:bool=True, me_type:int=1, int_type:int=0):
     """MEM integration in C++ using MG5 matrix elements
 
     Args:
@@ -228,14 +231,17 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         nwa (bool): whether or not to use NWA
         use_tf (bool, optional): whether or not to use the detector transfer function; False for debugging
         me_type (int, optional): 0: MG5; 1: Physsim. Defaults to 1.
+        int_type (int, optional): 0: for VEGAS; 1: NIS. Defaults to 0.
 
     Returns:
         _type_: _description_
     """
 
     from analysis.cffi.mg5.lib import mc_batch, mc_batch_sigma
+    if event_idx is None and reco_kin is None:
+        raise Exception('Either event_idx or kinematics must be given')
     
-    reco_kin = get_kinematics(data, False, event_idx)
+    reco_kin = reco_kin if reco_kin is not None else get_kinematics(data, False, event_idx)
     
     # phi: from -pi to pi
     # theta: from 0 to pi
@@ -252,29 +258,10 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         [0, 200],
         [0, pi]
     ]
-    
-    map = vegas.AdaptiveMap(bounds)
-    x_arr = [
-        Thb_prior(precond_size), # Thb1
-        
-        Phb_prior(precond_size), # Phb1
-        Rhb_prior(precond_size), # Rhb1
-        
-        Thb_prior(precond_size), # Thb1b
-        Phb_prior(precond_size), # Phb1b
-        
-        Rhb_prior(precond_size), # Rhb2
-        Thb_prior(precond_size), # Thb2
-    ]
-    
     if not nwa:
         bounds.insert(0, [124.9**2, 125.1**2])
-        x_arr.insert(0, np.ones(precond_size)*125**2) #mB1pow2
     
-    x = np.stack(x_arr).T
-    
-    @vegas.batchintegrand
-    def f(vars):
+    def integrand(vars):
         print(f"PS points given:found [{len(vars)}:", end="")
         res = []
         if use_tf:
@@ -286,24 +273,52 @@ def int_bf_v2(data, event_idx:int, precond_size:int=4000000, mode:int=1, nitn:in
         print(f"{found}] ({(100*found/len(vars)):6.2f} %)")
         return res
     
-    map.adapt_to_samples(x, f(x), nitn=5)
+    if int_type == 0:
+        map = vegas.AdaptiveMap(bounds)
+        x_arr = [
+            Thb_prior(precond_size), # Thb1
+            
+            Phb_prior(precond_size), # Phb1
+            Rhb_prior(precond_size), # Rhb1
+            
+            Thb_prior(precond_size), # Thb1b
+            Phb_prior(precond_size), # Phb1b
+            
+            Rhb_prior(precond_size), # Rhb2
+            Thb_prior(precond_size), # Thb2
+        ]
+        
+        if not nwa:
+            x_arr.insert(0, np.ones(precond_size)*125**2) #mB1pow2
     
-    integ = vegas.Integrator(map, alpha=0.1, nhcube_batch=nhcube_batch)
+        x = np.stack(x_arr).T
     
-    # adapt, discard results
-    integ(f, nitn=nitn, neval=int(neval/2))
+        @vegas.batchintegrand
+        def f(vars):
+            return integrand(vars)
     
-    print('Adaptation finished. Evaluating integral')
-    
-    result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}.pkl")
-    
-    print(result.summary())
-    print('result = %s    Q = %.2f' % (result, result.Q))
+        map.adapt_to_samples(x, f(x), nitn=5)
+        
+        integ = vegas.Integrator(map, alpha=0.1, nhcube_batch=nhcube_batch)
+        
+        # adapt, discard results
+        integ(f, nitn=nitn, neval=int(neval/2))
+        
+        print('Adaptation finished. Evaluating integral')
+        
+        result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}.pkl")
+        
+        print(result.summary())
+        print('result = %s    Q = %.2f' % (result, result.Q))
+    elif int_type == 1:
+        
+    else:
+        raise Exception(f'Integration type {int_type} not implemented')
     
     return result
 
 
-def int_test_bf_v2(data, event_idx:int, samples_per_dim:int=4, evt_constants:dict=constants, use_reco:bool=True, mode:int=1, nwa:bool=lib_options["NWA"]):   
+def int_test(data, event_idx:int, samples_per_dim:int=4, evt_constants:dict=constants, use_reco:bool=True, mode:int=1, nwa:bool=lib_options["NWA"]):   
     """Tests the implementation using a uniform grid along the 8 axes of integration variables with samples_per_dim grid points per axis
 
     Args:

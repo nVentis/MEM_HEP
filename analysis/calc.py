@@ -51,7 +51,7 @@ def calc_nll_llr_dtf_dbgauss(df, coeff = None, col_signal = "zhh_sigma", col_bg 
     likelihood_sig = integrate(integrand, [])
     likelihood_bkg = integrate(integrand, [])
     
-def get_kinematics(data, true:bool, i:int):
+def get_kinematics(data, true:bool, i:int) -> list[float]:
     lep_key = "true_lep" if true else "lep"
     parton_key = "parton" if true else "jet"
     
