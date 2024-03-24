@@ -24,7 +24,6 @@ class BinnedImportanceSamplingIntegrator(ImportanceSamplingIntegrator):
         self.bin_indices = tnp.arange(bins_per_dim)
         self.bin_bounds = tnp.array(tnp.array(bin_bounds))
         
-        
     # Generate
     def importance_per_dim(self, dim:int):
         bins = self.bin_bounds[dim][:].T

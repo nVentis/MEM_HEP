@@ -21,8 +21,11 @@ def camel(x:torch.Tensor, alpha:float=.2, centers=[1./3., 2./3.]):
         _type_: _description_
     """
     
-    prefac = 1./(alpha*np.sqrt(np.pi))**x.shape[1]
-    exp1 = -1.*torch.sum(((x-centers[0])**2)/alpha**2, dim=-1)
-    exp2 = -1.*torch.sum(((x-centers[1])**2)/alpha**2, dim=-1)
-
-    return .5*prefac*(exp1.exp()+exp2.exp())
+    prefac = .5/(alpha*np.sqrt(np.pi))**x.shape[1]
+    exp1 = -1.*(((x-centers[0])/alpha)**2).sum(axis=1)
+    exp2 = -1.*(((x-centers[1])/alpha)**2).sum(axis=1)
+    
+    if isinstance(x, torch.Tensor):
+        return prefac*(exp1.exp()+exp2.exp())
+    else:
+        return prefac*(np.exp(exp1)+np.exp(exp2))

@@ -686,9 +686,6 @@ import numpy as np
 from math import ceil, log2
 
 # From the i-flow paper
-def n_couplings(D:int):
-  return ceil(2*log2(D)) if D > 5 else D
-
 def binary_list(inval, length):
     """ Convert x into a binary list of length l. """
     return np.array([int(i) for i in np.binary_repr(inval, length)])

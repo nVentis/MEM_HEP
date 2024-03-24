@@ -6,7 +6,12 @@ import matplotlib.pylab as pylab
 import pandas as pd
 from matplotlib import rcParams as rcp
 from matplotlib.backends.backend_pdf import PdfPages
-from typing import Optional, Union, Callable, Dict, List, Literal
+from typing import Optional, Union, Callable, Dict, List
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
 from math import sqrt
 #from scipy.stats import chisquare
 

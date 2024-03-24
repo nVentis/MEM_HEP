@@ -7,8 +7,8 @@ class ScaleShift(Flow):
                  limit_lower:Optional[torch.Tensor]=None, limit_upper:Optional[torch.Tensor]=None):
         super().__init__()
         
-        self.scale = scale
-        self.shift = shift
+        self.scale = torch.nn.Parameter(scale, requires_grad=False)
+        self.shift = torch.nn.Parameter(shift, requires_grad=False)
     
     def forward(self, z, context=None):
         z = z * self.scale + self.shift
