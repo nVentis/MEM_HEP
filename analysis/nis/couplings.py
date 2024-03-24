@@ -13,12 +13,10 @@ class CouplingBijector(Flow):
         self.features = len(mask)
         features_vector = torch.arange(self.features)
         
-        self.register_buffer(
-            "identity_features", tensor=features_vector.masked_select(mask <= 0)
-        )
-        self.register_buffer(
-            "transform_features", tensor=features_vector.masked_select(mask > 0)
-        )
+        self.register_buffer('identity_features', tensor=features_vector.masked_select(mask <= 0))
+        self.register_buffer('transform_features', tensor=features_vector.masked_select(mask > 0))
+        
+        #print('Init with identity_features', self.identity_features, 'and transform_features', self.transform_features)
         
         assert (self.num_identity_features + self.num_transform_features == self.features)
 
@@ -52,6 +50,8 @@ class CouplingBijector(Flow):
         outputs = torch.cat([identity_split, transform_split], dim=1)
         indices = torch.cat([self.identity_features, self.transform_features], dim=-1)
         outputs = outputs[:, torch.argsort(indices)]
+        
+        #print("indices", torch.argsort(indices))
         
         return outputs, logabsdet
 
@@ -112,9 +112,11 @@ class CouplingBijector(Flow):
 
 class PiecewiseBijector(CouplingBijector):
     def _coupling_transform_forward(self, inputs:torch.Tensor, transform_params:torch.Tensor):
+        #print(f'PiecewiseBijector[{self.i_test}] : FOR')
         return self._coupling_transform(inputs, transform_params, inverse=False)
 
     def _coupling_transform_inverse(self, inputs:torch.Tensor, transform_params:torch.Tensor):
+        #print(f'PiecewiseBijector[{self.i_test}] : INV')
         return self._coupling_transform(inputs, transform_params, inverse=True)
 
     def _coupling_transform(self, inputs:torch.Tensor, transform_params:torch.Tensor, inverse=False):
@@ -122,8 +124,12 @@ class PiecewiseBijector(CouplingBijector):
         transform_params = transform_params.view(b, d, -1)
 
         outputs, logabsdet = self._piecewise_cdf(inputs, transform_params, inverse)
+        
+        logabsdet = torch.sum(logabsdet, dim=-1)
+        
+        #print(f'{"INV" if inverse else "FOR"} [{self.i_test}]', logabsdet)
 
-        return outputs, torch.sum(logabsdet, dim=-1)
+        return outputs, logabsdet
 
     def _piecewise_cdf(self, inputs, transform_params, inverse=False)->tuple[torch.Tensor,torch.Tensor]:
         raise NotImplementedError()
@@ -133,6 +139,7 @@ class PiecewiseRationalQuadraticSpline(PiecewiseBijector):
                  min_bin_width=DEFAULT_MIN_BIN_WIDTH,
                  min_bin_height=DEFAULT_MIN_BIN_HEIGHT,
                  min_derivative=DEFAULT_MIN_DERIVATIVE,
+                 i_test=0,
                  **kwargs):
         self.num_bins = num_bins
         self.min_bin_width = min_bin_width
@@ -141,19 +148,19 @@ class PiecewiseRationalQuadraticSpline(PiecewiseBijector):
 
         super(PiecewiseRationalQuadraticSpline, self).__init__(
             mask, transform_net_create_fn, **kwargs)
+        
+        self.i_test = i_test
 
     def _transform_dim_multiplier(self):
         return self.num_bins * 3 + 1
 
     def _piecewise_cdf(self, inputs, transform_params, inverse=False):
-        #ransform_params = torch.zeros(transform_params.shape, device=transform_params.device)
         unnormalized_widths = transform_params[..., :self.num_bins]
         unnormalized_heights = transform_params[...,
                                                 self.num_bins:2*self.num_bins]
         unnormalized_derivatives = transform_params[..., 2*self.num_bins:]
-        #unnormalized_derivatives = np.log(np.exp(1 - self.min_derivative) - 1)*torch.ones(unnormalized_derivatives.shape, device=unnormalized_derivatives.device)
 
-        return rational_quadratic_spline(
+        res = rational_quadratic_spline(
             inputs=inputs,
             unnormalized_widths=unnormalized_widths,
             unnormalized_heights=unnormalized_heights,
@@ -163,3 +170,7 @@ class PiecewiseRationalQuadraticSpline(PiecewiseBijector):
             min_bin_height=self.min_bin_height,
             min_derivative=self.min_derivative
         )
+        
+        #print(f'COUPL {self.i_test}')
+        
+        return res

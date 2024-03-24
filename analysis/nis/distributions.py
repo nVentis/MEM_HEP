@@ -40,6 +40,7 @@ class Uniform(BaseDistribution):
         else:           
             z = (torch.linspace(self.low, self.high, steps=(num_samples+1), dtype=self.low.dtype, device=self.low.device)[:-1])
             z = z[:, None].expand(num_samples, self.d)
+            print(f'Sampled between [{z[0][0]}] [{z[-1][0]}]')
             
         log_p = self.log_prob_val * torch.ones(num_samples, device=self.device)
         return z, log_p
@@ -48,7 +49,7 @@ class Uniform(BaseDistribution):
         log_p = self.log_prob_val * torch.ones(z.shape[0], device=z.device)
         out_range = torch.logical_or(z < self.low, z > self.high)
         ind_inf = torch.any(torch.reshape(out_range, (z.shape[0], -1)), dim=-1)
-        if len(ind_inf):
+        if ind_inf.sum():
             print('ind_inf', ind_inf)
         log_p[ind_inf] = -np.inf
         return log_p
