@@ -1,7 +1,7 @@
-from typing import Callable, Iterable
+from typing import Callable, Iterable, List
 
 class IntegratorInterface:
-    def __init__(self, integrand:Callable, boundaries:list[list[float]], **kwargs) -> None:
+    def __init__(self, integrand:Callable, boundaries:List[List[float]], **kwargs) -> None:
         self.integrand = integrand
         self.dims = len(boundaries)
         self.boundaries = boundaries

@@ -13,7 +13,9 @@ processes = {
 
 # default: python me.cffi-builder.py -nwa -septf
 # Call python me.cffi-builder.py, optionally with -vvv, -vv or -v
-if __name__ == '__main__':    
+if __name__ == '__main__':
+    pyEnv = 'py311'
+    
     options = {
         # narrow width approximation
         'NWA': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-nwa") for argv in sys.argv]) else False),
@@ -23,7 +25,7 @@ if __name__ == '__main__':
         
         'DEBUG_VVV': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-vvv") for argv in sys.argv]) else False),
         'DEBUG_VV': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-vv") for argv in sys.argv]) else False),
-        'DEBUG_V': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-v") for argv in sys.argv]) else False)
+        'DEBUG_V': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-v") for argv in sys.argv]) else False),
     }
     
     extra_compile_args = [
@@ -89,7 +91,7 @@ if __name__ == '__main__':
             f'./mg5/SubProcesses/{process_path}',
             
             '/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim/include', # Physsim
-            '/nfs/dust/ilc/user/bliewert/.mambaforge/envs/py311/include'
+            f'/nfs/dust/ilc/user/bliewert/miniconda3/envs/{pyEnv}/include'
         ]
 
         # specify code needed to build the Python module
@@ -108,7 +110,7 @@ if __name__ == '__main__':
             library_dirs=[
                 './mg5/lib',
                 
-                '/nfs/dust/ilc/user/bliewert/.mambaforge/envs/py311/lib',
+                f'/nfs/dust/ilc/user/bliewert/miniconda3/envs/{pyEnv}/lib',
                 '/afs/desy.de/user/b/bliewert/public/ILCSoft/Physsim/lib64'
             ],
             include_dirs=include_dirs,

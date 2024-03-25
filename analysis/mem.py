@@ -8,7 +8,7 @@ from analysis.calc import get_kinematics
 from typing import Dict
 from math import sqrt,sin,cos,atan2,acos,pi
 from itertools import product
-from typing import Optional
+from typing import Optional, List
 from analysis.cffi.mg5.lib import lib_options
 
 from analysis.mem_ana import constants
@@ -215,10 +215,11 @@ def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
 
 # INTEGRATION USING CFFI C++ BINDINGS
 
-def mem_integrate(data, reco_kin:Optional[list[float]]=None, event_idx:Optional[int]=None, 
+def mem_integrate(reco_kin:Optional[List[float]]=None,
+                  data:Optional[pd.DataFrame]=None, event_idx:Optional[int]=None, 
               precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"],
               use_tf:bool=True, me_type:int=1, int_type:int=0, permutation=[1,2,3,4]):
-    """MEM integration in C++ using MG5 matrix elements
+    """MEM integration in C++ using Physsim or MG5 matrix elements
 
     Args:
         data (_type_): _description_
@@ -311,7 +312,7 @@ def mem_integrate(data, reco_kin:Optional[list[float]]=None, event_idx:Optional[
         print(result.summary())
         print('result = %s    Q = %.2f' % (result, result.Q))
     elif int_type == 1:
-        
+        result = None
     else:
         raise Exception(f'Integration type {int_type} not implemented')
     

@@ -49,7 +49,8 @@ def get_result(event_dir:str, event_idx:int):
     
     return result
 
-def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"], normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9) -> pd.DataFrame:
+def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
+                 normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9) -> pd.DataFrame:
     """_summary_
 
     Args:

@@ -136,7 +136,9 @@ def import_true_reco(
         df = np.load(src_file, allow_pickle=True)
     elif use_cache == False or not osp.isfile(cache_path):
         df = root_to_numpy(osp.join(src_dir, results[0], "root/prod", file_name), tree_name, null_on_not_found=True)
-        for i in (pbar := tqdm(range(1, len(results)))):
+        
+        pbar = tqdm(range(1, len(results)))
+        for i in (pbar):
             pbar.set_description(f'Current length: {len(df)}')
             part_path = osp.join(src_dir, results[i], "root/prod", file_name)
             if osp.isfile(part_path):

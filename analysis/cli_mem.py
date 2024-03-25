@@ -23,6 +23,7 @@ def integrate(event:int, dst:str, me_type:int, sampling_strategy:str, src:str):
     """
     from analysis.mem import mem_integrate
     from analysis.import_data import import_true_reco
+    from analysis.calc import get_kinematics
     import numpy as np
     import pandas as pd
     
@@ -35,6 +36,7 @@ def integrate(event:int, dst:str, me_type:int, sampling_strategy:str, src:str):
         raise Exception(f"Event [{event}] could not be found")
     
     event_idx = event_idx[0]
+    reco_kin = get_kinematics(reco, False, i=event_idx, perm=permutation)
     
     f = open(dst, "a")
     f.write(f"Event [{event}] IDX [{event_idx}] \n")

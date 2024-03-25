@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd   
+from typing import List
 
 def calc_nll_llr_dtf_delta(df:pd.DataFrame, col_signal:str = "zhh_sigma", col_bkg:str = "zzh_sigma") -> pd.DataFrame:
     """Calculates signal/background negative log-likelihood and the log-likelihood-ratio assuming delta distributions as transfer functions
@@ -51,7 +52,7 @@ def calc_nll_llr_dtf_dbgauss(df, coeff = None, col_signal = "zhh_sigma", col_bg 
     likelihood_sig = integrate(integrand, [])
     likelihood_bkg = integrate(integrand, [])
     
-def get_kinematics(data, true:bool, i:int, perm=[1,2,3,4]) -> list[float]:
+def get_kinematics(data, true:bool, i:int, perm=[1,2,3,4]) -> List[float]:
     lep_key = "true_lep" if true else "lep"
     parton_key = "parton" if true else "jet"
     

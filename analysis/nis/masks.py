@@ -683,7 +683,6 @@ Public License instead of this License.  But first, please read
 
 
 import numpy as np
-from math import ceil, log2
 
 # From the i-flow paper
 def binary_list(inval, length):
