@@ -51,7 +51,7 @@ def calc_nll_llr_dtf_dbgauss(df, coeff = None, col_signal = "zhh_sigma", col_bg 
     likelihood_sig = integrate(integrand, [])
     likelihood_bkg = integrate(integrand, [])
     
-def get_kinematics(data, true:bool, i:int) -> list[float]:
+def get_kinematics(data, true:bool, i:int, perm=[1,2,3,4]) -> list[float]:
     lep_key = "true_lep" if true else "lep"
     parton_key = "parton" if true else "jet"
     
@@ -66,25 +66,25 @@ def get_kinematics(data, true:bool, i:int) -> list[float]:
         data[f"{lep_key}2_py"][i],
         data[f"{lep_key}2_pz"][i],
         
-        data[f"{parton_key}1_e"][i],
-        data[f"{parton_key}1_px"][i],
-        data[f"{parton_key}1_py"][i],
-        data[f"{parton_key}1_pz"][i],
+        data[f"{parton_key}{perm[0]}_e"][i],
+        data[f"{parton_key}{perm[1]}_px"][i],
+        data[f"{parton_key}{perm[2]}_py"][i],
+        data[f"{parton_key}{perm[3]}_pz"][i],
         
-        data[f"{parton_key}2_e"][i],
-        data[f"{parton_key}2_px"][i],
-        data[f"{parton_key}2_py"][i],
-        data[f"{parton_key}2_pz"][i],
+        data[f"{parton_key}{perm[0]}_e"][i],
+        data[f"{parton_key}{perm[1]}_px"][i],
+        data[f"{parton_key}{perm[2]}_py"][i],
+        data[f"{parton_key}{perm[3]}_pz"][i],
         
-        data[f"{parton_key}3_e"][i],
-        data[f"{parton_key}3_px"][i],
-        data[f"{parton_key}3_py"][i],
-        data[f"{parton_key}3_pz"][i],
+        data[f"{parton_key}{perm[0]}_e"][i],
+        data[f"{parton_key}{perm[1]}_px"][i],
+        data[f"{parton_key}{perm[2]}_py"][i],
+        data[f"{parton_key}{perm[3]}_pz"][i],
         
-        data[f"{parton_key}4_e"][i],
-        data[f"{parton_key}4_px"][i],
-        data[f"{parton_key}4_py"][i],
-        data[f"{parton_key}4_pz"][i],
+        data[f"{parton_key}{perm[0]}_e"][i],
+        data[f"{parton_key}{perm[1]}_px"][i],
+        data[f"{parton_key}{perm[2]}_py"][i],
+        data[f"{parton_key}{perm[3]}_pz"][i],
     ]
     
 def filter_for_tf(data, parton=True, jet=True, true_lep=True, lepton=True, parton1_pdg = 5, parton2_pdg = 5):
