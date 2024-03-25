@@ -14,6 +14,7 @@ from analysis.nis.transforms import ScaleShift
 from analysis.nis.divergences import kl_div, exp_div
 from analysis.nis.couplings import PiecewiseRationalQuadraticSpline
 from analysis.nis.splines import rational_quadratic_spline, DEFAULT_MIN_BIN_HEIGHT, DEFAULT_MIN_BIN_WIDTH, DEFAULT_MIN_DERIVATIVE
+from analysis.mc.tools import variance_weighted_result
 
 from typing import Optional, Union, Literal, Callable, Union
 from tqdm.auto import tqdm
@@ -303,14 +304,3 @@ class NeuralImportanceSamplingIntegrator(ImportanceSamplingIntegrator):
             return torch.cuda.mem_get_info()[0]/1024/1024 #[1] total memory
 
 
-# From i-flow
-def variance_weighted_result(means:np.ndarray, stddevs:np.ndarray):
-    """ Computes weighted mean and stddev of given means and
-        stddevs arrays, using Inverse-variance weighting
-    """
-    assert np.size(means) == np.size(stddevs)
-    assert means.shape == stddevs.shape
-    variance = 1./np.sum(1./stddevs**2, axis=-1)
-    mean = np.sum(means/(stddevs**2), axis=-1)
-    mean *= variance
-    return mean, np.sqrt(variance)
