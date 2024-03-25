@@ -67,7 +67,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
               fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
               ticksize_minor:int=10, ticksize_major=None,
-              figsize:tuple=(8,6), figdpi:int=100):
+              figsize:tuple=(8,6), figdpi:int=100, scientific_stats:bool=False):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -211,8 +211,11 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         mean = np.average(stat_values)
         std_dev = np.std(stat_values)
         
+        mean_stat = f'{mean:.2E}' if scientific_stats else f'{mean:.2f}'
+        std_dev_stat = f'{std_dev:.2E}' if scientific_stats else f'{std_dev:.2f}'
+        
         fig.text(text_start_x, text_start_y - text_spacing_y*((2*i+1) if callable(fit_func) else i),
-                f"{h_name}\nEntries: {len(values)}\nMean: {mean:.2f}\nStd Dev: {std_dev:.2f}",
+                f"{h_name}\nEntries: {len(values)}\nMean: {mean_stat}\nStd Dev: {std_dev_stat}",
                 #color=colorpalette[i],
                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
                 fontsize='medium' if legendsize is None else legendsize,
