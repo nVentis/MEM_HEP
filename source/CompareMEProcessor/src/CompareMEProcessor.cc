@@ -143,7 +143,7 @@ CompareMEProcessor::CompareMEProcessor() :
   registerProcessorParameter("RequireNToXPass",
         "how many ICNs are required to decay to ",
         m_require_ntox_pass,
-        int(2)
+        int(0)
         );
 
   registerProcessorParameter("RequireNToX",
@@ -165,7 +165,7 @@ CompareMEProcessor::CompareMEProcessor() :
         );
 
   registerProcessorParameter("Mode",
-        "calculate MEs based on 0: True/MCParticleSkimmed; (following both using JetClusteringSig/Bkg parameters) 1: RefinedJets; 2: TrueJet (with matching of Misclustering processor in ZHH github); 3: TrueJet (with matching according to TrueJet)",
+        "calculate MEs based on 0: True/MCParticleSkimmed; (following both using JetClusteringSig matching) 1: RefinedJets; 2: TrueJet (with matching of Misclustering processor in ZHH github); 3: TrueJet (with matching according to TrueJet)",
         m_mode,
         int(0)
         );
@@ -1058,7 +1058,7 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
       }
       
       // For now only analyze HH/ZH->bbbarbbbar
-      if (!(both_to_b || both_to_c))
+      if (!(both_to_b )) // || both_to_c))
         return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
     
       //streamlog_out(DEBUG) << "processEvent : using signal jet pairing " << perm_sig[0] << perm_sig[1] << perm_sig[2] << perm_sig[3] << std::endl;

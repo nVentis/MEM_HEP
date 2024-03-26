@@ -39,7 +39,7 @@ def get_kinematics_from_int(int_variables, constants:dict, return_p_in=False, re
     
     mH2 = Thb1 = Phb1 = Rhb1 = Thb1b = Phb1b = Rhb2 = Thb2 = 0
     if nwa:
-        mH2 = 125.**2
+        0, = 125.**2
         Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables
     else:
         mH2, Thb1, Phb1, Rhb1, Thb1b, Phb1b, Rhb2, Thb2 = int_variables

@@ -6,7 +6,7 @@
     <constant name="DetectorModel" value="ILD_l5_o1_v02" />
     <constant name="CompactFile" value="${lcgeo_DIR}/ILD/compact/${DetectorModel}/${DetectorModel}.xml" />
     <constant name="OutputDirectory" value="dev" />
-    <constant name="OutputBaseName" value="e2e2hh" />
+    <constant name="OutputBaseName" value="e2e2zh" />
     <constant name="OutputRootFile" value="${OutputBaseName}.root" />
     <constant name="NumberOfHiggs" value="2" />
     <constant name="NumberOfJets" value="4" />
@@ -40,21 +40,24 @@
       <Xprocessor name="MyLeptonErrorAnalysis" condition="" />
       <Xprocessor name="MyJetErrorAnalysis_woNu" condition="" />
       <Xprocessor name="MyJetErrorAnalysis" condition="" />
-    </if>
-    <if condition="MyHdecayMode.GoodEvent">
       <processor name="mytruejet"/>
       <processor name="MyMisclusteringSigDurham"/>
+      <processor name="MyMisclusteringBkg"/>
+    </if>
+    <!-- <if condition="MyHdecayMode.GoodEvent">
+      <processor name="MyMisclusteringSigDurham"/>
       <processor name="MyMisclusteringSigGNN"/>
-      <!-- <processor name="MyMisclusteringBkg"/> -->
-   </if>
+      <processor name="MyMisclusteringBkg"/>
+   </if> -->
     <processor name="MyLCIOOutputProcessor"/>
   </execute>
 
   <global>
     <!--parameter name="LCIOInputFiles">/pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_ZZ_hadronic/ILD_l5_o1_v02/v02-02/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500062.P4f_zz_h.eL.pR.n000.d_dstm_15122_0.slcio</parameter-->
     <parameter name="LCIOInputFiles">
-      <!-- /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_0.slcio
-      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_1.slcio -->
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15806_0.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_0.slcio
+      /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15806_1.slcio
       /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_0.slcio
       /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_1.slcio
       /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015807/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403001.Pe2e2hh.eL.pR.n000.d_dstm_15807_2.slcio
@@ -83,7 +86,7 @@
     <!-- limit the number of processed records (run+evt): -->
     <!--parameter name="MaxRecordNumber" value="0" /to process all events--> 
     <!--parameter name="MaxRecordNumber" value="1000" /to process 1000 events--> 
-    <parameter name="MaxRecordNumber" value="100"/>
+    <parameter name="MaxRecordNumber" value="1000"/>
     <parameter name="SkipNEvents" value="0" />
     <parameter name="SupressCheck" value="false" />
     <parameter name="GearXMLFile">/cvmfs/ilc.desy.de/sw/ILDConfig/v02-02-02/StandardConfig/production/Gear/gear_ILD_l5_v02.xml</parameter>

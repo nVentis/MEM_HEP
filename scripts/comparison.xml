@@ -23,8 +23,8 @@
     <constant name="Verbosity" value="DEBUG"/>
     <constant name="RunMode" value="dev"/>
     <constant name="InputFiles">
-      /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zhh/slcio/e2e2hh.slcio
-      /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/zzh/slcio/e2e2zh.slcio
+      /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/dev/slcio/e2e2hh.slcio
+      /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/dev/slcio/e2e2zh.slcio
     </constant>
     <constant name="RunAll">true</constant>
   </constants>
@@ -71,6 +71,7 @@
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
+   <parameter name="RequireNToXPass" type="int" value="0"/>
    <parameter name="Mode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
@@ -89,6 +90,7 @@
    <parameter name="JetMatchingyCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSigDurham </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
+   <parameter name="RequireNToXPass" type="int" value="0"/>
    <parameter name="Mode" type="int" value="1"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
@@ -108,6 +110,7 @@
    <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
+   <parameter name="RequireNToXPass" type="int" value="0"/>
    <parameter name="Mode" type="int" value="2"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
    <parameter name="HiggsMass" type="double" value="125.0"/>
@@ -127,6 +130,7 @@
    <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
+   <parameter name="RequireNToXPass" type="int" value="0"/>
    <parameter name="Mode" type="int" value="3"/>
    <parameter name="TrueJetMode" type="int" value="0"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>
@@ -147,6 +151,7 @@
    <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
+   <parameter name="RequireNToXPass" type="int" value="0"/>
    <parameter name="Mode" type="int" value="3"/>
    <parameter name="TrueJetMode" type="int" value="1"/>
    <parameter name="Z1DecayPDG" type="int" value="13"/>

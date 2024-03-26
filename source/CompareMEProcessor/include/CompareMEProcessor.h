@@ -105,7 +105,7 @@ protected:
 	int m_saveTransferEnergies{};
 	int m_saveTransferKinematics{};
 	int m_require_presel_pass{};
-	int m_require_ntox_pass{}; // 2
+	int m_require_ntox_pass{}; // 0
 	int m_require_ntox{}; // 5
 	float m_Hmass{};
 

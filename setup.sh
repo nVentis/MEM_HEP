@@ -30,8 +30,8 @@ export MARLIN_DLL=$ILD_ANASOFT_ZHH/source/Misclustering/lib/libMisclustering.so:
 # Modules of MEM_HEP
 #export MARLIN_DLL=$MARLIN_DLL:$MEM_HEP/source/ZHHPostRecoMEProcessor/lib/libZHHPostRecoMEProcessor.so
 export MARLIN_DLL=$MEM_HEP/source/CompareMEProcessor/lib/libCompareMEProcessor.so:$MARLIN_DLL
-export MARLIN_DLL=$MEM_HEP/source/SaveFinalKinematics/lib/libSaveFinalKinematics.so:$MARLIN_DLL
-export MARLIN_DLL=$MEM_HEP/source/JetConvProcessor/build/lib/libJetConvProcessor.so:$MARLIN_DLL
+#export MARLIN_DLL=$MEM_HEP/source/SaveFinalKinematics/lib/libSaveFinalKinematics.so:$MARLIN_DLL
+#export MARLIN_DLL=$MEM_HEP/source/JetConvProcessor/build/lib/libJetConvProcessor.so:$MARLIN_DLL
 #export MARLIN_DLL=$MARLIN_DLL:$MEM_HEP/source/Use_TrueJet/build/lib/libUse_TrueJet.so
 
 # Other modules

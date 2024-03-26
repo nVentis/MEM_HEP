@@ -8,10 +8,13 @@ from os import path as osp
 from os import makedirs, remove
 import numpy as np
 
-def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss", true_label = "parton", reco_label = "jet", quantity="E", xlabel=r"$ΔE$ [GeV]", xlim=(-100,100), ylim=(0, 0.18), n_bins=128, binrange=None, fit_init=None, suptitle=None, fit_skip=False, yscale="linear", single_title=None):
+def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss", true_label = "parton", reco_label = "jet",
+                  quantity="E", xlabel=r"$ΔE$ [GeV]", xlim=(-100,100), ylim=(0, 0.18), n_bins=128, binrange=None, fit_init=None,
+                  suptitle=None, fit_skip=False, yscale="linear", single_title=None, plot_args={}):
     from scipy.optimize import curve_fit,minimize
     
     popts = []
+    figures = []
     
     fig, axes = plt.subplots(1, len(data), figsize=(6*len(data),8))
     fig.suptitle((name + r": $" + quantity + r"_{" + reco_label + r"}-" + quantity +  r"_{" + true_label + r"}$") if suptitle is None else suptitle, fontsize=18)
@@ -59,7 +62,7 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss",
             }
             
             fit_func = fit_funcs[fit]
-            fit_init_c = (fit_inits[fit] if fit_init is None else fit_init[i-1])
+            fit_init_c = fit_init if isinstance(fit_init, list) else (fit_inits[fit] if fit_init is None else fit_init[i-1])
             
             y, bins = np.histogram(df, bins=n_bins, density=True, range=binrange)
             x = (bins[:-1] + bins[1:]) / 2
@@ -73,8 +76,11 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss",
         
         popts.append(popt)
         
-        plot_hist(df, f"{reco_label.title()} {i}", fit_func=lambda x: fit_func(x, *popt), fit_opts=popt, bins=n_bins, xlim=xlim, ylim=ylim, ax=axes[i-1], xlabel=xlabel, title=(f"{reco_label.title()} {i}") if single_title is None else single_title, normalize=True, yscale=yscale, text_spacing_y=0.15)
-        #sns.histplot(data["jet{}_e".format(i)] - data["parton{}_e".format(i)], bins=128, ax=axes[i-1]).set_title("Jet {}".format(i))
+        fig = plot_hist(df, f"{reco_label.title()} {i}", fit_func=lambda x: fit_func(x, *popt), fit_opts=popt,
+                  bins=n_bins, xlim=xlim, ylim=ylim, ax=axes[i-1], xlabel=xlabel,
+                  title=(None if single_title is None else single_title), normalize=True, yscale=yscale, text_spacing_y=0.15, **plot_args)
+        fig.tight_layout()
+        figures.append(fig)
         
     if len(popts) == 4:
         print("SEPTF: A(1+2) : B(3+4)")
@@ -90,6 +96,8 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss",
 
         print(A.mean(axis=0))
         print(B.mean(axis=0))
+    
+    return figures, popts
 
 def plot_transfer_from_df(data, name = "", plot_save_dir:Optional[str] = None, fit = "gauss", yscale="linear"):
     df = []

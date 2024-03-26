@@ -2,7 +2,10 @@
 
 #export PATH="/nfs/dust/ilc/user/bliewert/.mambaforge/envs/py311/bin/"
 source /afs/desy.de/user/b/bliewert/.zshrc
-conda activate /nfs/dust/ilc/user/bliewert/.mambaforge/envs/py311
+conda activate /nfs/dust/ilc/user/bliewert/miniconda3/envs/py37
+
+mkdir -p /nfs/dust/ilc/user/bliewert/mem_integrate/results
+mkdir -p /nfs/dust/ilc/user/bliewert/mem_integrate/log
 
 cd /nfs/dust/ilc/user/bliewert/mem_integrate/results
 

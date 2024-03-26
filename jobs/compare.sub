@@ -3,7 +3,8 @@ arguments = $(file) $(ProcId)
 should_transfer_files = True
 transfer_executable = True
 
-Requirements = (OpSysAndVer == "CentOS7")
+max_retries = 3
+Requirements = (OpSysAndVer == "CentOS7") && (Machine =!= LastRemoteHost)
 request_cpus = 1
 request_memory = 2000 Mb
 

@@ -11,8 +11,9 @@ def cli_mem():
 @click.argument("dst")
 @click.option("--me_type", default="1", help="0 for MG5; 1 for Physsim", type=int)
 @click.option("--sampling", type=click.Choice(['vegas', 'nis'], case_sensitive=False))
+@click.option("--save_npy", default="1", type=int)
 @click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/comparison_reco_zhh_zzh.npy", help="Numpy file with reco kinematics")
-def integrate(event:int, dst:str, me_type:int, sampling_strategy:str, src:str):
+def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:str):
     """Does the MEM integration for the given event for signal and background hypothesis and saves the results in dst
 
     Args:
@@ -24,24 +25,31 @@ def integrate(event:int, dst:str, me_type:int, sampling_strategy:str, src:str):
     from analysis.mem import mem_integrate
     from analysis.import_data import import_true_reco
     from analysis.calc import get_kinematics
+    import itertools
     import numpy as np
     import pandas as pd
-    
-    event = int(event)
+    from os.path import dirname, join
     
     reco = import_true_reco(src_file=src, normalize=False)
+    event = int(event)
+    save_npy = bool(save_npy)
+    event_idx = reco.iloc[event]['event']
     
-    event_idx = np.where(reco["event"] == event)[0]
-    if len(event_idx) == 0:
-        raise Exception(f"Event [{event}] could not be found")
-    
-    event_idx = event_idx[0]
-    reco_kin = get_kinematics(reco, False, i=event_idx, perm=permutation)
+    perms_zhh = [
+        [1,2,3,4],
+        [1,3,2,4],
+        [1,4,2,3],
+    ]
+    perms_zzh = list(itertools.permutations([1, 2, 3, 4]))
     
     f = open(dst, "a")
     f.write(f"Event [{event}] IDX [{event_idx}] \n")
     f.close()
     
+    precond_size = 2000000
+    
+    ########################################################
+    # ZHH
     logger.info("Starting ZHH")
     
     neval = 10000000
@@ -51,26 +59,70 @@ def integrate(event:int, dst:str, me_type:int, sampling_strategy:str, src:str):
     #    neval = 10*neval
     #    nitn = 4
     
-    res_sig = mem_integrate(reco, event_idx, mode=1, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
-    logger.info(f"Finished ZHH: [{str(res_sig)}]")
+    results_sig = { 'means': [], 'sigmas': [] }
+    results_bkg = { 'means': [], 'sigmas': [] }
     
+    for i in range(len(perms_zhh)):
+        perm = perms_zhh[i]
+        logger.info(f'Perm [{i}]: [{" ".join(str(x) for x in perm)}]')
+        
+        reco_kin = get_kinematics(reco, False, i=event, perm=perm)
+        result = mem_integrate(reco_kin=reco_kin, mode=1, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type)
+        
+        results_sig['means'].append(result.mean)
+        results_sig['means'].append(result.sdev)
+        logger.info(f'Result: {str(result)}')
+        
+        if save_npy:
+            np.save(join(dirname('./result.txt'), f'sig_p{str(i)}.npy'), np.array(result.itn_results), allow_pickle=True)
     
+    tot_sig = np.mean(results_sig['means'])
+    
+    logger.info(f"Finished ZHH: [{str(tot_sig)}]")
+    
+    ########################################################
+    # ZZH
     logger.info("Starting ZZH")
     
     neval = 500000
     nitn = 10
     
-    res_bkg = mem_integrate(reco, event_idx, mode=0, neval=neval, precond_size=2000000, nitn=nitn, me_type=me_type)
+    for i in range(len(perms_zzh)):
+        perm = perms_zzh[i]
+        logger.info(f'Perm [{i}]: [{" ".join(str(x) for x in perm)}]')
+        
+        reco_kin = get_kinematics(reco, False, i=event, perm=perm)
+        result = mem_integrate(reco_kin=reco_kin, mode=0, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type)
+        
+        results_bkg['means'].append(result.mean)
+        results_bkg['means'].append(result.sdev)
+        logger.info(f'Result: {str(result)}')
+        
+        if save_npy:
+            np.save(join(dirname('./result.txt'), f'bkg_p{str(i)}.npy'), np.array(result.itn_results), allow_pickle=True)
+    
+    tot_bkg = np.mean(results_bkg['means'])
+    logger.info(f"Finished ZZH: [{str(tot_bkg)}]")
+    
+    ########################################################
+    # Save results
     
     report = f"""
-ZHH: {str(res_sig)}
-ZZH: {str(res_bkg)}             """
+ZHH: {str(tot_sig)}
+ZZH: {str(tot_bkg)}
+"""
 
     f = open(dst, "a")
     f.write(report)
     f.close()
     
-    logger.info(f"Finished ZZH: [{str(res_bkg)}]")
+    if save_npy:
+        np.save(join(dirname('./result.txt'), 'summary.npy'), {
+            'sig': results_sig,
+            'bkg': results_bkg
+        },allow_pickle=True)
+    
+    logger.info(f'Done')
 
 
 if __name__ == '__main__':

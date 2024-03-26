@@ -92,7 +92,9 @@ def import_true_reco(
     b1_decay_pdg:Optional[int]=5,
     b2_decay_pdg:Optional[int]=5,
     use_cache:bool=True,
-    recalc:bool=False) -> pd.DataFrame:
+    recalc:bool=False,
+    event_selection:bool=True
+    ) -> pd.DataFrame:
     
     """Combines the raw ROOT data to a pandas dataframe. Optionally, ensures normalization according to cross-section
     Uses caching, i.e. saves the full sample as numpy array/pandas DataFrame when it's accessed the first time 
@@ -136,6 +138,9 @@ def import_true_reco(
         df = np.load(src_file, allow_pickle=True)
     elif use_cache == False or not osp.isfile(cache_path):
         df = root_to_numpy(osp.join(src_dir, results[0], "root/prod", file_name), tree_name, null_on_not_found=True)
+        if event_selection:
+            mask = df['error_code'] == 0
+            df = df[mask]
         
         pbar = tqdm(range(1, len(results)))
         for i in (pbar):
@@ -144,6 +149,10 @@ def import_true_reco(
             if osp.isfile(part_path):
                 res = root_to_numpy(part_path, tree_name, null_on_not_found=True)
                 if res is not None:
+                    if event_selection:
+                        mask = res['error_code'] == 0
+                        res = res[mask]
+                        
                     df = np.concatenate((df, res))
         
         if use_cache:
