@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from math import sqrt,pi,floor,log10
-
+from typing import List
 import re
 
 constants = {
@@ -31,26 +31,28 @@ def parse_line_to_float(line:str, with_uncert:bool=False) -> float:
     else:
         return main
 
-def get_result(event_dir:str, event_idx:int):
+def get_result(event_dir:str, event_idx:int)->List[float]:
     #print(f"{event_dir}/event_{str(event_idx)}/result.txt")
     f = open(f"{event_dir}/event_{str(event_idx)}/result.txt", "r")
     lines = f.readlines()
-    line_res_start = 0
+    line_zhh = 0
     for line in lines:
-        if line.startswith("Event"):
-            line_res_start += 1
+        if line.startswith("ZHH:"):
+            break
+        
+        line_zhh += 1
     
     result = [0., 0.]
-    if len(lines) > line_res_start and lines[line_res_start].startswith("ZHH"):
-        result[0] = parse_line_to_float(lines[line_res_start])
+    if line_zhh > 0:
+        result[0] = float(lines[line_zhh].split(": ")[1])
         
-    if len(lines) > line_res_start+1 and lines[line_res_start+1].startswith("ZZH"):
-        result[1] = parse_line_to_float(lines[line_res_start+1])
+    if line_zhh > 0:
+        result[1] = float(lines[line_zhh+1].split(": ")[1])
     
     return result
 
 def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
-                 normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9) -> pd.DataFrame:
+                 normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9, add_generator:bool=False) -> pd.DataFrame:
     """_summary_
 
     Args:
@@ -70,41 +72,47 @@ def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants
     
     events = np.array([int(name.replace("event_", "")) for name in listdir(event_dir)])
     results = np.array([get_result(event_dir, event_idx) for event_idx in events]).T
+    
+    assert(len(events) == results.shape[1])
+    
     results = {
-        "event": events,
+        "event_idx": events,
+        "event": reco.iloc[events]['event'],
         "zhh_mem": results[0]*prefac/(zhh_cross_sec*pb_to_1oGeV2),
         "zzh_mem": results[1]*prefac/(zzh_cross_sec*pb_to_1oGeV2),
-        "zhh_true": reco["zhh_mg5"][events],
-        "zzh_true": reco["zzh_mg5"][events],
         "is_zhh": reco["is_zhh"][events],
         "is_zzh": reco["is_zzh"][events]
     }
+    if add_generator:
+        results["zhh_true"] = reco["zhh_mg5"][events]
+        results["zzh_true"] = reco["zzh_mg5"][events]
 
     results = pd.DataFrame(results)
-    results = results[((results["zhh_mem"] > 0) & (results["zzh_mem"] > 0))]
-    
-    if normalize_samples:
-        sig_to_bkg = zhh_cross_sec/zzh_cross_sec # ca. 0.1
-        bkg_to_sig = sig_to_bkg**-1 # ca. 10
+    if False:
+        results = results[((results["zhh_mem"] > 0) & (results["zzh_mem"] > 0))]
         
-        sig_size = np.count_nonzero(results["is_zhh"])
-        bkg_size = np.count_nonzero(results["is_zzh"])
-        
-        if abs(sig_size - sig_to_bkg*bkg_size) > 2:
-            if bkg_size < bkg_to_sig*sig_size:
-                sig_size_max = round(sig_to_bkg*bkg_size)
-                
-                # Use complete background sample, lower signal fraction
-                idx = np.where(results["is_zhh"] == 1)[0]
-                mask = np.random.choice(range(0, len(idx)), size=(sig_size-sig_size_max), replace=False)
+        if normalize_samples:
+            sig_to_bkg = zhh_cross_sec/zzh_cross_sec # ca. 0.1
+            bkg_to_sig = sig_to_bkg**-1 # ca. 10
+            
+            sig_size = np.count_nonzero(results["is_zhh"])
+            bkg_size = np.count_nonzero(results["is_zzh"])
+            
+            if abs(sig_size - sig_to_bkg*bkg_size) > 2:
+                if bkg_size < bkg_to_sig*sig_size:
+                    sig_size_max = round(sig_to_bkg*bkg_size)
+                    
+                    # Use complete background sample, lower signal fraction
+                    idx = np.where(results["is_zhh"] == 1)[0]
+                    mask = np.random.choice(range(0, len(idx)), size=(sig_size-sig_size_max), replace=False)
 
-                results.drop(results.index[idx[mask]], inplace=True)
-            else:
-                # Use complete signal sample, lower background fraction
-                raise Exception("Not implemented")
-                
+                    results.drop(results.index[idx[mask]], inplace=True)
+                else:
+                    # Use complete signal sample, lower background fraction
+                    raise Exception("Not implemented")
+                    
 
-    results["r"] = results["zhh_mem"]/(results["zhh_mem"] + results["zzh_mem"])
+        results["r"] = results["zhh_mem"]/(results["zhh_mem"] + results["zzh_mem"])
     
     return results
 

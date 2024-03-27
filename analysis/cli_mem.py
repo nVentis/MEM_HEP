@@ -15,6 +15,7 @@ def cli_mem():
 @click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/comparison_reco_zhh_zzh.npy", help="Numpy file with reco kinematics")
 def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:str):
     """Does the MEM integration for the given event for signal and background hypothesis and saves the results in dst
+    Careful naming: event (input) is the index in the data frame, event_idx is the generator event id
 
     Args:
         event (int): _description_
@@ -30,10 +31,13 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
     import pandas as pd
     from os.path import dirname, join
     
-    reco = import_true_reco(src_file=src, normalize=False)
     event = int(event)
+    me_type = int(me_type)
     save_npy = bool(save_npy)
-    event_idx = reco.iloc[event]['event']
+    int_type = 0 if sampling == "vegas" else 1
+    
+    reco = import_true_reco(src_file=src, normalize=False)
+    event_idx = int(reco.iloc[event]['event'])
     
     perms_zhh = [
         [1,2,3,4],
@@ -41,6 +45,32 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
         [1,4,2,3],
     ]
     perms_zzh = list(itertools.permutations([1, 2, 3, 4]))
+    
+    ########################################################
+    # Helper function and logging
+    def extract_values(result, int_type:int):
+        """Extract the values to save for the different integration methods
+
+        Args:
+            result (_type_): _description_
+            int_type (int): _description_
+
+        Raises:
+            Exception: _description_
+
+        Returns:
+            _type_: _description_
+        """
+        if int_type == 0:
+            mean, stddev = result.mean, result.sdev
+            
+            return ((mean, stddev), result.itn_results)
+        elif int_type == 1:
+            mean, stddev = result['result'], result['tot_uncert']
+            
+            return ((mean, stddev), result)
+        else:
+            raise Exception('Invalid state')
     
     f = open(dst, "a")
     f.write(f"Event [{event}] IDX [{event_idx}] \n")
@@ -67,14 +97,16 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
         logger.info(f'Perm [{i}]: [{" ".join(str(x) for x in perm)}]')
         
         reco_kin = get_kinematics(reco, False, i=event, perm=perm)
-        result = mem_integrate(reco_kin=reco_kin, mode=1, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type)
         
-        results_sig['means'].append(result.mean)
-        results_sig['means'].append(result.sdev)
+        result = mem_integrate(reco_kin=reco_kin, mode=1, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type, int_type=int_type, file_suffix=str(i))
+        (mean, sdev) , save_result = extract_values(result, int_type=int_type)
+        
+        results_sig['means'].append(mean)
+        results_sig['sigmas'].append(sdev)
         logger.info(f'Result: {str(result)}')
         
         if save_npy:
-            np.save(join(dirname('./result.txt'), f'sig_p{str(i)}.npy'), np.array(result.itn_results), allow_pickle=True)
+            np.save(join(dirname('./result.txt'), f'sig_p{str(i)}.npy'), np.array(save_result), allow_pickle=True)
     
     tot_sig = np.mean(results_sig['means'])
     
@@ -92,14 +124,16 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
         logger.info(f'Perm [{i}]: [{" ".join(str(x) for x in perm)}]')
         
         reco_kin = get_kinematics(reco, False, i=event, perm=perm)
-        result = mem_integrate(reco_kin=reco_kin, mode=0, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type)
         
-        results_bkg['means'].append(result.mean)
-        results_bkg['means'].append(result.sdev)
+        result = mem_integrate(reco_kin=reco_kin, mode=0, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type, int_type=int_type, file_suffix=str(i))
+        (mean, sdev) , save_result = extract_values(result, int_type=int_type)
+        
+        results_bkg['means'].append(mean)
+        results_bkg['sigmas'].append(sdev)
         logger.info(f'Result: {str(result)}')
         
         if save_npy:
-            np.save(join(dirname('./result.txt'), f'bkg_p{str(i)}.npy'), np.array(result.itn_results), allow_pickle=True)
+            np.save(join(dirname('./result.txt'), f'bkg_p{str(i)}.npy'), np.array(save_result), allow_pickle=True)
     
     tot_bkg = np.mean(results_bkg['means'])
     logger.info(f"Finished ZZH: [{str(tot_bkg)}]")
@@ -107,20 +141,20 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
     ########################################################
     # Save results
     
+    if save_npy:
+        np.save(join(dirname('./result.txt'), 'summary.npy'), {
+            'sig': results_sig,
+            'bkg': results_bkg
+        }, allow_pickle=True)
+    
     report = f"""
-ZHH: {str(tot_sig)}
-ZZH: {str(tot_bkg)}
+ZHH: [{str(tot_sig)}]
+ZZH: [{str(tot_bkg)}]
 """
 
     f = open(dst, "a")
     f.write(report)
     f.close()
-    
-    if save_npy:
-        np.save(join(dirname('./result.txt'), 'summary.npy'), {
-            'sig': results_sig,
-            'bkg': results_bkg
-        },allow_pickle=True)
     
     logger.info(f'Done')
 

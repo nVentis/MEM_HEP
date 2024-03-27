@@ -80,6 +80,28 @@ def normalize_samples(
         
     return out
 
+def correct_lepton_pairing(df):
+    from analysis.mem import get_angles_np, unit_vec_np
+
+    perms = [ [1,1,2,2], [1,2,1,2] ] # True,Reco
+
+    perm_res = []
+    for perm in perms:
+        cres = np.zeros(len(df), dtype=float)
+        for part in range(int(len(perm)/2)):
+            true_vecs = unit_vec_np(*get_angles_np(df[f'true_lep{perm[0]}_px'], df[f'true_lep{perm[0]}_py'], df[f'true_lep{perm[0]}_pz'])).T
+            reco_vecs = unit_vec_np(*get_angles_np(df[f'lep{perm[1]}_px'], df[f'lep{perm[1]}_py'], df[f'lep{perm[1]}_pz'])).T
+            cres += np.sum(true_vecs * reco_vecs, axis=1)
+        
+        perm_res.append(cres)
+        
+    swap = np.where(perm_res[0] < perm_res[1])[0]
+    print(f'Correcting {len(swap)} entries ({(100*len(swap)/len(df)):.2f}%)')
+    for prop in ['e', 'px', 'py', 'pz']:
+        df.loc[df.index[swap], [f"lep1_{prop}", f"lep2_{prop}"]] = df.loc[df.index[swap], [f"lep2_{prop}", f"lep1_{prop}"]].to_numpy()
+        
+    return df
+
 def import_true_reco(
     comparison=["zhh", "zzh"],
     src_file:Optional[str] = None,
@@ -93,7 +115,8 @@ def import_true_reco(
     b2_decay_pdg:Optional[int]=5,
     use_cache:bool=True,
     recalc:bool=False,
-    event_selection:bool=True
+    event_selection:bool=True,
+    autocorrect_lepton_pairing:bool=True
     ) -> pd.DataFrame:
     
     """Combines the raw ROOT data to a pandas dataframe. Optionally, ensures normalization according to cross-section
@@ -163,6 +186,8 @@ def import_true_reco(
         df = np.load(cache_path, allow_pickle=True)
         
     df = pd.DataFrame(df)
+    if autocorrect_lepton_pairing:
+        df = correct_lepton_pairing(df)
     
     if b1_decay_pdg is not None:
         df = df[(df["true_h1_decay_pdg"] == b1_decay_pdg)]

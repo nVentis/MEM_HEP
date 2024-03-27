@@ -24,6 +24,19 @@ Rhb_prior = lambda size: np.abs(np.random.normal(loc=prior_args[0][0], scale=pri
 Thb_prior = lambda size: np.random.normal(loc=prior_args[1][0], scale=prior_args[1][1], size=size)
 Phb_prior = lambda size: np.random.uniform(-pi, pi, size)
 
+def get_angles_np(x:np.ndarray, y:np.ndarray, z:np.ndarray):
+    theta = np.arccos(z/np.sqrt(x**2 + y**2 + z**2))
+    phi = np.arctan2(y, x)
+    
+    return (theta, phi)
+
+def unit_vec_np(theta:np.ndarray, phi:np.ndarray):
+    return np.array([
+        np.sin(theta)*np.cos(phi),
+        np.sin(theta)*np.sin(phi),
+        np.cos(theta)
+    ])
+
 def get_angles(x, y, z):
     theta = acos(z/sqrt(x**2 + y**2 + z**2))
     phi = atan2(y, x)
@@ -218,7 +231,7 @@ def get_evt_constants(data, event_idx, constants=constants, use_reco=True):
 def mem_integrate(reco_kin:Optional[List[float]]=None,
                   data:Optional[pd.DataFrame]=None, event_idx:Optional[int]=None, 
               precond_size:int=4000000, mode:int=1, nitn:int=8, neval:int=16000000, nhcube_batch:int=100000, nwa:bool=lib_options["NWA"],
-              use_tf:bool=True, me_type:int=1, int_type:int=0, permutation=[1,2,3,4]):
+              use_tf:bool=True, me_type:int=1, int_type:int=0, permutation=[1,2,3,4], file_suffix:str=''):
     """MEM integration in C++ using Physsim or MG5 matrix elements
 
     Args:
@@ -307,12 +320,33 @@ def mem_integrate(reco_kin:Optional[List[float]]=None,
         
         print('Adaptation finished. Evaluating integral')
         
-        result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}.pkl")
+        result = integ(f, nitn=nitn, neval=int(neval/2), save=f"{'zhh' if mode else 'zzh'}_{event_idx}_{file_suffix}.pkl")
         
         print(result.summary())
         print('result = %s    Q = %.2f' % (result, result.Q))
     elif int_type == 1:
-        result = None
+        from tensorflow.keras.backend import clear_session
+        from analysis.nis.IFlowIntegrator import IFlowIntegrator, build_mem_integrand
+        
+        iflow_args = {}
+        boundaries = np.array(bounds)
+
+        integrand = build_mem_integrand(reco_kin)
+        integrator = IFlowIntegrator(integrand=integrand, boundaries=boundaries, **iflow_args)
+
+        means, stddevs, losses = integrator.means, integrator.stddevs, integrator.losses
+        tot_res, tot_uncert = integrator.integrate()
+        print(f'result = {tot_res:.2E} +/- {tot_uncert:.2E}')
+        
+        clear_session()
+        
+        result = {
+            'means': means,
+            'stddevs': stddevs,
+            'losses': losses,
+            'result': tot_res,
+            'tot_uncert': tot_uncert
+        }
     else:
         raise Exception(f'Integration type {int_type} not implemented')
     

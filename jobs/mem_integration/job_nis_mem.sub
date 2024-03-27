@@ -1,4 +1,4 @@
-executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/job_mem.sh
+executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/job_nis_mem.sh
 arguments = $(event) $(ProcId)
 should_transfer_files = True
 transfer_executable = True

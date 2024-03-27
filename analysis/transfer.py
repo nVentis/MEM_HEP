@@ -3,14 +3,14 @@ from analysis.fit_funcs import fit_funcs
 from analysis.import_data import import_data, filter_data
 from analysis.plot_matplotlib import plot_hist
 from math import sqrt, pow, pi, exp
-from typing import Optional
+from typing import Optional, List
 from os import path as osp
 from os import makedirs, remove
 import numpy as np
 
-def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss", true_label = "parton", reco_label = "jet",
+def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit:Optional[str]="gauss", true_label = "parton", reco_label = "jet",
                   quantity="E", xlabel=r"$ΔE$ [GeV]", xlim=(-100,100), ylim=(0, 0.18), n_bins=128, binrange=None, fit_init=None,
-                  suptitle=None, fit_skip=False, yscale="linear", single_title=None, plot_args={}):
+                  suptitle=None, fit_skip=False, yscale="linear", single_title=None, plot_args={}, titles:Optional[List[str]]=None):
     from scipy.optimize import curve_fit,minimize
     
     popts = []
@@ -44,15 +44,13 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss",
         
         popt = None
         pcov = None
+        df = df[0] - df[1]
         
         if fit == "dbgauss":
             raise Exception("Not implemented")
             # Unbinned likelihood fit
             #minimize(dbgauss_likelihood())
-        else:
-            # Binned fit
-            df = df[0] - df[1]
-            
+        elif isinstance(fit, str):            
             fit_inits = {
                 "laplace": [np.average(df), 5],
                 "lorentz": [np.average(df), 2],
@@ -75,10 +73,10 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit = "gauss",
             print(popt)
         
         popts.append(popt)
-        
-        fig = plot_hist(df, f"{reco_label.title()} {i}", fit_func=lambda x: fit_func(x, *popt), fit_opts=popt,
-                  bins=n_bins, xlim=xlim, ylim=ylim, ax=axes[i-1], xlabel=xlabel,
-                  title=(None if single_title is None else single_title), normalize=True, yscale=yscale, text_spacing_y=0.15, **plot_args)
+        args = { 'x': (f"{reco_label.title()} {i}") if titles is None else titles[i-1], 'fit_func': (lambda x: fit_func(x, *popt)) if fit is not None else None,
+                'fit_opts': popt, 'bins': n_bins, 'xlim': xlim, 'ylim': ylim, 'ax': axes[i-1],
+                 'xlabel': xlabel, 'title':(None if single_title is None else single_title), 'normalize':True, 'yscale': yscale, 'text_spacing_y': 0.15 }
+        fig = plot_hist(df, **{ **args, **plot_args})
         fig.tight_layout()
         figures.append(fig)
         

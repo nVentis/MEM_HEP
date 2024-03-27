@@ -141,7 +141,6 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     
     xlim_view = xlim if xlim is not None else None
     
-    
     if isinstance(x, str):
         x = [x]
 
@@ -162,7 +161,6 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
             xlim_binning = [np.min(np.min(data)), np.max(np.max(data))]
 
     for i in range(len(columns)):
-        print("asd")
         column = columns[i]
         values = data if column is None else data[column]
         
@@ -182,7 +180,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
             stat_values = stat_values[(stat_values >= xlim_binning[0]) & (stat_values <= xlim_binning[1])]
         
         # Additional behavior if only one column is to be plotted
-        h_name  = (x if isinstance(x, str) else "Data") if column is None else (column if labels is None else labels[i])
+        h_name  = (x_in if isinstance(x_in, str) else "Data") if column is None else (column if labels is None else labels[i])
         
         bin_counts, _, patches = (plt if ax == None else ax).hist(stat_values, bin_edges, 
                                                                     alpha=0.7,
@@ -201,17 +199,17 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
                 
                 if normalize:
                     fit_data = fit_data/fit_data.sum()
-                    
+                
                 MSE = ((bin_counts - fit_data)**2).sum()*1/(len(bin_counts))
                 RMSE = sqrt(MSE)
                 
-                ss_res = ((bin_counts - fit_data) ** 2).sum()
+                ss_reg = ((bin_counts - fit_data) ** 2).sum()
                 ss_tot = (((bin_counts - np.mean(bin_counts)) ** 2)).sum()
-                COE = 1 - (ss_res / ss_tot) # R^2
+                Rsquared = 1 - (ss_reg / ss_tot) # R^2
                 
                 text_rms = format_st(MSE) if not scientific_stats else f'{MSE:.2E}'
                 text_rmse = format_st(RMSE) if not scientific_stats else f'{RMSE:.2E}'
-                text_rsq = f'{COE:.2f}' if not scientific_stats else f'{COE:.2E}'
+                text_rsq = f'{Rsquared:.2f}' if not scientific_stats else f'{Rsquared:.2E}'
                 
                 (plt if ax == None else ax).plot(bin_centers, fit_data, color="red", alpha=0.7)
                 fig.text(text_start_x, text_start_y - text_spacing_y*2*i,
