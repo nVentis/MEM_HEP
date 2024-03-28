@@ -21,10 +21,10 @@ if __name__ == '__main__':
         'NWA': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-nwa") for argv in sys.argv]) else False),
         
          # separate transfer functions for sig/bkg
-        'SEPTF': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-septf") for argv in sys.argv]) else False),
+        'SEPTF': True,#(False if (len(sys.argv) == 1 or not (True in [argv.lower().endswith("-septf") for argv in sys.argv])) else True),
         
         # use double Gaussian DTF for partons (otherwise Lorentzians as for the angles)
-        'PARTDBGAUSS': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-partdbgauss") for argv in sys.argv]) else False),
+        'PARTDBGAUSS': True,# (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-partdbgauss") for argv in sys.argv]) else False),
         
         'DEBUG_VVV': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-vvv") for argv in sys.argv]) else False),
         'DEBUG_VV': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-vv") for argv in sys.argv]) else False),

@@ -190,9 +190,9 @@ class calc_me {
 
     int err_map[11]{ -1, -2, -3, -4, -5, -6, -7, -8, -9, -10 , -11 };
 
-    double calc_tf_E(int jet_idx, double a, double b);
-    double calc_tf_Th(int jet_idx, double a, double b);
-    double calc_tf_Ph(int jet_idx, double a, double b);
+    double calc_tf_E(double a, double b);
+    double calc_tf_Th(double a, double b);
+    double calc_tf_Ph(double a, double b);
 
     void kin_debug_print();
 
