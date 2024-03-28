@@ -672,6 +672,15 @@ void CompareMEProcessor::transfer_four_momenta()
 
   // -----------   RECO    ---------
 
+  TString debug_msg;
+  debug_msg.Form("Parton:Jet Energies | %.2f:%.2f | %.2f:%.2f | %.2f:%.2f | %.2f:%.2f",
+    parton1.E(), jet1.E(),
+    parton2.E(), jet2.E(),
+    parton3.E(), jet3.E(),
+    parton4.E(), jet4.E());
+    
+  streamlog_out(DEBUG) << debug_msg << std::endl;
+
   m_jet1_e = jet1.E();
   m_jet2_e = jet2.E();
   m_jet3_e = jet3.E();
@@ -943,16 +952,52 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
         m_zhh_is_set = 1;
       }
 
-    } else if (m_mode == 1 || m_mode == 2) {
-      // Jet reconstruction mode
-      // 1 for RefinedJets
-      // 2 for TrueJet
+    } else if (m_mode == 2) {
+      // TrueJet mode, using matching by Misclustering processor  
 
+      //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
 
+      if (!(parton1_jet_i > -1 && parton2_jet_i > -1 && parton3_jet_i > -1 && parton4_jet_i > -1 && lepton1_jet_i > -1 && lepton2_jet_i > -1))
+      return save_evt_with_error_code(ERRORS::SOME_TRUEJET_NOT_FOUND);
+
+      // CHEATED: Extract information about decays
+      if (m_parton1_pdg != m_parton3_pdg)
+        return save_evt_with_error_code(ERRORS::NEITHER_BBBB_NOR_CCCC);
+
+      m_h1_decay_pdg = m_true_h1_decay_pdg;
+      m_h2_decay_pdg = m_true_h2_decay_pdg;
+      m_z2_decay_pdg = m_true_z2_decay_pdg;
+
+      jet1 = v4(this->p4seen(parton1_jet_i));
+      jet2 = v4(this->p4seen(parton2_jet_i));
+      jet3 = v4(this->p4seen(parton3_jet_i));
+      jet4 = v4(this->p4seen(parton4_jet_i));
+      
+      // Assuming ZZH
+      // b1 = Z
+      // b2 = H
+      zzh_z2f1_lortz = jet1;
+      zzh_z2f2_lortz = jet2;
+      zzh_h_lortz    = jet3 + jet4;
+
+      m_z2_decay_pdg  = m_parton1_pdg; // PDGs: bottom->5, charm->4
+      m_h1_decay_pdg  = m_parton3_pdg;
+      m_z2_decay_mode = getZDecayModeFromPDG(m_z2_decay_pdg);
+
+      m_zhh_is_set = 1;
+
+      // Assuming ZHH
+      // b1,b2 = H
+      zhh_h1_lortz = jet1 + jet2;
+      zhh_h2_lortz = jet3 + jet4;
+
+      m_h2_decay_pdg = m_z2_decay_pdg;
+      
+      m_zzh_is_set = 1;
+
+    } else if (m_mode == 1) {
       // For MEM calculation: Use di-jet matching from Misclustering processor
       vector<int> perm_sig; // ZHH
-      vector<int> perm_bkg; // ZZH
-
       vector<ReconstructedParticle*> sig_jets;
 
       // Check if JetMatching collection exists
@@ -967,68 +1012,35 @@ void CompareMEProcessor::processEvent( EVENT::LCEvent *pLCEvent )
 
       if (jm_sig_params.getNInt(std::string((m_mode == 1) ? "b2jet2id" : "b2tjet2id")) != 1)
         return save_evt_with_error_code((m_mode == 1) ? ERRORS::INCOMPLETE_RECOJET_COLLECTION : ERRORS::INCOMPLETE_TRUEJET_COLLECTION);
+        
+      // From TrueJet to reco matching, and MCParticle to TrueJet matching, we can identify the Reco->MCParticle matching
+      // Get TrueJet to reco matching
+      std::map<int, int> tj2reco = {
+        {jm_sig_params.getIntVal("b1tjet1id"), jm_sig_params.getIntVal("b1jet1id")},
+        {jm_sig_params.getIntVal("b1tjet2id"), jm_sig_params.getIntVal("b1jet2id")},
+        {jm_sig_params.getIntVal("b2tjet1id"), jm_sig_params.getIntVal("b2jet1id")},
+        {jm_sig_params.getIntVal("b2tjet2id"), jm_sig_params.getIntVal("b2jet2id")}
+      };
 
-      if (m_mode == 2) {
-        // TrueJet mode, using matching by Misclustering processor  
+      // Fetching collections
+      streamlog_out(DEBUG) << "  getting jet collection: " << m_inputJetCollection << std::endl;
+      inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
 
-        //DelMe delme(std::bind(&CompareMEProcessor::delall, this));
+      // Get jet pairing from Misclustering processor
+      perm_sig.push_back(jm_sig_params.getIntVal("b1jet1id"));
+      perm_sig.push_back(jm_sig_params.getIntVal("b1jet2id"));
+      perm_sig.push_back(jm_sig_params.getIntVal("b2jet1id"));
+      perm_sig.push_back(jm_sig_params.getIntVal("b2jet2id"));
 
-        perm_sig.push_back(jm_sig_params.getIntVal("b1tjet1id"));
-        perm_sig.push_back(jm_sig_params.getIntVal("b1tjet2id"));
-        perm_sig.push_back(jm_sig_params.getIntVal("b2tjet1id"));
-        perm_sig.push_back(jm_sig_params.getIntVal("b2tjet2id"));
-
-        for (int j = 0; j < 4; j++) {
-          sig_jets.push_back((ReconstructedParticle*) tj->jet(perm_sig[j]));
-        }
-
-      } else if (m_mode == 1) {
-        // From TrueJet to reco matching, and MCParticle to TrueJet matching, we can identify the Reco->MCParticle matching
-        // Get TrueJet to reco matching
-        std::map<int, int> tj2reco = {
-          {jm_sig_params.getIntVal("b1tjet1id"), jm_sig_params.getIntVal("b1jet1id")},
-          {jm_sig_params.getIntVal("b1tjet2id"), jm_sig_params.getIntVal("b1jet2id")},
-          {jm_sig_params.getIntVal("b2tjet1id"), jm_sig_params.getIntVal("b2jet1id")},
-          {jm_sig_params.getIntVal("b2tjet2id"), jm_sig_params.getIntVal("b2jet2id")}
-        };
-
-        // Fetching collections
-        streamlog_out(DEBUG) << "  getting jet collection: " << m_inputJetCollection << std::endl;
-        inputJetCol = pLCEvent->getCollection( m_inputJetCollection );
-
-        // Get jet pairing from Misclustering processor
-        perm_sig.push_back(jm_sig_params.getIntVal("b1jet1id"));
-        perm_sig.push_back(jm_sig_params.getIntVal("b1jet2id"));
-        perm_sig.push_back(jm_sig_params.getIntVal("b2jet1id"));
-        perm_sig.push_back(jm_sig_params.getIntVal("b2jet2id"));
-
-        for (int j = 0; j < 4; j++) {
-          sig_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_sig[j]));
-        }
-
-        TString debug_msg;
-        debug_msg.Form("TJ->Reco | %i->%i %i | %i->%i %i | %i->%i %i | %i->%i %i",
-          jm_sig_params.getIntVal("b1tjet1id"), jm_sig_params.getIntVal("b1jet1id"), int(tj2reco.count(jm_sig_params.getIntVal("b1tjet1id"))),
-          jm_sig_params.getIntVal("b1tjet2id"), jm_sig_params.getIntVal("b1jet2id"), int(tj2reco.count(jm_sig_params.getIntVal("b1tjet2id"))),
-          jm_sig_params.getIntVal("b2tjet1id"), jm_sig_params.getIntVal("b2jet1id"), int(tj2reco.count(jm_sig_params.getIntVal("b2tjet1id"))),
-          jm_sig_params.getIntVal("b2tjet2id"), jm_sig_params.getIntVal("b2jet2id"), int(tj2reco.count(jm_sig_params.getIntVal("b2tjet2id"))) );
-          
-        streamlog_out(DEBUG) << " TrueJet Matching " << debug_msg << std::endl;
-
-        // Assign et energies if there is a valid mapping in tj2reco
-        if (parton1_jet_i > -1 && tj2reco.count(parton1_jet_i)) set_v4(jet1, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton1_jet_i]));
-        if (parton2_jet_i > -1 && tj2reco.count(parton2_jet_i)) set_v4(jet2, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton2_jet_i]));
-        if (parton3_jet_i > -1 && tj2reco.count(parton3_jet_i)) set_v4(jet3, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton3_jet_i]));
-        if (parton4_jet_i > -1 && tj2reco.count(parton4_jet_i)) set_v4(jet4, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton4_jet_i]));
-
-        debug_msg.Form("Parton:Jet Energies | %.2f:%.2f | %.2f:%.2f | %.2f:%.2f | %.2f:%.2f",
-          parton1.E(), jet1.E(),
-          parton2.E(), jet2.E(),
-          parton3.E(), jet3.E(),
-          parton4.E(), jet4.E());
-          
-        streamlog_out(DEBUG) << debug_msg << std::endl;
+      for (int j = 0; j < 4; j++) {
+        sig_jets.push_back((ReconstructedParticle*) inputJetCol->getElementAt(perm_sig[j]));
       }
+
+      // Assign et energies if there is a valid mapping in tj2reco
+      if (parton1_jet_i > -1 && tj2reco.count(parton1_jet_i)) set_v4(jet1, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton1_jet_i]));
+      if (parton2_jet_i > -1 && tj2reco.count(parton2_jet_i)) set_v4(jet2, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton2_jet_i]));
+      if (parton3_jet_i > -1 && tj2reco.count(parton3_jet_i)) set_v4(jet3, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton3_jet_i]));
+      if (parton4_jet_i > -1 && tj2reco.count(parton4_jet_i)) set_v4(jet4, (ReconstructedParticle*)inputJetCol->getElementAt(tj2reco[parton4_jet_i]));
 
       // Save info about regions
       if (jm_sig_params.getNInt("region") == 1)

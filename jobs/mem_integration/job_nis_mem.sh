@@ -14,4 +14,4 @@ event=${1}
 mkdir -p event_$event
 cd event_$event
 
-python /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/cli mem integrate $event ./result.txt --me_type=1 --sampling==nis
+python /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/cli mem integrate $event ./result.txt --me_type=1 --sampling=nis --with_perms=0

@@ -80,7 +80,7 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit:Optional[s
         fig.tight_layout()
         figures.append(fig)
         
-    if len(popts) == 4:
+    if len(popts) == 4 and (not 0 in [(1 if a is not None else 0) for a in popts]):
         print("SEPTF: A(1+2) : B(3+4)")
         A = np.array([
             popts[0],

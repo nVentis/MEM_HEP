@@ -23,6 +23,9 @@ if __name__ == '__main__':
          # separate transfer functions for sig/bkg
         'SEPTF': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-septf") for argv in sys.argv]) else False),
         
+        # use double Gaussian DTF for partons (otherwise Lorentzians as for the angles)
+        'PARTDBGAUSS': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-partdbgauss") for argv in sys.argv]) else False),
+        
         'DEBUG_VVV': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-vvv") for argv in sys.argv]) else False),
         'DEBUG_VV': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-vv") for argv in sys.argv]) else False),
         'DEBUG_V': (True if (len(sys.argv) > 1 and True in [argv.lower().endswith("-v") for argv in sys.argv]) else False),
@@ -77,6 +80,9 @@ if __name__ == '__main__':
         
         if options["SEPTF"]:
             extra_compile_args_proc.append("-D" + ("SIG" if process == "zhh" else "BKG") + "HYP")
+        
+        if options["PARTDBGAUSS"]:
+            extra_compile_args_proc.append("-DPARTDBGAUSS")
         
         extra_compile_args_run = extra_compile_args + extra_compile_args_proc
         

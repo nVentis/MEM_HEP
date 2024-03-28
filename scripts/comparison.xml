@@ -23,7 +23,6 @@
     <constant name="Verbosity" value="DEBUG"/>
     <constant name="RunMode" value="dev"/>
     <constant name="InputFiles">
-      /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/dev/slcio/e2e2hh.slcio
       /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/scripts/dev/slcio/e2e2zh.slcio
     </constant>
     <constant name="RunAll">true</constant>
@@ -31,8 +30,8 @@
 
   <execute>
     <processor name="CompareMEProcessorReco"/>
-    <processor name="CompareMEProcessorMCTruth" condition="${RunAll}"/>
-    <!-- <processor name="CompareMEProcessorTrueJetMatchingReco" condition="${RunAll}"/> -->
+    <processor name="CompareMEProcessorMCTruth"/>
+    <processor name="CompareMEProcessorTrueJetMatchingReco"/>
     <!-- <processor name="CompareMEProcessorTrueJetTrue" condition="${RunAll}" /> -->
     <!-- <processor name="CompareMEProcessorTrueJetSeen" condition="${RunAll}" /> -->
   </execute>
@@ -87,7 +86,7 @@
    <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="JetMatchingyCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSigDurham </parameter>
+   <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSigDurham </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="RequireNToXPass" type="int" value="0"/>
@@ -106,8 +105,7 @@
    <parameter name="InputLepPairCollection" type="string" lcioInType="ReconstructedParticle"> LeptonPair </parameter>
    <parameter name="InputHiggsPairCollection" type="string" lcioInType="ReconstructedParticle"> HiggsPair </parameter>
    <parameter name="InputJetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
-   <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSig </parameter>
-   <parameter name="JetMatchingBkgCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingBkg </parameter>
+   <parameter name="JetMatchingSigCollection" type="string" lcioInType="ReconstructedParticle"> JetMatchingSigDurham </parameter>
 
    <parameter name="RequirePreselectionPass" type="int" value="1"/>
    <parameter name="RequireNToXPass" type="int" value="0"/>

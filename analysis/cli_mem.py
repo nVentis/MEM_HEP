@@ -10,10 +10,11 @@ def cli_mem():
 @click.argument("event")
 @click.argument("dst")
 @click.option("--me_type", default="1", help="0 for MG5; 1 for Physsim", type=int)
-@click.option("--sampling", type=click.Choice(['vegas', 'nis'], case_sensitive=False))
+@click.option("--sampling", default="vegas", type=click.Choice(['vegas', 'nis'], case_sensitive=False))
 @click.option("--save_npy", default="1", type=int)
+@click.option("--with_perms", default="1", type=int)
 @click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/comparison_reco_zhh_zzh.npy", help="Numpy file with reco kinematics")
-def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:str):
+def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_perms:int, src:str):
     """Does the MEM integration for the given event for signal and background hypothesis and saves the results in dst
     Careful naming: event (input) is the index in the data frame, event_idx is the generator event id
 
@@ -31,10 +32,13 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
     import pandas as pd
     from os.path import dirname, join
     
+    logger.info(f"MEM Integration 0.1 [{event}][{me_type}][{sampling}][{with_perms}][{src}]")
+    
     event = int(event)
     me_type = int(me_type)
     save_npy = bool(save_npy)
-    int_type = 0 if sampling == "vegas" else 1
+    with_perms = bool(with_perms)
+    int_type = 1 if sampling == "nis" else 0
     
     reco = import_true_reco(src_file=src, normalize=False)
     event_idx = int(reco.iloc[event]['event'])
@@ -45,6 +49,10 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, src:s
         [1,4,2,3],
     ]
     perms_zzh = list(itertools.permutations([1, 2, 3, 4]))
+    
+    if not with_perms:
+        perms_zhh = [perms_zhh[0]]
+        perms_zzh = [perms_zzh[0]]
     
     ########################################################
     # Helper function and logging

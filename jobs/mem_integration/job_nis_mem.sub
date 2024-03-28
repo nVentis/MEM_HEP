@@ -6,12 +6,12 @@ transfer_executable = True
 max_retries = 3
 Requirements = (OpSysAndVer == "CentOS7") && (Machine =!= LastRemoteHost)
 request_cpus = 1
-request_memory = 4000 Mb
+request_memory = 8000 Mb
 
-log = /nfs/dust/ilc/user/bliewert/mem_integrate/log/$(ProcId).log
-output = /nfs/dust/ilc/user/bliewert/mem_integrate/log/$(ProcId).out
-error = /nfs/dust/ilc/user/bliewert/mem_integrate/log/$(ProcId).err
+log = /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log/$(ProcId).log
+output = /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log/$(ProcId).out
+error = /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log/$(ProcId).err
 
 transfer_output_files = ""
 
-queue event from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/event_numbers.txt
+queue event from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/event_numbers_test.txt

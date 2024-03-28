@@ -107,7 +107,8 @@ def import_true_reco(
     src_file:Optional[str] = None,
     src_dir:str = "/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/",
     tree_name:str="dataTree",
-    file_name:str="compare_reco.root",
+    #file_name:str="compare_reco.root",
+    file_name:str='compare_truejet_matchingreco.root',
     normalize:bool=False,
     equal_size:bool=False,
     constants:dict=constants,
@@ -116,7 +117,7 @@ def import_true_reco(
     use_cache:bool=True,
     recalc:bool=False,
     event_selection:bool=True,
-    autocorrect_lepton_pairing:bool=True
+    autocorrect_lepton_pairing:bool=False
     ) -> pd.DataFrame:
     
     """Combines the raw ROOT data to a pandas dataframe. Optionally, ensures normalization according to cross-section
@@ -151,7 +152,7 @@ def import_true_reco(
     results.remove("cache")
     
     df = None
-    serialized_name = f'comparison_reco_{comparison[0]}_{comparison[1]}.npy'
+    serialized_name = f'{osp.basename(file_name)}_{comparison[0]}_{comparison[1]}.npy'
     cache_path = osp.join(cache_dir, serialized_name)
     
     if use_cache and recalc and osp.isfile(cache_path):

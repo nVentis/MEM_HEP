@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 
 from math import sqrt,pi,floor,log10
-from typing import List
+from analysis.mc.tools import variance_weighted_result
+from typing import List, Optional
 import re
 
 constants = {
@@ -15,7 +16,9 @@ constants = {
     "sigma_zzh": 0.0822856, # from dumpevent /pnfs/desy.de/ilc/prod/ilc/mc-2020/ild/dst-merged/500-TDR_ws/hh/ILD_l5_o1_v02_nobg/v02-02-03/00015806/000/rv02-02-03.sv02-02-03.mILD_l5_o1_v02_nobg.E500-TDR_ws.I403011.Pe2e2qqh.eL.pR.n000.d_dstm_15806_0.slcio
     "system_px": 0,
     "system_py": 0,
-    "system_pz": 0
+    "system_pz": 0,
+    "B_Z_bb": 0.1512, # 
+    "B_H_bb": 0.569 # https://pdg.lbl.gov/2023/reviews/rpp2022-rev-higgs-boson.pdf  
 }
 
 def parse_line_to_float(line:str, with_uncert:bool=False) -> float:   
@@ -31,28 +34,68 @@ def parse_line_to_float(line:str, with_uncert:bool=False) -> float:
     else:
         return main
 
+def parse_lines(lines, line_zhh, old:bool=False):
+    result = [0., 0.]
+    
+    if old:
+        if line_zhh > 0: result[0] = float(lines[line_zhh].split(": ")[1])
+        if line_zhh > 0: result[1] = float(lines[line_zhh+1].split(": ")[1])
+    else:
+        if line_zhh > 0: result[0] = float(lines[line_zhh].split(": [")[1].split("]")[0])
+        if line_zhh > 0: result[1] = float(lines[line_zhh+1].split(": [")[1].split("]")[0])
+        
+    return result
+
 def get_result(event_dir:str, event_idx:int)->List[float]:
     #print(f"{event_dir}/event_{str(event_idx)}/result.txt")
-    f = open(f"{event_dir}/event_{str(event_idx)}/result.txt", "r")
-    lines = f.readlines()
-    line_zhh = 0
-    for line in lines:
-        if line.startswith("ZHH:"):
-            break
+    with open(f"{event_dir}/event_{str(event_idx)}/result.txt", "r") as f:
+        lines = f.readlines()
+        line_zhh = 0
+        for line in lines:
+            if line.startswith("ZHH:"):
+                break
+            
+            line_zhh += 1
         
-        line_zhh += 1
-    
-    result = [0., 0.]
-    if line_zhh > 0:
-        result[0] = float(lines[line_zhh].split(": ")[1])
-        
-    if line_zhh > 0:
-        result[1] = float(lines[line_zhh+1].split(": ")[1])
+        result = parse_lines(lines, line_zhh, old=('[' not in lines[line_zhh]))
     
     return result
 
-def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
-                 normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9, add_generator:bool=False) -> pd.DataFrame:
+def get_result_npy(event_dir:str, event_idx:int,
+                   perms_all:bool=True, perm_list:List[int]=[0],
+                   variance_weighted:bool=False)->List[float]:
+
+    f = np.load(f"{event_dir}/event_{str(event_idx)}/summary.npy", allow_pickle=True).item()
+    
+    zhh_means = np.array(f['sig']['means'])
+    zzh_means = np.array(f['bkg']['means'])
+    
+    if perms_all:
+        perm_list = np.arange(len(zhh_means))
+        
+    zhh_means = zhh_means[perm_list]
+    zzh_means = zzh_means[perm_list]
+    
+    assert(len(zhh_means) == len(zzh_means))
+    
+    if variance_weighted:
+        zhh_stdev = np.array(f['sig']['sigmas'])
+        zzh_stdev = np.array(f['bkg']['sigmas'])
+        
+        result = [
+            variance_weighted_result(zhh_means, zhh_stdev)[0],
+            variance_weighted_result(zzh_means, zzh_stdev)[0],
+        ]
+    else:
+        result = [zhh_means.mean(), zzh_means.mean()]
+        
+    return result
+
+def load_results(event_dir:str, reco:pd.DataFrame,
+                 zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
+                 z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"],
+                 perms_all:bool=True, perm_list:List[int]=[0], variance_weighted:bool=False, use_npy:Optional[bool]=None,
+                 normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9, add_generator:bool=False,) -> pd.DataFrame:
     """_summary_
 
     Args:
@@ -67,19 +110,30 @@ def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants
         pd.DataFrame: _description_
     """
     from os import listdir
+    import os.path as osp
     
     prefac = 1/((2**24)*(pi**18))
     
     events = np.array([int(name.replace("event_", "")) for name in listdir(event_dir)])
-    results = np.array([get_result(event_dir, event_idx) for event_idx in events]).T
+    results = []
+    for event_idx in events:
+        if (use_npy != True) and (perms_all and not variance_weighted):
+            if osp.isfile(f"{event_dir}/event_{str(event_idx)}/result.txt"):
+                results.append(get_result(event_dir, event_idx))
+        else:
+            if osp.isfile(f"{event_dir}/event_{str(event_idx)}/summary.npy"):
+                results.append(get_result_npy(event_dir, event_idx, variance_weighted=variance_weighted,
+                                            perms_all=perms_all, perm_list=perm_list))
+        
+    results = np.array(results).T
     
     assert(len(events) == results.shape[1])
     
     results = {
         "event_idx": events,
         "event": reco.iloc[events]['event'],
-        "zhh_mem": results[0]*prefac/(zhh_cross_sec*pb_to_1oGeV2),
-        "zzh_mem": results[1]*prefac/(zzh_cross_sec*pb_to_1oGeV2),
+        "zhh_mem": results[0]*prefac/(zhh_cross_sec*h_bb_branching*h_bb_branching*pb_to_1oGeV2),
+        "zzh_mem": results[1]*prefac/(zzh_cross_sec*h_bb_branching*z_bb_branching*pb_to_1oGeV2),
         "is_zhh": reco["is_zhh"][events],
         "is_zzh": reco["is_zzh"][events]
     }
@@ -88,31 +142,33 @@ def load_results(event_dir:str, reco:pd.DataFrame, zhh_cross_sec:float=constants
         results["zzh_true"] = reco["zzh_mg5"][events]
 
     results = pd.DataFrame(results)
-    if False:
-        results = results[((results["zhh_mem"] > 0) & (results["zzh_mem"] > 0))]
+    results = results[((results["zhh_mem"] > 0) & (results["zzh_mem"] > 0))]
+    
+    if normalize_samples:
+        sig_to_bkg = (zhh_cross_sec*h_bb_branching)/(zzh_cross_sec*z_bb_branching)
+        bkg_to_sig = sig_to_bkg**-1
         
-        if normalize_samples:
-            sig_to_bkg = zhh_cross_sec/zzh_cross_sec # ca. 0.1
-            bkg_to_sig = sig_to_bkg**-1 # ca. 10
-            
-            sig_size = np.count_nonzero(results["is_zhh"])
-            bkg_size = np.count_nonzero(results["is_zzh"])
-            
-            if abs(sig_size - sig_to_bkg*bkg_size) > 2:
-                if bkg_size < bkg_to_sig*sig_size:
-                    sig_size_max = round(sig_to_bkg*bkg_size)
-                    
-                    # Use complete background sample, lower signal fraction
-                    idx = np.where(results["is_zhh"] == 1)[0]
-                    mask = np.random.choice(range(0, len(idx)), size=(sig_size-sig_size_max), replace=False)
+        sig_size = np.count_nonzero(results["is_zhh"])
+        bkg_size = np.count_nonzero(results["is_zzh"])
+        
+        print('sig', sig_size, 'bkg', sig_to_bkg*bkg_size)
+        
+        if abs(sig_size - sig_to_bkg*bkg_size) > 2:
+            if bkg_size < bkg_to_sig*sig_size:
+                sig_size_max = round(sig_to_bkg*bkg_size)
+                
+                # Use complete background sample, lower signal fraction
+                idx = np.where(results["is_zhh"] == 1)[0]
+                np.random.seed(42)
+                mask = np.random.choice(range(0, len(idx)), size=(sig_size-sig_size_max), replace=False)
 
-                    results.drop(results.index[idx[mask]], inplace=True)
-                else:
-                    # Use complete signal sample, lower background fraction
-                    raise Exception("Not implemented")
+                results.drop(results.index[idx[mask]], inplace=True)
+            else:
+                # Use complete signal sample, lower background fraction
+                raise Exception("Not implemented")
                     
 
-        results["r"] = results["zhh_mem"]/(results["zhh_mem"] + results["zzh_mem"])
+    results["r"] = results["zhh_mem"]/(results["zhh_mem"] + results["zzh_mem"])
     
     return results
 
@@ -128,7 +184,10 @@ def conf_mat(results, threshold:float):
         [FP, TN]
     ]
     
-def best_threshold(results, vals=None, r_column="r", zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"], return_df=False, optimization_scheme:int=0):
+def best_threshold(results, vals=None, r_column="r",
+                   zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
+                   z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"],
+                   return_df=False, optimization_scheme:int=0, nsteps:int=1000):
     """_summary_
 
     Args:
@@ -145,12 +204,12 @@ def best_threshold(results, vals=None, r_column="r", zhh_cross_sec:float=constan
     """
     
     if vals is None:
-        vals = np.linspace(np.min(results[r_column]), np.max(results[r_column]), 1000)
+        vals = np.linspace(np.min(results[r_column]), np.max(results[r_column]), nsteps)
     
     best = 9999
     best_t = np.max(results[r_column])
     
-    sig_to_bkg = zhh_cross_sec/zzh_cross_sec
+    sig_to_bkg = (zhh_cross_sec*h_bb_branching)/(zzh_cross_sec*z_bb_branching)
     
     result = {
         "TP": [],
@@ -202,7 +261,7 @@ def best_threshold(results, vals=None, r_column="r", zhh_cross_sec:float=constan
         result["FN"].append(FN)
     
     if return_df:
-        return pd.DataFrame(result)
+        return best_t, pd.DataFrame(result)
     else:
         return best_t
 

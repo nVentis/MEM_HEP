@@ -1,7 +1,8 @@
 import numpy as np
+from typing import List
 
 # From iflow
-def variance_weighted_result(means:np.ndarray, stddevs:np.ndarray):
+def variance_weighted_result(means:np.ndarray, stddevs:np.ndarray)->List[float]:
     """ Computes weighted mean and stddev of given means and
         stddevs arrays, using Inverse-variance weighting
     """

@@ -266,29 +266,42 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     return fig
 
 def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
-                 xscale:str="linear", yscale:str="linear",
+                 xscale:Optional[str]="linear", yscale:Optional[str]="linear",
                  ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, title:Optional[str]=None,
-                 fontsize:Optional[Union[str, int]]=14, titlesize:Union[int, str]=15):
+                 fontsize:Optional[Union[str, int]]=14, titlesize:Union[int, str]=15,
+                 ticks_left:Union[bool,List,None]=True, ticks_bottom:Union[bool,List,None]=True):
     
-    ax.tick_params(axis='both', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
-    ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
+    if isinstance(ticks_left, list):
+        ax.set_yticks(range(len(ticks_left)), ticks_left, fontsize=fontsize)
+    elif ticks_left is not None:
+        if ticks_left:
+            ax.tick_params(axis='y', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
+            ax.tick_params(axis='y', which='minor', labelsize=ticksize_minor)
+        else:
+            ax.tick_params(left=False, right=False, labelleft=False, labelright=False)
     
-    if title is not None:
-        ax.set_title(title, fontdict = {'fontsize' : titlesize})
-        
-    ax.set_xscale(xscale)
-    ax.set_yscale(yscale)
+    if isinstance(ticks_bottom, list):
+        ax.set_xticks(range(len(ticks_bottom)), ticks_bottom, fontsize=fontsize)
+    elif ticks_bottom is not None:
+        if ticks_bottom:
+            ax.tick_params(axis='x', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
+            ax.tick_params(axis='x', which='minor', labelsize=ticksize_minor)
+        else:
+            ax.tick_params(bottom=False, top=False, labelbottom=False, labeltop=False)
     
-    if xlabel is not None:
-        ax.set_xlabel(xlabel, fontsize=fontsize)
-        
-    if ylabel is not None:
-        ax.set_ylabel(ylabel, fontsize=fontsize)
+    if title is not None: ax.set_title(title, fontdict = {'fontsize' : titlesize})
     
-    if ylim is not None:
-        ax.set_ylim(ylim)
+    if xscale is not None: ax.set_xscale(xscale)
+    if yscale is not None: ax.set_yscale(yscale)
     
-def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:Optional[int]=None, title:Optional[str]=None, titlesize:Union[int, str]=15):
+    if xlabel is not None: ax.set_xlabel(xlabel, fontsize=fontsize)
+    if ylabel is not None: ax.set_ylabel(ylabel, fontsize=fontsize)
+    
+    if ylim is not None: ax.set_ylim(ylim)
+    
+def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
+                   title:Optional[str]=None, titlesize:Union[int, str]=15,
+                   labels=['ZHH', 'ZZH']):
     import seaborn as sns
     
     if ticksize_major is None:
@@ -316,18 +329,46 @@ def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:
     conf_mat = pd.DataFrame([
         [TP, FN],
         [FP, TN]
-    ], index=["Sig", "Bkg"], columns=["Sig", "Bkg"])
+    ], index=[labels[0], labels[1]], columns=[labels[0], labels[1]])
 
     ax = sns.heatmap(conf_mat, annot=annot, fmt = '')
     
     #ax.set_xlabel("Predicted label", fontsize=fontsize)
     #ax.set_ylabel("Actual label", fontsize=fontsize)
     
-    ax.tick_params(axis='both', which='major', labelsize=ticksize_major)
-    ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
+    #ax.tick_params(axis='both', which='major', labelsize=ticksize_major)
+    #ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
     
     plot_styling(ax, ticksize_minor=ticksize_minor, ticksize_major=ticksize_major,
-                 xscale="linear", yscale="linear", ylim=None,
+                 xscale=None, yscale=None, ylim=None,
                  xlabel="Predicted label", ylabel="Actual label",
-                 title=title, fontsize=fontsize, titlesize=titlesize)
+                 title=title, fontsize=fontsize, titlesize=titlesize,
+                 ticks_left=None, ticks_bottom=None,)
     
+    return ax
+    
+def plot_roc(thresh_df:pd.DataFrame):
+    TP = thresh_df["TP"]
+    TN = thresh_df["TN"]
+    
+    FN = thresh_df["FN"]
+    FP = thresh_df["FP"]
+    
+    P = TP + FN
+    N = TN + FP
+    
+    FPR = FP/N
+    TPR = TP/P
+
+    fig, ax = plt.subplots()
+    ax.plot(FPR, TPR)
+    
+    AUC = np.sum(TPR)/len(TPR)
+    
+    #ax.set_xlabel("FPR")
+    #ax.set_ylabel("TPR")
+    #ax.set_title(f"ROC-curve [AUC:{AUC:.3f}]")
+    
+    plot_styling(ax, title=f"ROC-curve [AUC:{AUC:.3f}]", xlabel="FPR", ylabel="TPR")
+    
+    return fig

@@ -332,7 +332,7 @@ def mem_integrate(reco_kin:Optional[List[float]]=None,
         boundaries = np.array(bounds)
 
         integrand = build_mem_integrand(reco_kin)
-        integrator = IFlowIntegrator(integrand=integrand, boundaries=boundaries, **iflow_args)
+        integrator = IFlowIntegrator(integrand=integrand, boundaries=boundaries, lr=1e-4, **iflow_args)
 
         means, stddevs, losses = integrator.means, integrator.stddevs, integrator.losses
         tot_res, tot_uncert = integrator.integrate()

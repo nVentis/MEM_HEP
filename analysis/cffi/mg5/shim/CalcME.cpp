@@ -553,9 +553,9 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
 
                 for (j = 0; j < 4; j++) {
                     //tf_E = calc_tf_E(reco_kin[8+j*4], kin[12 + j*4]);
-                    tf_Th = calc_tf_Th(j, reco_angles[j][0], kin[tf_Th_order_kin[j]]);
-                    tf_Ph = calc_tf_Ph(j, reco_angles[j][1], kin[tf_Ph_order_kin[j]]);
-                    tf_E = calc_tf_E(j, reco_kin[8+j*4], kin[tf_E_order_kin[j]]);
+                    tf_Th = calc_tf_Th(reco_angles[j][0], kin[tf_Th_order_kin[j]]);
+                    tf_Ph = calc_tf_Ph(reco_angles[j][1], kin[tf_Ph_order_kin[j]]);
+                    tf_E = calc_tf_E(reco_kin[8+j*4], kin[tf_E_order_kin[j]]);
 
                     transfer = transfer*tf_Th*tf_Ph*tf_E;
                     #ifdef DEBUG_VVV
@@ -604,31 +604,38 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     full_kin.clear();
 }
 
-double calc_me::calc_tf_E(int jet_idx, double a, double b) {
-    // a: Measured, b:True
-    if (jet_idx < 2) {
-        return 1/(M_PI*tf_E1_args[1]*(1 + std::pow( ((a-b)-tf_E1_args[0])/tf_E1_args[1], 2.) ));
-    } else {
-        return 1/(M_PI*tf_E2_args[1]*(1 + std::pow( ((a-b)-tf_E2_args[0])/tf_E2_args[1], 2.) ));
+#ifdef PARTDBGAUSS
+    #ifdef DEBUG_VV
+        std::cout << "Using DBGauss DTF for Partons" << std::endl;
+    #endif
+
+    double calc_me::calc_tf_E(double a, double b) {
+        // a: Measured, b:True
+        return 1/(std::sqrt(2*M_PI) * (tf_E_args[1] + tf_E_args[4]*std::pow(tf_E_args[2], 2.) )) * (
+                                           std::exp(-std::pow((a-b)-tf_E_args[0], 2.) / (2*std::pow(tf_E_args[1], 2.)))
+            + std::pow(tf_E_args[2], 2.) * std::exp(-std::pow((a-b)-tf_E_args[3], 2.) / (2*std::pow(tf_E_args[4], 2.)))
+        );
     }
+#else
+    #ifdef DEBUG_VV
+        std::cout << "Using DBGauss DTF for Partons" << std::endl;
+    #endif
+
+    double calc_me::calc_tf_E(double a, double b) {
+        // a: Measured, b:True
+        return 1/(M_PI*tf_E_args[1]*(1 + std::pow( ((a-b)-tf_E_args[0])/tf_E_args[1], 2.) ));
+    }
+#endif
+
+
+double calc_me::calc_tf_Th(double a, double b) {
+    // a:Measured, b:True
+    return 1/(M_PI*tf_Th_args[1]*(1 + std::pow( ((a-b)-tf_Th_args[0])/tf_Th_args[1], 2.) ));
 }
 
-double calc_me::calc_tf_Th(int jet_idx, double a, double b) {
+double calc_me::calc_tf_Ph(double a, double b) {
     // a:Measured, b:True
-    if (jet_idx < 2) {
-        return 1/(M_PI*tf_Th1_args[1]*(1 + std::pow( ((a-b)-tf_Th1_args[0])/tf_Th1_args[1], 2.) ));
-    } else {
-        return 1/(M_PI*tf_Th2_args[1]*(1 + std::pow( ((a-b)-tf_Th2_args[0])/tf_Th2_args[1], 2.) ));
-    }
-}
-
-double calc_me::calc_tf_Ph(int jet_idx, double a, double b) {
-    // a:Measured, b:True
-    if (jet_idx < 2) {
-        return 1/(M_PI*tf_Ph1_args[1]*(1 + std::pow( ((a-b)-tf_Ph1_args[0])/tf_Ph1_args[1], 2.) ));
-    } else {
-        return 1/(M_PI*tf_Ph2_args[1]*(1 + std::pow( ((a-b)-tf_Ph2_args[0])/tf_Ph2_args[1], 2.) ));
-    }
+    return 1/(M_PI*tf_Ph_args[1]*(1 + std::pow( ((a-b)-tf_Ph_args[0])/tf_Ph_args[1], 2.) ));
 }
 
 void calc_me::kin_debug_print(){
