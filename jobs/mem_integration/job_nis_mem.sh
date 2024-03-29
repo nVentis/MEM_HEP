@@ -10,8 +10,9 @@ mkdir -p /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log
 cd /nfs/dust/ilc/user/bliewert/mem_integrate_nis/results
 
 event=${1}
+job=${2}
 
 mkdir -p event_$event
 cd event_$event
 
-python /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/cli mem integrate $event ./result.txt --me_type=1 --sampling=nis --with_perms=0
+python /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/cli mem integrate $event ./result.txt --me_type=1 --sampling=nis --with_perms=0 --job=${job}

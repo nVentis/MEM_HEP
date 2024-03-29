@@ -21,37 +21,6 @@ def calc_nll_llr_dtf_delta(df:pd.DataFrame, col_signal:str = "zhh_sigma", col_bk
     
     return df
 
-def normal_dist(x, mu, sigma):
-    return 1/(sigma*np.sqrt(2*np.pi)) * np.exp(-1/2 * ((x-mu)/sigma)**2)
-
-def dtf_dbgauss(coeffs, E_jet, E_part):
-    result = 1
-    
-    for i in range(4): # len(coeffs)
-        a, b = coeffs[i]
-        E_j = E_jet[i]
-        E_p = E_part[i]
-        
-        result *= dbgauss(a, b, E_jet, E_part)
-        
-    return result
-
-def calc_nll_llr_dtf_dbgauss(df, coeff = None, col_signal = "zhh_sigma", col_bg = "zzh_sigma"):
-    p4_true, p4_meas = extract_event_p4(df)
-    
-    def dtf(coeff, p4_meas, p4_int):
-        ...
-        
-    def integrand(coeff, p4_meas, p4_int, me_func):
-        return dtf(coeff, p4_meas, p4_int)*me_func(p4_int)
-    
-    # deltra distributions assumed for...
-    # - lepton energies and
-    # - jet solid angles  
-    
-    likelihood_sig = integrate(integrand, [])
-    likelihood_bkg = integrate(integrand, [])
-    
 def get_kinematics(data, true:bool, i:int, perm=[1,2,3,4]) -> List[float]:
     lep_key = "true_lep" if true else "lep"
     parton_key = "parton" if true else "jet"
@@ -68,23 +37,23 @@ def get_kinematics(data, true:bool, i:int, perm=[1,2,3,4]) -> List[float]:
         data[f"{lep_key}2_pz"][i],
         
         data[f"{parton_key}{perm[0]}_e"][i],
-        data[f"{parton_key}{perm[1]}_px"][i],
-        data[f"{parton_key}{perm[2]}_py"][i],
-        data[f"{parton_key}{perm[3]}_pz"][i],
+        data[f"{parton_key}{perm[0]}_px"][i],
+        data[f"{parton_key}{perm[0]}_py"][i],
+        data[f"{parton_key}{perm[0]}_pz"][i],
         
-        data[f"{parton_key}{perm[0]}_e"][i],
+        data[f"{parton_key}{perm[1]}_e"][i],
         data[f"{parton_key}{perm[1]}_px"][i],
-        data[f"{parton_key}{perm[2]}_py"][i],
-        data[f"{parton_key}{perm[3]}_pz"][i],
+        data[f"{parton_key}{perm[1]}_py"][i],
+        data[f"{parton_key}{perm[1]}_pz"][i],
         
-        data[f"{parton_key}{perm[0]}_e"][i],
-        data[f"{parton_key}{perm[1]}_px"][i],
+        data[f"{parton_key}{perm[2]}_e"][i],
+        data[f"{parton_key}{perm[2]}_px"][i],
         data[f"{parton_key}{perm[2]}_py"][i],
-        data[f"{parton_key}{perm[3]}_pz"][i],
+        data[f"{parton_key}{perm[2]}_pz"][i],
         
-        data[f"{parton_key}{perm[0]}_e"][i],
-        data[f"{parton_key}{perm[1]}_px"][i],
-        data[f"{parton_key}{perm[2]}_py"][i],
+        data[f"{parton_key}{perm[3]}_e"][i],
+        data[f"{parton_key}{perm[3]}_px"][i],
+        data[f"{parton_key}{perm[3]}_py"][i],
         data[f"{parton_key}{perm[3]}_pz"][i],
     ]
     

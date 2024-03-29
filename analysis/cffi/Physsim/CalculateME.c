@@ -572,10 +572,14 @@ double calc_zhh_single(double momenta[]);
 /************************************************************/
 
 static void *_cffi_types[] = {
-/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 3), // double()(double *)
-/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 3), // double *
+/*  0 */ _CFFI_OP(_CFFI_OP_FUNCTION, 6), // double()(double *)
+/*  1 */ _CFFI_OP(_CFFI_OP_POINTER, 6), // double *
 /*  2 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/*  3 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
+/*  3 */ _CFFI_OP(_CFFI_OP_FUNCTION, 7), // void()(void *)
+/*  4 */ _CFFI_OP(_CFFI_OP_POINTER, 7), // void *
+/*  5 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
+/*  6 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 14), // double
+/*  7 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
 static double _cffi_d_calc_zhh_single(double * x0)
@@ -654,9 +658,46 @@ _cffi_f_calc_zzh_single(PyObject *self, PyObject *arg0)
 #  define _cffi_f_calc_zzh_single _cffi_d_calc_zzh_single
 #endif
 
+static void _cffi_d_free(void * x0)
+{
+  free(x0);
+}
+#ifndef PYPY_VERSION
+static PyObject *
+_cffi_f_free(PyObject *self, PyObject *arg0)
+{
+  void * x0;
+  Py_ssize_t datasize;
+  struct _cffi_freeme_s *large_args_free = NULL;
+
+  datasize = _cffi_prepare_pointer_call_argument(
+      _cffi_type(4), arg0, (char **)&x0);
+  if (datasize != 0) {
+    x0 = ((size_t)datasize) <= 640 ? (void *)alloca((size_t)datasize) : NULL;
+    if (_cffi_convert_array_argument(_cffi_type(4), arg0, (char **)&x0,
+            datasize, &large_args_free) < 0)
+      return NULL;
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+  _cffi_restore_errno();
+  { free(x0); }
+  _cffi_save_errno();
+  Py_END_ALLOW_THREADS
+
+  (void)self; /* unused */
+  if (large_args_free != NULL) _cffi_free_array_arguments(large_args_free);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+#else
+#  define _cffi_f_free _cffi_d_free
+#endif
+
 static const struct _cffi_global_s _cffi_globals[] = {
   { "calc_zhh_single", (void *)_cffi_f_calc_zhh_single, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 0), (void *)_cffi_d_calc_zhh_single },
   { "calc_zzh_single", (void *)_cffi_f_calc_zzh_single, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 0), (void *)_cffi_d_calc_zzh_single },
+  { "free", (void *)_cffi_f_free, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 3), (void *)_cffi_d_free },
 };
 
 static const struct _cffi_type_context_s _cffi_type_context = {
@@ -666,12 +707,12 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   NULL,  /* no struct_unions */
   NULL,  /* no enums */
   NULL,  /* no typenames */
-  2,  /* num_globals */
+  3,  /* num_globals */
   0,  /* num_struct_unions */
   0,  /* num_enums */
   0,  /* num_typenames */
   NULL,  /* no includes */
-  4,  /* num_types */
+  8,  /* num_types */
   0,  /* flags */
 };
 

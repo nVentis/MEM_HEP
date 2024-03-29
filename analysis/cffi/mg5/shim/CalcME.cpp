@@ -463,7 +463,7 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
         }
     }
 
-    // Prepare vectors for quar quantities
+    // Prepare vectors for parton quantities
     full_kin.push_back(new double[4]);
     full_kin.push_back(new double[4]);
     full_kin.push_back(new double[4]);

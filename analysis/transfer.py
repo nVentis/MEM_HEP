@@ -56,7 +56,8 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit:Optional[s
                 "lorentz": [np.average(df), 2],
                 "uniform": [0.1],
                 "gauss": [np.average(df), np.std(df)],
-                "dbgauss_old": [0, np.std(df), 0.2, 0, 2*np.std(df)]
+                "dbgauss_old": [0, np.std(df), 0.2, 0, 2*np.std(df)],
+                "log_normal": [np.log(np.mean(df)) - sqrt(np.std(df))/2, np.std(df)]
             }
             
             fit_func = fit_funcs[fit]

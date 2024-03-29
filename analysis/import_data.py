@@ -144,12 +144,14 @@ def import_true_reco(
     
     from os import listdir
     import os.path as osp
-    Path(f'{src_dir}/cache').mkdir(parents=True, exist_ok=True)
+    
+    if src_file is None:
+        Path(f'{src_dir}/cache').mkdir(parents=True, exist_ok=True)
     
     results = listdir(src_dir)
     results.sort()
-    results.remove("log")
-    results.remove("cache")
+    if 'log' in results: results.remove("log")
+    if 'cache' in results: results.remove("cache")
     
     df = None
     serialized_name = f'{osp.basename(file_name)}_{comparison[0]}_{comparison[1]}.npy'

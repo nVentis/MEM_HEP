@@ -1,0 +1,17 @@
+executable = /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/job_vegas_consistency.sh
+arguments = $(event) $(ProcId)
+should_transfer_files = True
+transfer_executable = True
+
+max_retries = 3
+Requirements = (OpSysAndVer == "CentOS7") && (Machine =!= LastRemoteHost)
+request_cpus = 1
+request_memory = 2000 Mb
+
+log = /nfs/dust/ilc/user/bliewert/vegas_consistency/log/$(ProcId).log
+output = /nfs/dust/ilc/user/bliewert/vegas_consistency/log/$(ProcId).out
+error = /nfs/dust/ilc/user/bliewert/vegas_consistency/log/$(ProcId).err
+
+transfer_output_files = ""
+
+queue event from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/consistency.txt

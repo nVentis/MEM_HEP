@@ -1,6 +1,6 @@
-from mg5.CalcMEZHH import lib as zhh
-from mg5.CalcMEZZH import lib as zzh
-from Physsim.CalculateME import lib as Physsim
+from analysis.cffi.mg5.CalcMEZHH import lib as zhh
+from analysis.cffi.mg5.CalcMEZZH import lib as zzh
+from analysis.cffi.Physsim.CalculateME import lib as Physsim
 
 fm = [
     20, 1, 2, 3,
@@ -18,7 +18,7 @@ fm_ph = [
     310, 11, 13, 15
 ]
 
-print(zhh.calc_single(b"/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat", 2, [0,-1,1,1], fm))
+#print(zhh.calc_single(b"/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat", 2, [0,-1,1,1], fm))
 print(Physsim.calc_zhh_single(fm_ph))
 
 #zhh.calc(b"/afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/analysis/cffi/mg5/mg5/Cards/param_card.dat", 2, [0,-1,1,1])

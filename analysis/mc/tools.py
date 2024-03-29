@@ -1,11 +1,15 @@
 import numpy as np
-from typing import List
+from typing import List, Union, Tuple
 
 # From iflow
-def variance_weighted_result(means:np.ndarray, stddevs:np.ndarray)->List[float]:
+def variance_weighted_result(means:Union[List,np.ndarray], stddevs:Union[List,np.ndarray])->Tuple[float, float]:
     """ Computes weighted mean and stddev of given means and
         stddevs arrays, using Inverse-variance weighting
     """
+    
+    if isinstance(means, list): means = np.array(means)
+    if isinstance(stddevs, list): stddevs = np.array(stddevs)
+    
     assert np.size(means) == np.size(stddevs)
     assert means.shape == stddevs.shape
     variance = 1./np.sum(1./stddevs**2, axis=-1)

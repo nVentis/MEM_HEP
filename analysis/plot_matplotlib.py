@@ -57,11 +57,11 @@ def export_figures(filename, figs=None, dpi=200):
     pp.close()
 
 def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
-              fit_func:Optional[Callable]=None, fit_opts:Optional[Dict] = None,
-              labels:Optional[List[str]]=None, colorpalette=None, bins=128,
+              fit_func:Optional[Callable]=None,
+              labels:Optional[List[str]]=None, colorpalette=None, bins:int=128,
               same_bins:bool=True, xlim_binning:Optional[Union[list,tuple]]=None, xlim:Optional[Union[list,tuple]]=None, ylim=None,
               xlabel:Optional[str] = None, ylabel:Optional[str]=None,
-              normalize=False, filter_nan:bool=False,
+              normalize=False, filter_nan:bool=False, unitx:Optional[str]=None,
               title:Optional[str]=None, ax=None,
               text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.22,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
@@ -118,7 +118,6 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         data = pd.DataFrame({ (x if isinstance(x, str) else "Data"): data })
     
     x_in = x
-    
     if x is None:
         x = list(data.keys())
     
@@ -154,12 +153,12 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
             xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
                 
     # If same_bins=True, infer limits and impose xlim_binning
-    if same_bins and xlim_binning is None:
-        if isinstance(data, pd.DataFrame):
+    if xlim_binning is None:
+        if same_bins or isinstance(data, pd.DataFrame):
             xlim_binning = xlim_view
-        else:
+        else: # why this?
             xlim_binning = [np.min(np.min(data)), np.max(np.max(data))]
-
+            
     for i in range(len(columns)):
         column = columns[i]
         values = data if column is None else data[column]
@@ -171,9 +170,17 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         min_val = xlim_binning[0] if (xlim_binning is not None) else np.min(values)
         max_val = xlim_binning[1] if (xlim_binning is not None) else np.max(values)
         
-        bin_edges = np.linspace(min_val, max_val, bins + 1)
+        if xscale == 'log':
+            log_start, log_stop = np.log(min_val), np.log(max_val)
+            bin_edges = np.exp(np.linspace(log_start, log_stop, bins+2))
+        else:
+            if xscale != 'linear':
+                print(f'Unsupported xscale {xscale}. Reverting to linear')
+                
+            bin_edges = np.linspace(min_val, max_val, num=bins+1)
+            
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-        
+
         # Filter for x_lim_binning
         stat_values = values
         if xlim_binning is not None:
@@ -193,42 +200,41 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
                                                                     ec=colorpalette[i],
                                                                     weights=np.ones_like(stat_values)/(len(stat_values) if normalize else 1))
         
-        if isinstance(x_in, str):
-            if callable(fit_func):
-                fit_data = fit_func(bin_centers)
-                
-                if normalize:
-                    fit_data = fit_data/fit_data.sum()
-                
-                MSE = ((bin_counts - fit_data)**2).sum()*1/(len(bin_counts))
-                RMSE = sqrt(MSE)
-                
-                ss_reg = ((bin_counts - fit_data) ** 2).sum()
-                ss_tot = (((bin_counts - np.mean(bin_counts)) ** 2)).sum()
-                Rsquared = 1 - (ss_reg / ss_tot) # R^2
-                
-                text_rms = format_st(MSE) if not scientific_stats else f'{MSE:.2E}'
-                text_rmse = format_st(RMSE) if not scientific_stats else f'{RMSE:.2E}'
-                text_rsq = f'{Rsquared:.2f}' if not scientific_stats else f'{Rsquared:.2E}'
-                
-                (plt if ax == None else ax).plot(bin_centers, fit_data, color="red", alpha=0.7)
-                fig.text(text_start_x, text_start_y - text_spacing_y*2*i,
-                 f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {text_rms}\nRMSE: {text_rmse}\nR^2: {text_rsq}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
-                 #color=colorpalette[i],
-                 bbox=dict(edgecolor="red", facecolor="w"),
-                 fontsize='medium' if legendsize is None else legendsize,
-                 horizontalalignment='right',
-                 verticalalignment='top',
-                 transform=ax.transAxes)
+        if callable(fit_func):
+            fit_data = fit_func(bin_centers)
+            
+            if normalize:
+                fit_data = fit_data/fit_data.sum()
+            
+            MSE = ((bin_counts - fit_data)**2).sum()*1/(len(bin_counts))
+            RMSE = sqrt(MSE)
+            
+            ss_reg = ((bin_counts - fit_data) ** 2).sum()
+            ss_tot = (((bin_counts - np.mean(bin_counts)) ** 2)).sum()
+            Rsquared = 1 - (ss_reg / ss_tot) # R^2
+            
+            text_rms = format_st(MSE) if not scientific_stats else f'{MSE:.2E}'
+            text_rmse = format_st(RMSE) if not scientific_stats else f'{RMSE:.2E}'
+            text_rsq = f'{Rsquared:.2f}' if not scientific_stats else f'{Rsquared:.2E}'
+            
+            (plt if ax == None else ax).plot(bin_centers, fit_data, color="red", alpha=0.7)
+            fig.text(text_start_x, text_start_y - text_spacing_y*2*i,
+                f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {text_rms}\nRMSE: {text_rmse}\nR^2: {text_rsq}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
+                #color=colorpalette[i],
+                bbox=dict(edgecolor="red", facecolor="w"),
+                fontsize='medium' if legendsize is None else legendsize,
+                horizontalalignment='right',
+                verticalalignment='top',
+                transform=ax.transAxes)
             
         mean = np.average(stat_values)
         std_dev = np.std(stat_values)
         
-        mean_stat = f'{mean:.2E}' if scientific_stats else f'{mean:.2f}'
-        std_dev_stat = f'{std_dev:.2E}' if scientific_stats else f'{std_dev:.2f}'
+        mean_stat = (f'{mean:.2E}' if scientific_stats else f'{mean:.2f}')+(f' {unitx}' if unitx is not None else '')
+        std_dev_stat = (f'{std_dev:.2E}' if scientific_stats else f'{std_dev:.2f}')+(f' {unitx}' if unitx is not None else '')
         
         fig.text(text_start_x, text_start_y - text_spacing_y*((2*i+1) if callable(fit_func) else i),
-                f"{h_name}\nEntries: {len(values)}\nMean: {mean_stat}\nStd Dev: {std_dev_stat}",
+                f"{h_name}\nEntries: {len(stat_values)}\nMean: {mean_stat}\nStd Dev: {std_dev_stat}",
                 #color=colorpalette[i],
                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
                 fontsize='medium' if legendsize is None else legendsize,
@@ -348,6 +354,8 @@ def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:
     return ax
     
 def plot_roc(thresh_df:pd.DataFrame):
+    from sklearn.metrics import auc
+    
     TP = thresh_df["TP"]
     TN = thresh_df["TN"]
     
@@ -363,7 +371,7 @@ def plot_roc(thresh_df:pd.DataFrame):
     fig, ax = plt.subplots()
     ax.plot(FPR, TPR)
     
-    AUC = np.sum(TPR)/len(TPR)
+    AUC = auc(FPR, TPR) #np.sum(TPR)/len(TPR)
     
     #ax.set_xlabel("FPR")
     #ax.set_ylabel("TPR")

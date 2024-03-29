@@ -32,7 +32,7 @@ calc_zhh::~calc_zhh()
 */
 double calc_zhh::calc_zhh_calc(double momenta[]) const
 {
-    TLorentzVector zhh_lortz[5] = {
+    TLorentzVector zhh_lortz[4] = {
         TLorentzVector(momenta[ 1], momenta[ 2], momenta[ 3], momenta[ 0]),
         TLorentzVector(momenta[ 5], momenta[ 6], momenta[ 7], momenta[ 4]),
         TLorentzVector(momenta[ 9], momenta[10], momenta[11], momenta[ 8]),

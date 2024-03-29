@@ -12,7 +12,7 @@ logger = logging.getLogger('mem_hep')
 
 from analysis.convert import convert_file
 from analysis.import_data import import_data, filter_data, combine_columns, split_true_zhh_zzh
-from analysis.calc import calc_nll_llr_dtf_delta, calc_nll_llr_dtf_dbgauss
+from analysis.calc import calc_nll_llr_dtf_delta
 from analysis.plot_routines import plot_summary, plot_nll, plot_llr
 
 def me(src_file:str, dst:str, name:str, convert:bool, plot:bool, calc:bool = True, dtf:str = "delta"):

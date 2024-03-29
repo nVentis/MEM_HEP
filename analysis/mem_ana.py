@@ -3,7 +3,7 @@ import numpy as np
 
 from math import sqrt,pi,floor,log10
 from analysis.mc.tools import variance_weighted_result
-from typing import List, Optional
+from typing import List, Optional, Union
 import re
 
 constants = {
@@ -18,7 +18,8 @@ constants = {
     "system_py": 0,
     "system_pz": 0,
     "B_Z_bb": 0.1512, # 
-    "B_H_bb": 0.569 # https://pdg.lbl.gov/2023/reviews/rpp2022-rev-higgs-boson.pdf  
+    "B_H_bb": 0.569, # https://pdg.lbl.gov/2023/reviews/rpp2022-rev-higgs-boson.pdf  
+    "pb_to_1oGeV2": 2.56819e-9
 }
 
 def parse_line_to_float(line:str, with_uncert:bool=False) -> float:   
@@ -61,11 +62,10 @@ def get_result(event_dir:str, event_idx:int)->List[float]:
     
     return result
 
-def get_result_npy(event_dir:str, event_idx:int,
-                   perms_all:bool=True, perm_list:List[int]=[0],
-                   variance_weighted:bool=False)->List[float]:
+def get_result_npy(path:str,
+                   perms_all:bool=True, perm_list:List[int]=[0])->Union[List[float],None]:
 
-    f = np.load(f"{event_dir}/event_{str(event_idx)}/summary.npy", allow_pickle=True).item()
+    f = np.load(path, allow_pickle=True).item()
     
     zhh_means = np.array(f['sig']['means'])
     zzh_means = np.array(f['bkg']['means'])
@@ -76,26 +76,27 @@ def get_result_npy(event_dir:str, event_idx:int,
     zhh_means = zhh_means[perm_list]
     zzh_means = zzh_means[perm_list]
     
-    assert(len(zhh_means) == len(zzh_means))
+    if len(zhh_means) != len(zzh_means):
+        return None
     
-    if variance_weighted:
-        zhh_stdev = np.array(f['sig']['sigmas'])
-        zzh_stdev = np.array(f['bkg']['sigmas'])
+    return [zhh_means.mean(), zzh_means.mean()]
+
+def finalize_mems(results:np.ndarray,
+                  assume_zzh:bool=False, assume_zhh:bool=False,
+                  pb_to_1oGeV2:float=constants["pb_to_1oGeV2"],
+                  prefac:float=1/((2**24)*(pi**18)),
+                  zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
+                  z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"]):
+    
+    if not assume_zhh and not assume_zzh: raise Exception('Invalid state')
         
-        result = [
-            variance_weighted_result(zhh_means, zhh_stdev)[0],
-            variance_weighted_result(zzh_means, zzh_stdev)[0],
-        ]
-    else:
-        result = [zhh_means.mean(), zzh_means.mean()]
-        
-    return result
+    return results*prefac/(zhh_cross_sec if assume_zhh else zzh_cross_sec)*h_bb_branching*(h_bb_branching if assume_zhh else z_bb_branching)*pb_to_1oGeV2
 
 def load_results(event_dir:str, reco:pd.DataFrame,
                  zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
                  z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"],
-                 perms_all:bool=True, perm_list:List[int]=[0], variance_weighted:bool=False, use_npy:Optional[bool]=None,
-                 normalize_samples:bool=True, pb_to_1oGeV2:float = 2.56819e-9, add_generator:bool=False,) -> pd.DataFrame:
+                 perms_all:bool=True, perm_list:List[int]=[0], use_npy:Optional[bool]=None,
+                 normalize_samples:bool=True, pb_to_1oGeV2:float=constants["pb_to_1oGeV2"], add_generator:bool=False,) -> pd.DataFrame:
     """_summary_
 
     Args:
@@ -111,29 +112,42 @@ def load_results(event_dir:str, reco:pd.DataFrame,
     """
     from os import listdir
     import os.path as osp
+    from glob import glob
     
     prefac = 1/((2**24)*(pi**18))
     
     events = np.array([int(name.replace("event_", "")) for name in listdir(event_dir)])
     results = []
-    for event_idx in events:
-        if (use_npy != True) and (perms_all and not variance_weighted):
+    mask = np.zeros(len(events), dtype=bool)
+
+    for i in range(len(events)):
+        event_idx = events[i]
+        if (use_npy != True) and perms_all:
             if osp.isfile(f"{event_dir}/event_{str(event_idx)}/result.txt"):
+                mask[i] = True
                 results.append(get_result(event_dir, event_idx))
         else:
-            if osp.isfile(f"{event_dir}/event_{str(event_idx)}/summary.npy"):
-                results.append(get_result_npy(event_dir, event_idx, variance_weighted=variance_weighted,
-                                            perms_all=perms_all, perm_list=perm_list))
+            files = glob(f"{event_dir}/event_{str(event_idx)}/summary*.npy")
+            if len(files):
+                res = get_result_npy(path=files[0], perms_all=perms_all, perm_list=perm_list)
+                if res is not None:
+                    mask[i] = True
+                    results.append(res)
+                else:
+                    print(event_idx)
+            else:
+                print(f'No file for event {event_idx}')
         
     results = np.array(results).T
+    events = events[mask]
     
     assert(len(events) == results.shape[1])
     
     results = {
         "event_idx": events,
         "event": reco.iloc[events]['event'],
-        "zhh_mem": results[0]*prefac/(zhh_cross_sec*h_bb_branching*h_bb_branching*pb_to_1oGeV2),
-        "zzh_mem": results[1]*prefac/(zzh_cross_sec*h_bb_branching*z_bb_branching*pb_to_1oGeV2),
+        "zhh_mem": finalize_mems(results[0], assume_zhh=True),
+        "zzh_mem": finalize_mems(results[1], assume_zzh=True),
         "is_zhh": reco["is_zhh"][events],
         "is_zzh": reco["is_zzh"][events]
     }

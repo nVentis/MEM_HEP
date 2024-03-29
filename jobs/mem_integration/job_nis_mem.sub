@@ -14,4 +14,4 @@ error = /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log/$(ProcId).err
 
 transfer_output_files = ""
 
-queue event from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/event_numbers_test.txt
+queue event from /afs/desy.de/user/b/bliewert/public/MarlinWorkdirs/MEM_HEP/jobs/mem_integration/consistency.txt

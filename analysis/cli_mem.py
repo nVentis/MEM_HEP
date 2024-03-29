@@ -13,8 +13,9 @@ def cli_mem():
 @click.option("--sampling", default="vegas", type=click.Choice(['vegas', 'nis'], case_sensitive=False))
 @click.option("--save_npy", default="1", type=int)
 @click.option("--with_perms", default="1", type=int)
-@click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/comparison_reco_zhh_zzh.npy", help="Numpy file with reco kinematics")
-def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_perms:int, src:str):
+@click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/compare_truejet_matchingreco.root_zhh_zzh.npy", help="Numpy file with reco kinematics")
+@click.option("--job", default="0", type=int)
+def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_perms:int, src:str, job:int):
     """Does the MEM integration for the given event for signal and background hypothesis and saves the results in dst
     Careful naming: event (input) is the index in the data frame, event_idx is the generator event id
 
@@ -26,6 +27,7 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
     """
     from analysis.mem import mem_integrate
     from analysis.import_data import import_true_reco
+    from analysis.mc.tools import variance_weighted_result
     from analysis.calc import get_kinematics
     import itertools
     import numpy as np
@@ -39,8 +41,9 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
     save_npy = bool(save_npy)
     with_perms = bool(with_perms)
     int_type = 1 if sampling == "nis" else 0
+    job = int(job)
     
-    reco = import_true_reco(src_file=src, normalize=False)
+    reco = import_true_reco(src_file=src)
     event_idx = int(reco.iloc[event]['event'])
     
     perms_zhh = [
@@ -107,7 +110,7 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
         reco_kin = get_kinematics(reco, False, i=event, perm=perm)
         
         result = mem_integrate(reco_kin=reco_kin, mode=1, neval=neval, precond_size=precond_size, nitn=nitn, me_type=me_type, int_type=int_type, file_suffix=str(i))
-        (mean, sdev) , save_result = extract_values(result, int_type=int_type)
+        (mean, sdev), save_result = extract_values(result, int_type=int_type)
         
         results_sig['means'].append(mean)
         results_sig['sigmas'].append(sdev)
@@ -116,8 +119,7 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
         if save_npy:
             np.save(join(dirname('./result.txt'), f'sig_p{str(i)}.npy'), np.array(save_result), allow_pickle=True)
     
-    tot_sig = np.mean(results_sig['means'])
-    
+    tot_sig = np.mean(results_sig['means'])    
     logger.info(f"Finished ZHH: [{str(tot_sig)}]")
     
     ########################################################
@@ -150,11 +152,11 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
     # Save results
     
     if save_npy:
-        np.save(join(dirname('./result.txt'), 'summary.npy'), {
+        np.save(join(dirname('./result.txt'), f'summary_{str(job)}.npy'), {
             'sig': results_sig,
             'bkg': results_bkg
         }, allow_pickle=True)
-    
+
     report = f"""
 ZHH: [{str(tot_sig)}]
 ZZH: [{str(tot_bkg)}]

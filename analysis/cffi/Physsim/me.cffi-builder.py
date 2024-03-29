@@ -8,7 +8,9 @@ ffibuilder = FFI()
 
 # specify functions, etc to be made available to Python
 ffibuilder.cdef('''double calc_zhh_single(double momenta[]);
-                double calc_zzh_single(double momenta[]);''')
+                double calc_zzh_single(double momenta[]);
+                void free(void *ptr);
+                ''')
 
 # specify code needed to build the Python module
 ffibuilder.set_source(
