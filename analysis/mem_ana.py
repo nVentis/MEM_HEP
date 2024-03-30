@@ -81,6 +81,11 @@ def get_result_npy(path:str,
     
     return [zhh_means.mean(), zzh_means.mean()]
 
+def sig_to_bkg(zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
+               z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"],)->float:
+    
+    return (zhh_cross_sec*h_bb_branching)/(zzh_cross_sec*z_bb_branching)
+
 def finalize_mems(results:np.ndarray,
                   assume_zzh:bool=False, assume_zhh:bool=False,
                   pb_to_1oGeV2:float=constants["pb_to_1oGeV2"],
@@ -93,8 +98,6 @@ def finalize_mems(results:np.ndarray,
     return results*prefac/(zhh_cross_sec if assume_zhh else zzh_cross_sec)*h_bb_branching*(h_bb_branching if assume_zhh else z_bb_branching)*pb_to_1oGeV2
 
 def load_results(event_dir:str, reco:pd.DataFrame,
-                 zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
-                 z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"],
                  perms_all:bool=True, perm_list:List[int]=[0], use_npy:Optional[bool]=None,
                  normalize_samples:bool=True, pb_to_1oGeV2:float=constants["pb_to_1oGeV2"], add_generator:bool=False,) -> pd.DataFrame:
     """_summary_
@@ -159,17 +162,17 @@ def load_results(event_dir:str, reco:pd.DataFrame,
     results = results[((results["zhh_mem"] > 0) & (results["zzh_mem"] > 0))]
     
     if normalize_samples:
-        sig_to_bkg = (zhh_cross_sec*h_bb_branching)/(zzh_cross_sec*z_bb_branching)
-        bkg_to_sig = sig_to_bkg**-1
+        stob = sig_to_bkg()
+        btos = stob**-1
         
         sig_size = np.count_nonzero(results["is_zhh"])
         bkg_size = np.count_nonzero(results["is_zzh"])
         
-        print('sig', sig_size, 'bkg', sig_to_bkg*bkg_size)
+        print('sig', sig_size, 'bkg', stob*bkg_size)
         
-        if abs(sig_size - sig_to_bkg*bkg_size) > 2:
-            if bkg_size < bkg_to_sig*sig_size:
-                sig_size_max = round(sig_to_bkg*bkg_size)
+        if abs(sig_size - stob*bkg_size) > 2:
+            if bkg_size < btos*sig_size:
+                sig_size_max = round(stob*bkg_size)
                 
                 # Use complete background sample, lower signal fraction
                 idx = np.where(results["is_zhh"] == 1)[0]
@@ -223,7 +226,7 @@ def best_threshold(results, vals=None, r_column="r",
     best = 9999
     best_t = np.max(results[r_column])
     
-    sig_to_bkg = (zhh_cross_sec*h_bb_branching)/(zzh_cross_sec*z_bb_branching)
+    stob = sig_to_bkg()
     
     result = {
         "TP": [],
@@ -250,18 +253,18 @@ def best_threshold(results, vals=None, r_column="r",
         
         cur = 0
         if optimization_scheme == 0: # signal/background-ratio as expected
-            cur = sqrt((TP - sig_to_bkg*TN)**2) + FN + FP #+ sqrt((FN-FP)**2)
+            cur = sqrt((TP - stob*TN)**2) + FN + FP #+ sqrt((FN-FP)**2)
         elif optimization_scheme == 1: # variation of 0
-            cur = sqrt((TP - sig_to_bkg*TN)**2) + sqrt(FN**2 + FP**2)
+            cur = sqrt((TP - stob*TN)**2) + sqrt(FN**2 + FP**2)
         elif optimization_scheme == 2: # signal/background-ratio as expected, high TPR
-            cur = sqrt(((TP - sig_to_bkg*TN)/P)**2) - TPR
+            cur = sqrt(((TP - stob*TN)/P)**2) - TPR
         elif optimization_scheme == 3: # high TPR, high TNR 
             cur = -TPR -TNR 
-        elif optimization_scheme == 4: # ratio of predicted positive/negative = sig_to_bkg
+        elif optimization_scheme == 4: # ratio of predicted positive/negative = stob
             if PN == 0:
                 cur = 99999
             else:
-                cur = (PP/PN - sig_to_bkg)**2            
+                cur = (PP/PN - stob)**2            
         else:
             raise Exception("Unknown scheme")
             

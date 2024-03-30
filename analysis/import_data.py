@@ -4,7 +4,7 @@ import os.path as osp
 import os
 from pathlib import Path
 from analysis.split_event_tree import ttype_column
-from analysis.mem_ana import constants
+from analysis.mem_ana import constants, sig_to_bkg
 from analysis.convert import root_to_numpy
 from tqdm.auto import tqdm
 from typing import Optional
@@ -58,22 +58,18 @@ def samples_set_ratio(
 
 def normalize_samples(
     df:pd.DataFrame,
-    constants:dict=constants,
     comparison=["zhh", "zzh"]) -> pd.DataFrame:
     
-    sig_cross_sec = constants[f"sigma_{comparison[0]}"]
-    bkg_cross_sec = constants[f"sigma_{comparison[1]}"]
-    
-    sig_to_bkg = sig_cross_sec/bkg_cross_sec # ca. 0.1
-    bkg_to_sig = sig_to_bkg**-1 # ca. 10
+    stob = sig_to_bkg() # ca. 0.1
+    btos = stob**-1 # ca. 10
     
     sig_size = np.count_nonzero(df[f"is_{comparison[0]}"])
     bkg_size = np.count_nonzero(df[f"is_{comparison[1]}"])
     
     out = df
-    if abs(sig_size - sig_to_bkg*bkg_size) > 2:
-        if bkg_size < bkg_to_sig*sig_size:
-            out = samples_set_ratio(out, sig_to_bkg=sig_to_bkg, is_sig_col=f"is_{comparison[0]}")
+    if abs(sig_size - stob*bkg_size) > 2:
+        if bkg_size < btos*sig_size:
+            out = samples_set_ratio(out, sig_to_bkg=stob, is_sig_col=f"is_{comparison[0]}")
         else:
             # Use complete signal sample, lower background fraction
             raise Exception("Not implemented")
@@ -201,7 +197,7 @@ def import_true_reco(
     if equal_size:
         df = samples_set_ratio(df, 1, f"is_{comparison[0]}")
     elif normalize:
-        df = normalize_samples(df, constants=constants, comparison=comparison)
+        df = normalize_samples(df, comparison=comparison)
     
     df.reset_index(drop=True, inplace=True)
     
