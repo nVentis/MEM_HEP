@@ -282,18 +282,29 @@ def best_threshold(results, vals=None, r_column="r",
     else:
         return best_t
 
-def plot_r(data, name, yscale="log", text_start_y:float=0.95, text_start_x:float=0.93, normalize=True, bins=64):
+def plot_r(zhh_data:Optional[np.ndarray]=None,
+           zzh_data:Optional[np.ndarray]=None,
+           name:Optional[str]=None, text_start_y:float=0.95, text_start_x:float=0.93, normalize=True, bins=64, kwargs:dict={}):
     from analysis.plot_matplotlib import plot_hist
     from analysis.import_data import split_true_zhh_zzh
     from matplotlib import pyplot as plt
     
-    true_zhh, true_zzh = split_true_zhh_zzh(data)
+    llr = {}
+    labels = []
+    
+    if zhh_data is not None:
+        llr['zhh_r'] = zhh_data
+        labels.append('ZHH Events')
+        
+    if zzh_data is not None:
+        llr['zzh_r'] = zzh_data
+        labels.append('ZZH Events')
 
-    llr = {
-        "zhh_r": true_zhh["r"],
-        "zzh_r": true_zzh["r"]
-    }
-
-    fig, ax = plt.subplots()
-    plot_hist(llr, x = ["zhh_r", "zzh_r"], labels=["ZHH event data", "ZZH event data"], title=r"$D_{bkg}$ " + f"({name})", text_start_y=text_start_y, text_start_x=text_start_x, normalize=normalize, xlim=(-0.02,1.02), xlim_binning=(0,1.), xlabel=r"$D_{bkg}$", ax=ax, bins=bins, yscale=yscale)
+    args = { 'labels': labels, 'title': r"$D_{sig}$"+(f' {name}' if name is not None else ''),
+                     'text_start_y': text_start_y, 'text_start_x': text_start_x, 'normalize': normalize,
+                     'xlabel': r"$D_{sig}$", 'bins': bins, 'xscale': 'log', 'scientific_stats': True }
+    
+    plot_args = { **args, **kwargs }
+    
+    return plot_hist(llr, **plot_args)
 

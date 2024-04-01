@@ -3,20 +3,22 @@ from analysis.fit_funcs import fit_funcs
 from analysis.import_data import import_data, filter_data
 from analysis.plot_matplotlib import plot_hist
 from math import sqrt, pow, pi, exp
-from typing import Optional, List
+from typing import Optional, List, Union
 from os import path as osp
 from os import makedirs, remove
 import numpy as np
 
 def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit:Optional[str]="gauss", true_label = "parton", reco_label = "jet",
+                  with_fit_opts:bool=False,
                   quantity="E", xlabel=r"$ΔE$ [GeV]", xlim=(-100,100), ylim=(0, 0.18), n_bins=128, binrange=None, fit_init=None,
+                  size_x:Union[int,float]=6, size_y:Union[int,float]=8,
                   suptitle=None, fit_skip=False, yscale="linear", single_title=None, plot_args={}, titles:Optional[List[str]]=None):
     from scipy.optimize import curve_fit,minimize
     
     popts = []
     figures = []
     
-    fig, axes = plt.subplots(1, len(data), figsize=(6*len(data),8))
+    fig, axes = plt.subplots(1, len(data), figsize=(size_x*len(data), size_y))
     fig.suptitle((name + r": $" + quantity + r"_{" + reco_label + r"}-" + quantity +  r"_{" + true_label + r"}$") if suptitle is None else suptitle, fontsize=18)
     
     if len(data) == 1:
@@ -74,8 +76,15 @@ def plot_transfer(data, name, plot_save_dir:Optional[str] = None, fit:Optional[s
             print(popt)
         
         popts.append(popt)
-        args = { 'x': (f"{reco_label.title()} {i}") if titles is None else titles[i-1], 'fit_func': (lambda x: fit_func(x, *popt)) if fit is not None else None,
-                'fit_opts': popt, 'bins': n_bins, 'xlim': xlim, 'ylim': ylim, 'ax': axes[i-1],
+        
+        fit_funcs_plot = []
+        for popt in popts:
+            fit_funcs_plot.append(fit_func if with_fit_opts else lambda x: fit_func(x, *popt))
+        
+        args = { 'x': (f"{reco_label.title()} {i}") if titles is None else titles[i-1],
+                'fit_func': None if fit is None else fit_funcs_plot,
+                'fit_opts': None if not with_fit_opts else popts,
+                'bins': n_bins, 'xlim': xlim, 'ylim': ylim, 'ax': axes[i-1],
                  'xlabel': xlabel, 'title':(None if single_title is None else single_title), 'normalize':True, 'yscale': yscale, 'text_spacing_y': 0.15 }
         fig = plot_hist(df, **{ **args, **plot_args})
         fig.tight_layout()

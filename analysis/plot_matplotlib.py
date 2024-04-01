@@ -4,9 +4,11 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pylab as pylab
 import pandas as pd
+from analysis.calc import calc_FWHM
 from matplotlib import rcParams as rcp
 from matplotlib.backends.backend_pdf import PdfPages
 from typing import Optional, Union, Callable, Dict, List
+import inspect
 try:
     from typing import Literal
 except ImportError:
@@ -57,12 +59,12 @@ def export_figures(filename, figs=None, dpi=200):
     pp.close()
 
 def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
-              fit_func:Optional[Callable]=None,
+              fit_func:Optional[Callable]=None, fit_opts:Optional[Union[List[dict], dict]]=None,
               labels:Optional[List[str]]=None, colorpalette=None, bins:int=128,
               same_bins:bool=True, xlim_binning:Optional[Union[list,tuple]]=None, xlim:Optional[Union[list,tuple]]=None, ylim=None,
               xlabel:Optional[str] = None, ylabel:Optional[str]=None,
               normalize=False, filter_nan:bool=False, unitx:Optional[str]=None,
-              title:Optional[str]=None, ax=None,
+              title:Optional[str]=None, ax=None, with_fwhm:bool=False,
               text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.22,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
               fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
@@ -77,7 +79,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         data (Union[dict,pd.DataFrame]): Can be a pd.DataFrame or simple dict (preferrable for columns of unequal size)
         x (Optional[Union[str,list]]): one column or a list of columns in data to be histogrammed.
         fit_func (Optional[function], optional): only supported if one column is to be plotted, i.e. x is a string
-        fit_opts (Optional[dict], opional): only used for printing
+        fit_opts (Optional[Union[List[dict], dict]], opional): only used for printing
         labels (_type_, optional): _description_. Defaults to None.
         colorpalette (_type_, optional): _description_. Defaults to None.
         bins (int, optional): _description_. Defaults to 128.
@@ -142,7 +144,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     
     if isinstance(x, str):
         x = [x]
-
+        
     if len(list(data.shape)) == 1:
         columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
         if xlim_view is None:
@@ -151,20 +153,28 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
         columns = [x] if isinstance(x, str) else x
         if xlim_view is None:
             xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
-                
+
     # If same_bins=True, infer limits and impose xlim_binning
     if xlim_binning is None:
         if same_bins or isinstance(data, pd.DataFrame):
             xlim_binning = xlim_view
         else: # why this?
             xlim_binning = [np.min(np.min(data)), np.max(np.max(data))]
-            
+    
+    # TODO:    
+    nextbox_y = text_start_y
+    
     for i in range(len(columns)):
         column = columns[i]
         values = data if column is None else data[column]
+        fit_fn = None if fit_func is None else (fit_func if callable(fit_func) else (fit_func[i] if (isinstance(fit_func, list) and callable(fit_func[i])) else None))
         
         if filter_nan == True:
-            values = values[~np.isnan(values)]
+            mask = np.isnan(values)
+            if np.sum(mask):
+                print(f'Warning: {np.sum(mask)} values NaN')
+            
+            values = values[~mask]
             
         # Limits
         min_val = xlim_binning[0] if (xlim_binning is not None) else np.min(values)
@@ -179,7 +189,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
                 
             bin_edges = np.linspace(min_val, max_val, num=bins+1)
             
-        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2           
 
         # Filter for x_lim_binning
         stat_values = values
@@ -200,8 +210,16 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
                                                                     ec=colorpalette[i],
                                                                     weights=np.ones_like(stat_values)/(len(stat_values) if normalize else 1))
         
-        if callable(fit_func):
-            fit_data = fit_func(bin_centers)
+        
+        
+        if callable(fit_fn):
+            # Allow different parameters per fit/data
+            fit_opt = None if fit_opts is None else (fit_opts[i] if len(np.shape(fit_opts)) == 2 else fit_opts)
+            
+            if fit_opt is not None:   
+                fit_data = fit_fn(bin_centers, *fit_opt)
+            else:
+                fit_data = fit_fn(bin_centers)
             
             if normalize:
                 fit_data = fit_data/fit_data.sum()
@@ -217,9 +235,21 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
             text_rmse = format_st(RMSE) if not scientific_stats else f'{RMSE:.2E}'
             text_rsq = f'{Rsquared:.2f}' if not scientific_stats else f'{Rsquared:.2E}'
             
+            fit_name = f' {fit_fn.__name__}' if not fit_fn.__name__ == '<lambda>' else ''
+            fit_text = f"Fit{fit_name}\nMSE: {text_rms}\nRMSE: {text_rmse}\nR^2: {text_rsq}" # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
+            fit_args = inspect.getfullargspec(fit_fn).args
+            
+            if fit_opt is not None and len(fit_args) > 1:
+                # First argument is x and skipped
+                keys = inspect.getfullargspec(fit_fn).args
+                for j, val in enumerate(fit_opt):
+                    key = keys[j+1]
+                    fit_text += f'\n{key} = ' + (f'{val:.2E}' if scientific_stats else f'{val:.2f}')
+            
             (plt if ax == None else ax).plot(bin_centers, fit_data, color="red", alpha=0.7)
+            
             fig.text(text_start_x, text_start_y - text_spacing_y*2*i,
-                f"Fit{fit_func.__name__ if not fit_func.__name__ == '<lambda>' else ''}\nMSE: {text_rms}\nRMSE: {text_rmse}\nR^2: {text_rsq}" , # + ("" if not isinstance(fit_opts, dict) else "\n".join("{0}:{1:.2f}".format(key, fit_opts[key]) for key in fit_opts.keys()))
+                fit_text,
                 #color=colorpalette[i],
                 bbox=dict(edgecolor="red", facecolor="w"),
                 fontsize='medium' if legendsize is None else legendsize,
@@ -229,12 +259,19 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
             
         mean = np.average(stat_values)
         std_dev = np.std(stat_values)
+        fwhm = None
+        
+        # Extra statistics
+        extra_text = ''
+        if with_fwhm:
+            fwhm = calc_FWHM(bin_centers, bin_counts)
+            extra_text += f'\nFWHM: ' + (f'{fwhm:.2E}' if scientific_stats else f'{fwhm:.2f}')
         
         mean_stat = (f'{mean:.2E}' if scientific_stats else f'{mean:.2f}')+(f' {unitx}' if unitx is not None else '')
         std_dev_stat = (f'{std_dev:.2E}' if scientific_stats else f'{std_dev:.2f}')+(f' {unitx}' if unitx is not None else '')
         
-        fig.text(text_start_x, text_start_y - text_spacing_y*((2*i+1) if callable(fit_func) else i),
-                f"{h_name}\nEntries: {len(stat_values)}\nMean: {mean_stat}\nStd Dev: {std_dev_stat}",
+        fig.text(text_start_x, text_start_y - text_spacing_y*((2*i+1) if callable(fit_fn) else i),
+                f"{h_name}\nEntries: {len(stat_values)}\nMean: {mean_stat}\nStd Dev: {std_dev_stat}{extra_text}",
                 #color=colorpalette[i],
                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
                 fontsize='medium' if legendsize is None else legendsize,
