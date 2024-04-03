@@ -334,8 +334,9 @@ def mem_integrate(reco_kin:Optional[List[float]]=None,
         integrand = build_mem_integrand(reco_kin)
         integrator = IFlowIntegrator(integrand=integrand, boundaries=boundaries, lr=1e-4, **iflow_args)
 
+        tot_res, tot_uncert = integrator.integrate(do_masking=True)
+        
         means, stddevs, losses = integrator.means, integrator.stddevs, integrator.losses
-        tot_res, tot_uncert = integrator.integrate()
         print(f'result = {tot_res:.2E} +/- {tot_uncert:.2E}')
         
         clear_session()

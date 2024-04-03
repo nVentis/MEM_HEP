@@ -252,6 +252,24 @@ def jac(params, constants):
         )
     )
 
+def prefactor(params_sph, constants)->float:
+    # rho^2*sin(Theta)/E
+    (Rhb1, Thb1, Phb1,
+    Rhb1b, Thb1b, Phb1b,
+    Rhb2, Thb2, Phb2,
+    Rhb2b, Thb2b, Phb2b) = params_sph
+    
+    prefac = 1.
+    for Rh, Th in (
+        (Rhb1, Thb1),
+        (Rhb1b, Thb1b),
+        (Rhb2, Thb2),
+        (Rhb2b, Thb2b)):
+        
+        prefac = prefac * (Rh**2)*sin(Th)/sqrt(Rh**2 + constants["m_b"]**2)
+        
+    return prefac
+
 def construct_integrand_bf(data, event_idx, constants):
     from analysis.cffi.mg5.lib import calc_zhh
     
@@ -309,7 +327,9 @@ def construct_integrand_bf(data, event_idx, constants):
                 for j in range(4):
                     transfer = transfer * tf_E(reco_energies[j+2] - energies[j]) * tf_Th(reco_angles[j+2][0] - thetas[j]) * tf_Ph(reco_angles[j+2][1] - phis[j])
                 
-                results[i] = jacobian*transfer
+                prefac = prefactor(spherical, constants)
+                
+                results[i] = prefac*transfer/jacobian
                 found = found+1
                 
             else:

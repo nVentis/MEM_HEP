@@ -69,7 +69,8 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
               fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
               ticksize_minor:int=10, ticksize_major=None,
-              figsize:tuple=(8,6), figdpi:int=100, scientific_stats:bool=False):
+              figsize:tuple=(8,6), figdpi:int=100, scientific_stats:bool=False,
+              force_df:bool=True):
     """_summary_
     
     text_spacing_y: 0.11 for high-res
@@ -115,7 +116,11 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     
     # Force conversion of dict to DataFrame
     if isinstance(data, dict):
-        data = pd.DataFrame(data)
+        if force_df:
+            data = pd.DataFrame(data)
+        else:
+            for key in data:
+                data[key] = np.array(data[key])
     elif isinstance(data, np.ndarray):
         data = pd.DataFrame({ (x if isinstance(x, str) else "Data"): data })
     
@@ -145,15 +150,23 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     if isinstance(x, str):
         x = [x]
         
-    if len(list(data.shape)) == 1:
+    if not isinstance(data, dict) and len(list(data.shape)) == 1:
         columns = [None] # In this case, data is assumed to contain just one column of data, which is to be histogrammed
         if xlim_view is None:
             xlim_view = [0.98*data.min(), 1.02*data.max()]
     else:
         columns = [x] if isinstance(x, str) else x
         if xlim_view is None:
-            xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
-
+            if isinstance(data, dict):
+                xlim_view = (np.min(data[list(data.keys())[0]]), np.max(data[list(data.keys())[0]]))
+                for key, dt in data.items():
+                    xlim_view = (
+                        min(xlim_view[0], dt.min()),
+                        max(xlim_view[0], dt.max()),
+                    )
+            else:
+                xlim_view = [0.98*data[x].min().min(), 1.02*data[x].max().max()]
+                
     # If same_bins=True, infer limits and impose xlim_binning
     if xlim_binning is None:
         if same_bins or isinstance(data, pd.DataFrame):
@@ -344,7 +357,7 @@ def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
     
 def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
                    title:Optional[str]=None, titlesize:Union[int, str]=15,
-                   labels=['ZHH', 'ZZH']):
+                   labels=['ZHH', 'ZZH'],):
     import seaborn as sns
     
     if ticksize_major is None:
@@ -376,19 +389,13 @@ def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:
 
     ax = sns.heatmap(conf_mat, annot=annot, fmt = '')
     
-    #ax.set_xlabel("Predicted label", fontsize=fontsize)
-    #ax.set_ylabel("Actual label", fontsize=fontsize)
-    
-    #ax.tick_params(axis='both', which='major', labelsize=ticksize_major)
-    #ax.tick_params(axis='both', which='minor', labelsize=ticksize_minor)
-    
     plot_styling(ax, ticksize_minor=ticksize_minor, ticksize_major=ticksize_major,
                  xscale=None, yscale=None, ylim=None,
                  xlabel="Predicted label", ylabel="Actual label",
                  title=title, fontsize=fontsize, titlesize=titlesize,
                  ticks_left=None, ticks_bottom=None,)
     
-    return ax
+    return ax.get_figure()
     
 def plot_roc(thresh_df:pd.DataFrame):
     from sklearn.metrics import auc
@@ -409,10 +416,6 @@ def plot_roc(thresh_df:pd.DataFrame):
     ax.plot(FPR, TPR)
     
     AUC = auc(FPR, TPR) #np.sum(TPR)/len(TPR)
-    
-    #ax.set_xlabel("FPR")
-    #ax.set_ylabel("TPR")
-    #ax.set_title(f"ROC-curve [AUC:{AUC:.3f}]")
     
     plot_styling(ax, title=f"ROC-curve [AUC:{AUC:.3f}]", xlabel="FPR", ylabel="TPR")
     

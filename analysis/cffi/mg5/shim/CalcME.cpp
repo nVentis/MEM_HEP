@@ -407,8 +407,8 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     double tf_E = 1.;
     double tf_Th = 1.;
     double tf_Ph = 1.;
-
-    double jacobian = 0.;
+    double prefac = 1.;
+    double jacobian = 1.;
 
     int i,j,k;
     int kin_res = 0;
@@ -416,6 +416,7 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
     int tf_E_order_kin[4] {20,24,12,16};
     int tf_Th_order_kin[4] {7,10,1,4};
     int tf_Ph_order_kin[4] {8,11,2,5};
+    int rho_order_kin[4] {6,9,0,3};
 
     #ifdef DEBUG_VV
     std::vector<double> B1_masses;    
@@ -567,6 +568,13 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
                 #endif
             }
 
+            // Calculate pre-factors
+            prefac = 1.;
+            for (j = 0; j < 4; j++) {
+                // rho^2*sin(Theta)/E
+                prefac = prefac * std::pow(kin[rho_order_kin[j]], 2.) * std::sin(kin[tf_Th_order_kin[j]]) / kin[tf_E_order_kin[j]];
+            }
+
             // Calculate jacobian
             jacobian = calc_jac(
                 kin[0], kin[1], kin[2],
@@ -577,13 +585,14 @@ void calc_me::mc_batch(double reco_kin[], double int_variables[], int n_elements
             
             #ifdef DEBUG_VV
                 std::cout << "----------------------------------------------------" << std::endl;
-                std::cout << " ME:" << me_element_val;
-                std::cout << " TF:" << transfer;
+                std::cout << " PF :" << prefac << std::endl;
+                std::cout << " ME :" << me_element_val << std::endl;
+                std::cout << " TF :" << transfer << std::endl;
                 std::cout << " JAC:" << jacobian << std::endl;
                 std::cout << "----------------------------------------------------" << std::endl;
             #endif
 
-            buffer[i] = me_element_val*transfer*jacobian;
+            buffer[i] = prefac*me_element_val*transfer/jacobian;
         }
     }
 

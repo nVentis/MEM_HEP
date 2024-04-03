@@ -6,7 +6,7 @@ transfer_executable = True
 max_retries = 3
 Requirements = (OpSysAndVer == "CentOS7") && (Machine =!= LastRemoteHost)
 request_cpus = 1
-request_memory = 8000 Mb
+request_memory = 16000 Mb
 
 log = /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log/$(ProcId).log
 output = /nfs/dust/ilc/user/bliewert/mem_integrate_nis/log/$(ProcId).out

@@ -13,9 +13,10 @@ def cli_mem():
 @click.option("--sampling", default="vegas", type=click.Choice(['vegas', 'nis'], case_sensitive=False))
 @click.option("--save_npy", default="1", type=int)
 @click.option("--with_perms", default="1", type=int)
+@click.option("--same_size", default="0", type=int)
 @click.option("--src", default="/nfs/dust/ilc/user/bliewert/fullflow_v3/comparison/cache/compare_truejet_matchingreco.root_zhh_zzh.npy", help="Numpy file with reco kinematics")
 @click.option("--job", default="0", type=int)
-def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_perms:int, src:str, job:int):
+def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_perms:int, same_size:int, src:str, job:int):
     """Does the MEM integration for the given event for signal and background hypothesis and saves the results in dst
     Careful naming: event (input) is the index in the data frame, event_idx is the generator event id
 
@@ -40,6 +41,7 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
     me_type = int(me_type)
     save_npy = bool(save_npy)
     with_perms = bool(with_perms)
+    same_size = bool(same_size)
     int_type = 1 if sampling == "nis" else 0
     job = int(job)
     
@@ -126,8 +128,8 @@ def integrate(event:int, dst:str, me_type:int, sampling:str, save_npy:int, with_
     # ZZH
     logger.info("Starting ZZH")
     
-    neval = 500000
-    nitn = 10
+    neval = 500000 if not same_size else neval
+    nitn = 10 if not same_size else nitn
     
     for i in range(len(perms_zzh)):
         perm = perms_zzh[i]

@@ -202,8 +202,6 @@ def conf_mat(results, threshold:float):
     ]
     
 def best_threshold(results, vals=None, r_column="r",
-                   zhh_cross_sec:float=constants["sigma_zhh"], zzh_cross_sec:float=constants["sigma_zzh"],
-                   z_bb_branching:float=constants["B_Z_bb"], h_bb_branching:float=constants["B_H_bb"],
                    return_df=False, optimization_scheme:int=0, nsteps:int=1000):
     """_summary_
 
