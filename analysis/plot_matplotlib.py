@@ -39,15 +39,6 @@ def get_colorpalette():
 def set_colorpalette(colorpalette):
     settings['colorpalette'] = colorpalette
 
-
-def fontsize(fs):
-    pylab.rcParams.update({
-        'legend.fontsize': fs,
-        'axes.labelsize': fs,
-        'axes.titlesize': fs,
-        'xtick.labelsize': fs,
-        'ytick.labelsize': fs})
-
 def export_figures(filename, figs=None, dpi=200):
     pp = PdfPages(filename)
     if figs is None:
@@ -63,11 +54,12 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
               labels:Optional[List[str]]=None, colorpalette=None, bins:int=128,
               same_bins:bool=True, xlim_binning:Optional[Union[list,tuple]]=None, xlim:Optional[Union[list,tuple]]=None, ylim=None,
               xlabel:Optional[str] = None, ylabel:Optional[str]=None,
+              title:Optional[str]=None, ax=None,
               normalize=False, filter_nan:bool=False, unitx:Optional[str]=None,
-              title:Optional[str]=None, ax=None, with_fwhm:bool=False,
+              with_fwhm:bool=False,
               text_start_x:float=0.965, text_start_y:float=0.97, text_spacing_y:float=0.22,
               xscale:Literal['linear', 'log']='linear', yscale:Literal['linear', 'log']="linear",
-              fontsize:Optional[Union[str, int]]=14, legendsize = None, titlesize:Union[int, str]=15,
+              fontsize:Optional[Union[str, int]]=14, legendsize=None, titlesize:Union[int, str]=15,
               ticksize_minor:int=10, ticksize_major=None,
               figsize:tuple=(8,6), figdpi:int=100, scientific_stats:bool=False,
               force_df:bool=True):
@@ -265,7 +257,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
                 fit_text,
                 #color=colorpalette[i],
                 bbox=dict(edgecolor="red", facecolor="w"),
-                fontsize='medium' if legendsize is None else legendsize,
+                fontsize=(pylab.rcParams['legend.fontsize'] if legendsize is None else legendsize),
                 horizontalalignment='right',
                 verticalalignment='top',
                 transform=ax.transAxes)
@@ -287,7 +279,7 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
                 f"{h_name}\nEntries: {len(stat_values)}\nMean: {mean_stat}\nStd Dev: {std_dev_stat}{extra_text}",
                 #color=colorpalette[i],
                 bbox=dict(edgecolor=colorpalette[i], facecolor="w"),
-                fontsize='medium' if legendsize is None else legendsize,
+                fontsize=(pylab.rcParams['legend.fontsize'] if legendsize is None else legendsize),
                 horizontalalignment='right',
                 verticalalignment='top',
                 transform=ax.transAxes)
@@ -321,14 +313,29 @@ def plot_hist(data:Union[dict,pd.DataFrame], x:Optional[Union[str,list]]=None,
     
     return fig
 
+def defaultsize(ls, ts:Optional[int]=None, axs:Optional[int]=None):
+    if ts is None: ts = ls
+    if axs is None: axs = ls
+    
+    pylab.rcParams.update({
+        'legend.fontsize': ls,
+        'axes.labelsize': axs,
+        'axes.titlesize': axs,
+        'xtick.labelsize': ts,
+        'ytick.labelsize': ts})
+
 def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
                  xscale:Optional[str]="linear", yscale:Optional[str]="linear",
                  ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, title:Optional[str]=None,
-                 fontsize:Optional[Union[str, int]]=14, titlesize:Union[int, str]=15,
+                 fontsize:Union[str, int, None]=None,
+                 titlesize:Union[int, str, None]=None,
                  ticks_left:Union[bool,List,None]=True, ticks_bottom:Union[bool,List,None]=True):
     
+    if fontsize is None: fontsize = pylab.rcParams['axes.labelsize'] 
+    if titlesize is None: titlesize = fontsize + 2
+    
     if isinstance(ticks_left, list):
-        ax.set_yticks(range(len(ticks_left)), ticks_left, fontsize=fontsize)
+        ax.set_yticks(range(len(ticks_left)), ticks_left, fontsize=pylab.rcParams['ytick.labelsize'])
     elif ticks_left is not None:
         if ticks_left:
             ax.tick_params(axis='y', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
@@ -337,7 +344,7 @@ def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
             ax.tick_params(left=False, right=False, labelleft=False, labelright=False)
     
     if isinstance(ticks_bottom, list):
-        ax.set_xticks(range(len(ticks_bottom)), ticks_bottom, fontsize=fontsize)
+        ax.set_xticks(range(len(ticks_bottom)), ticks_bottom, fontsize=pylab.rcParams['xtick.labelsize'])
     elif ticks_bottom is not None:
         if ticks_bottom:
             ax.tick_params(axis='x', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
@@ -354,7 +361,54 @@ def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
     if ylabel is not None: ax.set_ylabel(ylabel, fontsize=fontsize)
     
     if ylim is not None: ax.set_ylim(ylim)
+
+def plot_lego(x:Optional[np.ndarray], y:Optional[np.ndarray],
+              hist:Optional[np.ndarray], xedges:Optional[np.ndarray], yedges:Optional[np.ndarray],
+              nbins:int=32, nbinsx:Optional[int]=None, nbinsy:Optional[int]=None,
+              xlabel:Optional[str] = None, ylabel:Optional[str]=None,
+              title:Optional[str]=None, ax=None, zscale:str='linear'):
     
+    if hist is None:
+        if nbinsx is None: nbinsx = nbins
+        if nbinsy is None: nbinsy = nbins
+        
+        fig = plt.figure()          #create a canvas, tell matplotlib it's 3d
+        if ax is None:
+            ax = fig.add_subplot(111, projection='3d')
+
+        #make histogram stuff - set bins - I choose 20x20 because I have a lot of data
+        hist, xedges, yedges = np.histogram2d(x, y, bins=(20,20))
+        
+    xpos, ypos = np.meshgrid(xedges[:-1]+xedges[1:], yedges[:-1]+yedges[1:])
+
+    xpos = xpos.flatten()/2.
+    ypos = ypos.flatten()/2.
+    zpos = np.zeros_like (xpos)
+
+    if zscale == 'log':
+        hist[hist != 0] = np.log(hist[hist != 0])
+
+    dx = xedges [1] - xedges [0]
+    dy = yedges [1] - yedges [0]
+    
+    dz = hist.flatten()
+
+    cmap = cm.get_cmap('jet') # Get desired colormap - you can change this!
+    max_height = np.max(dz)   # get range of colorbars so we can normalize
+    min_height = np.min(dz)
+    # scale each z to [0,1], and get their rgb values
+    rgba = [cmap((k-min_height)/max_height) for k in dz] 
+
+    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=rgba, zsort='average')
+    if zscale == 'log':
+        ax.set_zscale('symlog')
+    
+    if title is not None: plt.title(title)
+    if xlabel is not None: plt.xlabel(xlabel)
+    if ylabel is not None: plt.ylabel(ylabel)
+    
+    return fig
+
 def plot_confusion(conf_mat, fontsize=12, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
                    title:Optional[str]=None, titlesize:Union[int, str]=15,
                    labels=['ZHH', 'ZZH'],):
