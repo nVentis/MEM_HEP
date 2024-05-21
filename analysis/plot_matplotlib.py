@@ -324,7 +324,11 @@ def defaultsize(ls, ts:Optional[int]=None, axs:Optional[int]=None):
         'xtick.labelsize': ts,
         'ytick.labelsize': ts})
 
-def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
+
+defaultsize(12)
+
+def plot_styling(ax,
+                 ticksize_minor:Optional[int]=None, ticksize_major:Optional[int]=None,
                  xscale:Optional[str]="linear", yscale:Optional[str]="linear",
                  ylim=None, xlabel:Optional[str] = None, ylabel:Optional[str]=None, title:Optional[str]=None,
                  fontsize:Union[str, int, None]=None,
@@ -334,12 +338,18 @@ def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
     if fontsize is None: fontsize = pylab.rcParams['axes.labelsize'] 
     if titlesize is None: titlesize = fontsize + 2
     
+    ticksize_minor_y = pylab.rcParams['ytick.labelsize'] - 2 if ticksize_minor is None else ticksize_minor
+    ticksize_major_y = pylab.rcParams['ytick.labelsize']     if ticksize_major is None else ticksize_major
+    
+    ticksize_minor_x = pylab.rcParams['xtick.labelsize'] - 2 if ticksize_minor is None else ticksize_minor
+    ticksize_major_x = pylab.rcParams['xtick.labelsize']     if ticksize_major is None else ticksize_major
+    
     if isinstance(ticks_left, list):
         ax.set_yticks(range(len(ticks_left)), ticks_left, fontsize=pylab.rcParams['ytick.labelsize'])
     elif ticks_left is not None:
         if ticks_left:
-            ax.tick_params(axis='y', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
-            ax.tick_params(axis='y', which='minor', labelsize=ticksize_minor)
+            ax.tick_params(axis='y', which='major', labelsize=ticksize_major_y)
+            ax.tick_params(axis='y', which='minor', labelsize=ticksize_minor_y)
         else:
             ax.tick_params(left=False, right=False, labelleft=False, labelright=False)
     
@@ -347,8 +357,8 @@ def plot_styling(ax, ticksize_minor:int=10, ticksize_major:Optional[int]=None,
         ax.set_xticks(range(len(ticks_bottom)), ticks_bottom, fontsize=pylab.rcParams['xtick.labelsize'])
     elif ticks_bottom is not None:
         if ticks_bottom:
-            ax.tick_params(axis='x', which='major', labelsize=(ticksize_minor+2 if ticksize_major is None else ticksize_major))
-            ax.tick_params(axis='x', which='minor', labelsize=ticksize_minor)
+            ax.tick_params(axis='x', which='major', labelsize=ticksize_major_x)
+            ax.tick_params(axis='x', which='minor', labelsize=ticksize_minor_x)
         else:
             ax.tick_params(bottom=False, top=False, labelbottom=False, labeltop=False)
     
